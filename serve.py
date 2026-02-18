@@ -159,25 +159,35 @@ def status():
         "ready": checkpoint is not None,
         "checkpoint": checkpoint,
         "steps": state.get("steps", 0),
-        "num_checkpoints": len(state.get("checkpoints", [])),
+        "num_checkpoints": len(list_checkpoints()),
     }
 
 
 @app.get("/api/checkpoints")
 def list_checkpoints():
-    current = get_state().get("checkpoints", [])
-    using_fallback = not current
-    checkpoints = _all_checkpoints()
+    run2 = get_state().get("checkpoints", [])
+    run1 = []
+    if STATE_FILE_RUN1.exists():
+        run1 = json.loads(STATE_FILE_RUN1.read_text()).get("checkpoints", [])
+
     result = []
-    for i, ck in enumerate(checkpoints):
-        label = f"Step {ck['step']:,}"
+
+    # Run 1 checkpoints listed first (older, so they appear at the top of the dropdown)
+    for ck in run1:
+        label = f"Run 1 · Step {ck['step']:,}"
         if "epoch" in ck:
             label += f" · Epoch {ck['epoch']}"
-        if using_fallback:
-            label += " (run 1)"
-        if i == len(checkpoints) - 1:
+        result.append({"label": label, "path": ck["path"], "step": ck["step"]})
+
+    # Run 2 checkpoints listed last — the final entry becomes the default selection
+    for i, ck in enumerate(run2):
+        label = f"Run 2 · Step {ck['step']:,}"
+        if "epoch" in ck:
+            label += f" · Epoch {ck['epoch']}"
+        if i == len(run2) - 1:
             label += " (latest)"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
+
     return result
 
 
