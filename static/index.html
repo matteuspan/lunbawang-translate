@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LunBawang Translate</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:       #1a73e8;
+      --primary-light: #e8f0fe;
+      --surface:       #ffffff;
+      --bg:            #f8f9fa;
+      --border:        #dadce0;
+      --text:          #202124;
+      --muted:         #5f6368;
+      --accent:        #c8963c;
+      --green:         #137333;
+      --green-bg:      #e6f4ea;
+      --red:           #c5221f;
+      --red-bg:        #fce8e6;
+      --radius:        12px;
+    }
+
+    body {
+      font-family: -apple-system, "Google Sans", "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ───────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: -0.3px;
+    }
+    .logo em { color: var(--accent); font-style: normal; }
+
+    .status-pill {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.3s;
+    }
+    .status-pill.ready    { background: var(--green-bg); color: var(--green); }
+    .status-pill.training { background: var(--red-bg);   color: var(--red);   }
+
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .ready    .dot { background: var(--green); }
+    .training .dot { background: var(--red); animation: pulse 1.4s ease-in-out infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* ── Main layout ───────────────────────────────────── */
+    main {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
+    }
+
+    /* ── Lang bar ──────────────────────────────────────── */
+    .lang-bar {
+      display: grid;
+      grid-template-columns: 1fr 56px 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lang-side {
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 48px;
+    }
+
+    .lang-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .detected-tag {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: var(--primary-light);
+      color: var(--primary);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .detected-tag.show { opacity: 1; }
+
+    .swap-col {
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .swap-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.3s;
+      color: var(--muted);
+    }
+    .swap-btn:hover { background: var(--primary-light); color: var(--primary); }
+    .swap-btn.spinning { transform: rotate(180deg); }
+
+    /* ── Text panels ───────────────────────────────────── */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 56px 1fr;
+      min-height: 280px;
+    }
+
+    .panel { display: flex; flex-direction: column; }
+
+    textarea, .output-text {
+      flex: 1;
+      padding: 18px 20px;
+      font-size: 18px;
+      line-height: 1.55;
+      font-family: inherit;
+      min-height: 240px;
+    }
+
+    textarea {
+      border: none;
+      outline: none;
+      resize: none;
+      color: var(--text);
+      background: transparent;
+      width: 100%;
+    }
+
+    .output-text {
+      color: var(--primary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      position: relative;
+    }
+    .output-text.empty { color: #bdc1c6; }
+
+    .panel-divider {
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    /* ── Panel footers ─────────────────────────────────── */
+    .panel-footer {
+      border-top: 1px solid var(--border);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+    }
+
+    .char-count {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      display: none;
+    }
+    .clear-btn:hover { background: var(--bg); }
+    .clear-btn.show { display: block; }
+
+    .copy-btn {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: var(--bg); color: var(--text); }
+    .copy-btn.show { display: flex; }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+    .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── No-checkpoint banner ──────────────────────────── */
+    .training-notice {
+      display: none;
+      margin: 0 20px 20px;
+      padding: 14px 16px;
+      background: #fff8e1;
+      border: 1px solid #fdd663;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #7c5c00;
+      line-height: 1.5;
+    }
+    .training-notice.show { display: block; }
+
+    /* ── Responsive ────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 640px) {
+      .lang-bar, .panels {
+        grid-template-columns: 1fr;
+      }
+      .swap-col, .panel-divider {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        height: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Lun<em>Bawang</em> Translate</div>
+  <div class="status-pill training" id="statusPill">
+    <span class="dot"></span>
+    <span id="statusText">Connecting…</span>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+
+    <!-- Language bar -->
+    <div class="lang-bar">
+      <div class="lang-side">
+        <span class="lang-name" id="sourceLang">Detect language</span>
+        <span class="detected-tag" id="detectedTag">Detected</span>
+      </div>
+      <div class="swap-col">
+        <button class="swap-btn" id="swapBtn" title="Swap languages">
+          <!-- swap arrows icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M7 4v16M7 4l-4 4M7 4l4 4"/>
+            <path d="M17 20V4M17 20l4-4M17 20l-4-4"/>
+          </svg>
+        </button>
+      </div>
+      <div class="lang-side">
+        <span class="lang-name" id="targetLang">Translation</span>
+        <div class="spinner" id="spinner"></div>
+      </div>
+    </div>
+
+    <!-- Text panels -->
+    <div class="panels">
+      <div class="panel">
+        <textarea
+          id="sourceText"
+          placeholder="Enter Lun Bawang or English text…"
+          maxlength="5000"
+          spellcheck="false"
+          autocomplete="off"
+        ></textarea>
+        <div class="panel-footer">
+          <span class="char-count" id="charCount">0 / 5000</span>
+          <button class="clear-btn" id="clearBtn">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <div class="panel">
+        <div class="output-text empty" id="outputArea">Translation will appear here…</div>
+        <div class="panel-footer">
+          <span></span>
+          <button class="copy-btn" id="copyBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="training-notice" id="trainingNotice">
+    ⏳ <strong>Model is still training.</strong> The first checkpoint saves at step 500.
+    Translation will become available once training reaches that milestone.
+    This page checks automatically — just leave it open.
+  </div>
+</main>
+
+<footer>
+  Made with love by the Tagal-Pans
+</footer>
+
+<script>
+  // ── Element refs ──────────────────────────────────────────
+  const sourceText    = document.getElementById('sourceText');
+  const outputArea    = document.getElementById('outputArea');
+  const sourceLang    = document.getElementById('sourceLang');
+  const targetLang    = document.getElementById('targetLang');
+  const detectedTag   = document.getElementById('detectedTag');
+  const charCount     = document.getElementById('charCount');
+  const clearBtn      = document.getElementById('clearBtn');
+  const copyBtn       = document.getElementById('copyBtn');
+  const swapBtn       = document.getElementById('swapBtn');
+  const spinner       = document.getElementById('spinner');
+  const statusPill    = document.getElementById('statusPill');
+  const statusText    = document.getElementById('statusText');
+  const trainingNotice = document.getElementById('trainingNotice');
+
+  // ── State ─────────────────────────────────────────────────
+  let modelReady     = false;
+  let lockedDir      = null;   // null = auto, 'lb2en', or 'en2lb'
+  let lastTranslation = '';
+  let debounce       = null;
+  let lastDetected   = null;   // 'lb' or 'en'
+
+  // ── Status polling ────────────────────────────────────────
+  async function pollStatus() {
+    try {
+      const r = await fetch('/api/status');
+      const d = await r.json();
+      modelReady = d.ready;
+      if (modelReady) {
+        statusPill.className = 'status-pill ready';
+        statusText.textContent = `Model ready · ${d.num_checkpoints} checkpoint${d.num_checkpoints !== 1 ? 's' : ''}`;
+        trainingNotice.classList.remove('show');
+      } else {
+        statusPill.className = 'status-pill training';
+        statusText.textContent = d.steps > 0
+          ? `Training · step ${d.steps.toLocaleString()}`
+          : 'Training…';
+      }
+    } catch {
+      statusPill.className = 'status-pill training';
+      statusText.textContent = 'Offline';
+    }
+  }
+
+  pollStatus();
+  setInterval(pollStatus, 20_000);
+
+  // ── Language label helpers ────────────────────────────────
+  const LANG = { lb: 'Lun Bawang', en: 'English' };
+
+  function setLangLabels(srcLang, tgtLang, detected) {
+    sourceLang.textContent = srcLang;
+    targetLang.textContent = tgtLang;
+    detectedTag.classList.toggle('show', !!detected);
+  }
+
+  function refreshLabels(detectedLang) {
+    // detectedLang is 'lb' or 'en', or null (no text)
+    if (lockedDir) {
+      const src = lockedDir === 'lb2en' ? 'lb' : 'en';
+      const tgt = lockedDir === 'lb2en' ? 'en' : 'lb';
+      setLangLabels(LANG[src], LANG[tgt], false);
+    } else if (detectedLang) {
+      const tgt = detectedLang === 'lb' ? 'en' : 'lb';
+      setLangLabels(LANG[detectedLang], LANG[tgt], true);
+    } else {
+      setLangLabels('Detect language', 'Translation', false);
+    }
+  }
+
+  // ── Clear output ──────────────────────────────────────────
+  function clearOutput() {
+    outputArea.textContent = 'Translation will appear here…';
+    outputArea.classList.add('empty');
+    copyBtn.classList.remove('show');
+    lastTranslation = '';
+  }
+
+  // ── Translate ─────────────────────────────────────────────
+  async function doTranslate() {
+    const text = sourceText.value.trim();
+    if (!text) { clearOutput(); refreshLabels(null); return; }
+
+    if (!modelReady) {
+      trainingNotice.classList.add('show');
+      clearOutput();
+      return;
+    }
+
+    spinner.style.display = 'block';
+    copyBtn.classList.remove('show');
+
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, direction: lockedDir ?? 'auto' }),
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        outputArea.textContent = data.error;
+        outputArea.classList.add('empty');
+        if (data.error.includes('training')) trainingNotice.classList.add('show');
+      } else {
+        outputArea.textContent = data.translation;
+        outputArea.classList.remove('empty');
+        lastTranslation = data.translation;
+        lastDetected = data.detected_lang;
+        refreshLabels(data.detected_lang);
+        copyBtn.classList.add('show');
+        trainingNotice.classList.remove('show');
+      }
+    } catch (e) {
+      outputArea.textContent = 'Network error — is the server running?';
+      outputArea.classList.add('empty');
+    } finally {
+      spinner.style.display = 'none';
+    }
+  }
+
+  // ── Input events ──────────────────────────────────────────
+  sourceText.addEventListener('input', () => {
+    const len = sourceText.value.length;
+    charCount.textContent = `${len.toLocaleString()} / 5,000`;
+    clearBtn.classList.toggle('show', len > 0);
+
+    clearTimeout(debounce);
+    if (len === 0) { clearOutput(); refreshLabels(null); return; }
+    debounce = setTimeout(doTranslate, 750);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    sourceText.value = '';
+    charCount.textContent = '0 / 5,000';
+    clearBtn.classList.remove('show');
+    clearOutput();
+    refreshLabels(null);
+    lockedDir = null;
+    sourceText.focus();
+  });
+
+  // ── Copy ──────────────────────────────────────────────────
+  copyBtn.addEventListener('click', async () => {
+    if (!lastTranslation) return;
+    await navigator.clipboard.writeText(lastTranslation);
+    copyBtn.innerHTML = `
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg> Copied!`;
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg> Copy`;
+      copyBtn.classList.remove('copied');
+    }, 2000);
+  });
+
+  // ── Swap ──────────────────────────────────────────────────
+  swapBtn.addEventListener('click', () => {
+    // Determine new locked direction
+    const currentSrc = lockedDir
+      ? (lockedDir === 'lb2en' ? 'lb' : 'en')
+      : (lastDetected ?? 'lb');
+
+    lockedDir = currentSrc === 'lb' ? 'en2lb' : 'lb2en';
+
+    // Move translation to input
+    if (lastTranslation) {
+      sourceText.value = lastTranslation;
+      charCount.textContent = `${lastTranslation.length.toLocaleString()} / 5,000`;
+      clearBtn.classList.add('show');
+    }
+
+    clearOutput();
+    refreshLabels(null);
+
+    // Animate swap icon
+    swapBtn.classList.add('spinning');
+    setTimeout(() => swapBtn.classList.remove('spinning'), 300);
+
+    if (sourceText.value.trim()) {
+      clearTimeout(debounce);
+      debounce = setTimeout(doTranslate, 200);
+    }
+  });
+
+  // ── Keyboard shortcut: Cmd/Ctrl+Enter forces translate ────
+  sourceText.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      clearTimeout(debounce);
+      doTranslate();
+    }
+  });
+</script>
+</body>
+</html>
