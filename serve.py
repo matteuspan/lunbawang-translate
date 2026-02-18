@@ -87,7 +87,8 @@ app = FastAPI(title="LunBawang Translate")
 
 class TranslateRequest(BaseModel):
     text: str
-    direction: str = "auto"  # "auto" | "lb2en" | "en2lb"
+    direction: str = "auto"   # "auto" | "lb2en" | "en2lb"
+    checkpoint: str | None = None  # None = use latest
 
 
 @app.get("/api/status")
@@ -102,13 +103,27 @@ def status():
     }
 
 
+@app.get("/api/checkpoints")
+def list_checkpoints():
+    checkpoints = get_state().get("checkpoints", [])
+    result = []
+    for i, ck in enumerate(checkpoints):
+        label = f"Step {ck['step']:,}"
+        if "epoch" in ck:
+            label += f" · Epoch {ck['epoch']}"
+        if i == len(checkpoints) - 1:
+            label += " (latest)"
+        result.append({"label": label, "path": ck["path"], "step": ck["step"]})
+    return result
+
+
 @app.post("/api/translate")
 def translate(req: TranslateRequest):
     text = req.text.strip()
     if not text:
         return JSONResponse({"error": "Empty input"}, status_code=400)
 
-    checkpoint = get_latest_checkpoint()
+    checkpoint = req.checkpoint or get_latest_checkpoint()
     if not checkpoint:
         return {
             "error": "No checkpoint yet — training is still in progress.",

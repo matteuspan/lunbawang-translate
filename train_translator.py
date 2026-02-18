@@ -161,9 +161,10 @@ def train():
     service = ServiceClient()
     state = load_state()
 
-    if state and state.get("model_id"):
-        print(f"\nResuming experiment: {state['model_id']}")
-        tc = service.create_training_client_from_state(state["model_id"])
+    # Only resume if we have a real saved training-state checkpoint (not just a model ID)
+    if state and state.get("training_state_path"):
+        print(f"\nResuming from training state: {state['training_state_path']}")
+        tc = service.create_training_client_from_state(state["training_state_path"])
     else:
         print("\nStarting new training experiment...")
         tc = service.create_lora_training_client(
@@ -222,16 +223,16 @@ def train():
 
             if global_step % SAVE_EVERY == 0:
                 print(f"  → Saving checkpoint at step {global_step}...")
-                sc = tc.save_weights_and_get_sampling_client()
-                ckpt = sc.checkpoint.tinker_path
+                result = tc.save_weights_for_sampler(f"checkpoint-{global_step}").result()
+                ckpt = result.path
                 state["checkpoints"].append({"step": global_step, "path": ckpt})
                 state["steps"] = global_step
                 save_state(state)
                 print(f"    Checkpoint: {ckpt}")
 
         print(f"\nEpoch {epoch+1} done — saving checkpoint...")
-        sc = tc.save_weights_and_get_sampling_client()
-        ckpt = sc.checkpoint.tinker_path
+        result = tc.save_weights_for_sampler(f"checkpoint-epoch{epoch+1}").result()
+        ckpt = result.path
         state["checkpoints"].append({"step": global_step, "path": ckpt, "epoch": epoch+1})
         state["steps"] = global_step
         save_state(state)

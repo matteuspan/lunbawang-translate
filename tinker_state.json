@@ -1,5 +1,26 @@
 {
-  "model_id": "5b882d54-0c0e-5203-bebc-b95e20262819:train:0",
-  "checkpoints": [],
-  "steps": 0
+  "model_id": "f246f486-5e27-5171-9354-94c670255302:train:0",
+  "checkpoints": [
+    {
+      "step": 500,
+      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-500"
+    },
+    {
+      "step": 1000,
+      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-1000"
+    },
+    {
+      "step": 1500,
+      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-1500"
+    },
+    {
+      "step": 2000,
+      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-2000"
+    },
+    {
+      "step": 2500,
+      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-2500"
+    }
+  ],
+  "steps": 2500
 }

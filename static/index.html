@@ -52,6 +52,35 @@
     }
     .logo em { color: var(--accent); font-style: normal; }
 
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .checkpoint-wrap {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .checkpoint-wrap.show { display: flex; }
+
+    .checkpoint-select {
+      font-size: 12px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      outline: none;
+    }
+    .checkpoint-select:hover { border-color: var(--primary); }
+
     .status-pill {
       font-size: 12px;
       font-weight: 500;
@@ -286,9 +315,15 @@
 
 <header>
   <div class="logo">Lun<em>Bawang</em> Translate</div>
-  <div class="status-pill training" id="statusPill">
-    <span class="dot"></span>
-    <span id="statusText">Connecting…</span>
+  <div class="header-right">
+    <div class="checkpoint-wrap" id="checkpointWrap">
+      <span>Checkpoint:</span>
+      <select class="checkpoint-select" id="checkpointSelect"></select>
+    </div>
+    <div class="status-pill training" id="statusPill">
+      <span class="dot"></span>
+      <span id="statusText">Connecting…</span>
+    </div>
   </div>
 </header>
 
@@ -376,16 +411,49 @@
   const copyBtn       = document.getElementById('copyBtn');
   const swapBtn       = document.getElementById('swapBtn');
   const spinner       = document.getElementById('spinner');
-  const statusPill    = document.getElementById('statusPill');
-  const statusText    = document.getElementById('statusText');
+  const statusPill     = document.getElementById('statusPill');
+  const statusText     = document.getElementById('statusText');
   const trainingNotice = document.getElementById('trainingNotice');
+  const checkpointWrap = document.getElementById('checkpointWrap');
+  const checkpointSelect = document.getElementById('checkpointSelect');
 
   // ── State ─────────────────────────────────────────────────
-  let modelReady     = false;
-  let lockedDir      = null;   // null = auto, 'lb2en', or 'en2lb'
+  let modelReady      = false;
+  let lockedDir       = null;   // null = auto, 'lb2en', or 'en2lb'
   let lastTranslation = '';
-  let debounce       = null;
-  let lastDetected   = null;   // 'lb' or 'en'
+  let debounce        = null;
+  let lastDetected    = null;   // 'lb' or 'en'
+  let knownCheckpointCount = 0;
+
+  // ── Checkpoint dropdown ───────────────────────────────────
+  async function refreshCheckpoints() {
+    try {
+      const r = await fetch('/api/checkpoints');
+      const checkpoints = await r.json();
+      if (checkpoints.length === knownCheckpointCount) return;
+      knownCheckpointCount = checkpoints.length;
+
+      const prev = checkpointSelect.value;
+      checkpointSelect.innerHTML = '';
+      checkpoints.forEach(ck => {
+        const opt = document.createElement('option');
+        opt.value = ck.path;
+        opt.textContent = ck.label;
+        checkpointSelect.appendChild(opt);
+      });
+      // Default to latest (last option), restore previous selection if still valid
+      const paths = checkpoints.map(c => c.path);
+      checkpointSelect.value = paths.includes(prev) ? prev : checkpoints.at(-1)?.path ?? '';
+      checkpointWrap.classList.toggle('show', checkpoints.length > 0);
+    } catch { /* ignore */ }
+  }
+
+  checkpointSelect.addEventListener('change', () => {
+    if (sourceText.value.trim()) {
+      clearTimeout(debounce);
+      doTranslate();
+    }
+  });
 
   // ── Status polling ────────────────────────────────────────
   async function pollStatus() {
@@ -403,6 +471,7 @@
           ? `Training · step ${d.steps.toLocaleString()}`
           : 'Training…';
       }
+      await refreshCheckpoints();
     } catch {
       statusPill.className = 'status-pill training';
       statusText.textContent = 'Offline';
@@ -461,7 +530,11 @@
       const res = await fetch('/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, direction: lockedDir ?? 'auto' }),
+        body: JSON.stringify({
+          text,
+          direction: lockedDir ?? 'auto',
+          checkpoint: checkpointSelect.value || null,
+        }),
       });
       const data = await res.json();
 
