@@ -22,18 +22,23 @@ from pydantic import BaseModel
 
 # ── Config ─────────────────────────────────────────────────────────────────
 
-STATE_FILE  = Path(__file__).parent / "tinker_state.json"
+STATE_FILE      = Path(__file__).parent / "tinker_state.json"
+STATE_FILE_RUN1 = Path(__file__).parent / "tinker_state_run1.json"
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
 TINKER_BASE = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
 
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "
-    "Translate accurately and naturally."
+    "Translate ONLY the exact text provided — output just the translation, nothing else. "
+    "Do not add Bible verse titles, context, or anything not present in the input."
 )
 
-# Common English function/content words for language auto-detection
+# Common English words for language auto-detection.
+# Covers function words, time words, common nouns/verbs/adjectives so that
+# everyday English content words (e.g. "tomorrow") are reliably detected.
 ENGLISH_WORDS = {
+    # Function words
     "the", "be", "to", "of", "and", "a", "in", "that", "have", "it",
     "for", "not", "on", "with", "he", "as", "you", "do", "at", "this",
     "but", "his", "by", "from", "they", "we", "say", "her", "she", "or",
@@ -44,9 +49,42 @@ ENGLISH_WORDS = {
     "than", "then", "now", "look", "only", "come", "its", "over", "how",
     "our", "first", "well", "even", "new", "want", "because", "any",
     "these", "most", "us", "is", "are", "was", "were", "has", "had",
-    "been", "am", "god", "lord", "said", "shall", "did", "does", "been",
+    "been", "am", "god", "lord", "said", "shall", "did", "does",
     "i", "those", "through", "before", "after", "many", "also", "where",
-    "much", "must", "upon", "shall", "great", "against", "between", "down",
+    "much", "must", "upon", "great", "against", "between", "down",
+    "why", "while", "though", "although", "however", "therefore",
+    "else", "either", "both", "each", "every", "another", "other", "such",
+    "few", "enough", "whole", "together", "along", "since", "during",
+    "without", "within", "behind", "above", "below", "under", "across",
+    # Time
+    "today", "tomorrow", "yesterday", "morning", "evening", "night", "day",
+    "week", "month", "noon", "midnight", "soon", "always", "never", "often",
+    "again", "already", "still", "yet", "once", "twice", "early", "late",
+    # Common nouns
+    "house", "home", "water", "food", "name", "man", "woman", "child",
+    "people", "place", "thing", "way", "hand", "eye", "face", "head",
+    "body", "heart", "mind", "life", "world", "country", "land", "earth",
+    "sky", "sun", "moon", "star", "fire", "river", "tree", "road", "door",
+    "work", "love", "friend", "family", "father", "mother", "son", "daughter",
+    "brother", "sister", "king", "blood", "word", "voice", "light",
+    "book", "school", "church", "village", "town", "city", "field",
+    "dog", "bird", "fish", "horse", "pig", "cat", "cow",
+    # Common verbs
+    "find", "ask", "feel", "try", "leave", "call", "keep", "let", "begin",
+    "show", "hear", "play", "run", "move", "live", "believe", "hold", "bring",
+    "write", "sit", "stand", "lose", "meet", "continue", "set", "learn",
+    "change", "follow", "stop", "speak", "read", "grow", "open", "walk",
+    "remember", "consider", "appear", "buy", "wait", "serve", "die", "send",
+    "build", "stay", "fall", "cut", "reach", "remain", "raise", "pass",
+    "eat", "drink", "sleep", "pray", "sing", "give", "receive", "return",
+    # Common adjectives
+    "long", "last", "little", "own", "right", "big", "high", "different",
+    "small", "large", "next", "young", "important", "bad", "same", "able",
+    "old", "free", "real", "best", "better", "sure", "true", "hard",
+    "possible", "strong", "white", "black", "red", "blue", "green",
+    "hot", "cold", "beautiful", "happy", "sad", "angry", "tired", "ready",
+    "dead", "full", "close", "short", "certain", "low", "clear",
+    "holy", "righteous", "faithful", "eternal", "blessed", "mighty",
 }
 
 
@@ -69,15 +107,37 @@ def strip_think_tags(text: str) -> str:
     return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
+def clean_translation(text: str, source: str = "") -> str:
+    """Strip trailing punctuation that bleeds from Bible verse training data,
+    then mirror the source's terminal punctuation (. ! ?) if it had any."""
+    text = text.rstrip(".,;:").strip()
+    if source:
+        last = source.rstrip()[-1] if source.rstrip() else ""
+        if last in ".!?":
+            text += last
+    return text
+
+
 def get_state() -> dict:
     if STATE_FILE.exists():
         return json.loads(STATE_FILE.read_text())
     return {}
 
 
+def _all_checkpoints() -> list[dict]:
+    """Return all checkpoints across current run + run1 fallback, newest first."""
+    current = get_state().get("checkpoints", [])
+    if current:
+        return current
+    # New run has no checkpoints yet — fall back to the previous run
+    if STATE_FILE_RUN1.exists():
+        return json.loads(STATE_FILE_RUN1.read_text()).get("checkpoints", [])
+    return []
+
+
 def get_latest_checkpoint() -> str | None:
-    checkpoints = get_state().get("checkpoints", [])
-    return checkpoints[-1]["path"] if checkpoints else None
+    ckpts = _all_checkpoints()
+    return ckpts[-1]["path"] if ckpts else None
 
 
 # ── FastAPI app ────────────────────────────────────────────────────────────
@@ -105,12 +165,16 @@ def status():
 
 @app.get("/api/checkpoints")
 def list_checkpoints():
-    checkpoints = get_state().get("checkpoints", [])
+    current = get_state().get("checkpoints", [])
+    using_fallback = not current
+    checkpoints = _all_checkpoints()
     result = []
     for i, ck in enumerate(checkpoints):
         label = f"Step {ck['step']:,}"
         if "epoch" in ck:
             label += f" · Epoch {ck['epoch']}"
+        if using_fallback:
+            label += " (run 1)"
         if i == len(checkpoints) - 1:
             label += " (latest)"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
@@ -136,6 +200,8 @@ def translate(req: TranslateRequest):
 
     if direction == "lb2en":
         user_content = f"Translate to English:\n{text}"
+        if len(text.split()) <= 5:
+            user_content += "\n(Output only the translation of this word or phrase.)"
         detected_lang = "lb"
     else:
         user_content = f"Translate to Lun Bawang:\n{text}"
@@ -154,7 +220,7 @@ def translate(req: TranslateRequest):
             temperature=0.1,
             top_p=0.9,
         )
-        translation = strip_think_tags(response.choices[0].message.content)
+        translation = clean_translation(strip_think_tags(response.choices[0].message.content), source=text)
         return {
             "translation": translation,
             "direction": direction,
