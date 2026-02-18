@@ -171,6 +171,7 @@ class TranslateRequest(BaseModel):
     text: str
     direction: str = "auto"   # "auto" | "lb2en" | "en2lb"
     checkpoint: str | None = None  # None = use latest
+    clause_split: bool = False
 
 
 @app.get("/api/status")
@@ -278,7 +279,7 @@ def translate(req: TranslateRequest):
             "detected_lang": detected_lang,
         }
 
-        if direction == "en2lb":
+        if direction == "en2lb" and req.clause_split:
             clauses = split_clauses(text)
             if len(clauses) >= 2:
                 clause_parts = []

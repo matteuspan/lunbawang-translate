@@ -68,6 +68,17 @@
     }
     .checkpoint-wrap.show { display: flex; }
 
+    .clause-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .clause-toggle input[type="checkbox"] { cursor: pointer; }
+
     .checkpoint-select {
       font-size: 12px;
       font-family: inherit;
@@ -359,6 +370,10 @@
 <header>
   <div class="logo">Lun<em>Bawang</em> Translate</div>
   <div class="header-right">
+    <label class="clause-toggle">
+      <input type="checkbox" id="clauseToggle" />
+      Clause-by-clause
+    </label>
     <div class="checkpoint-wrap" id="checkpointWrap">
       <span>Checkpoint:</span>
       <select class="checkpoint-select" id="checkpointSelect"></select>
@@ -469,6 +484,7 @@
   const trainingNotice = document.getElementById('trainingNotice');
   const checkpointWrap   = document.getElementById('checkpointWrap');
   const checkpointSelect = document.getElementById('checkpointSelect');
+  const clauseToggle     = document.getElementById('clauseToggle');
   const wholeLabel       = document.getElementById('wholeLabel');
   const clauseSection    = document.getElementById('clauseSection');
   const clauseChips      = document.getElementById('clauseChips');
@@ -506,6 +522,13 @@
   }
 
   checkpointSelect.addEventListener('change', () => {
+    if (sourceText.value.trim()) {
+      clearTimeout(debounce);
+      doTranslate();
+    }
+  });
+
+  clauseToggle.addEventListener('change', () => {
     if (sourceText.value.trim()) {
       clearTimeout(debounce);
       doTranslate();
@@ -599,6 +622,7 @@
           text,
           direction: lockedDir ?? 'auto',
           checkpoint: checkpointSelect.value || null,
+          clause_split: clauseToggle.checked,
         }),
       });
       const data = await res.json();
