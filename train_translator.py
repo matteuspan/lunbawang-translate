@@ -296,7 +296,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
             num_samples=1,
             sampling_params=params,
         ).result()
-        return sc_tokenizer.decode(result.samples[0].tokens, skip_special_tokens=True).strip()
+        return sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True).strip()
 
     def _batch_translate(pairs, direction="lb2en"):
         """Return (hypotheses, references) lists."""
@@ -564,7 +564,7 @@ def translate(text: str, direction: str = "lb2en", checkpoint_path: str = None):
     params = SamplingParams(max_tokens=256, temperature=0.1, top_p=0.9)
 
     result = sc.sample(prompt, num_samples=1, sampling_params=params).result()
-    output_tokens = result.samples[0].tokens
+    output_tokens = result.sequences[0].tokens
     return tokenizer.decode(output_tokens, skip_special_tokens=True).strip()
 
 
