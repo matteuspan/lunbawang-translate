@@ -265,6 +265,49 @@
     .copy-btn.show { display: flex; }
     .copy-btn.copied { color: var(--green); border-color: var(--green); }
 
+    /* ── Clause translation ────────────────────────────────── */
+    .clause-section {
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .clause-section.show { display: block; }
+
+    .clause-header {
+      padding: 8px 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .clause-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .clause-chip {
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .whole-label {
+      padding: 8px 20px 0;
+      display: none;
+    }
+    .whole-label.show { display: block; }
+
     .spinner {
       display: none;
       width: 18px; height: 18px;
@@ -371,7 +414,17 @@
       <div class="panel-divider"></div>
 
       <div class="panel">
+        <div class="whole-label" id="wholeLabel">
+          <span class="section-label">Full sentence</span>
+        </div>
         <div class="output-text empty" id="outputArea">Translation will appear here…</div>
+        <div class="clause-section" id="clauseSection">
+          <div class="clause-header">
+            <span class="section-label">Clause-by-clause</span>
+            <div class="clause-chips" id="clauseChips"></div>
+          </div>
+          <div class="output-text" id="clauseArea"></div>
+        </div>
         <div class="panel-footer">
           <span></span>
           <button class="copy-btn" id="copyBtn">
@@ -414,8 +467,12 @@
   const statusPill     = document.getElementById('statusPill');
   const statusText     = document.getElementById('statusText');
   const trainingNotice = document.getElementById('trainingNotice');
-  const checkpointWrap = document.getElementById('checkpointWrap');
+  const checkpointWrap   = document.getElementById('checkpointWrap');
   const checkpointSelect = document.getElementById('checkpointSelect');
+  const wholeLabel       = document.getElementById('wholeLabel');
+  const clauseSection    = document.getElementById('clauseSection');
+  const clauseChips      = document.getElementById('clauseChips');
+  const clauseArea       = document.getElementById('clauseArea');
 
   // ── State ─────────────────────────────────────────────────
   let modelReady      = false;
@@ -505,11 +562,19 @@
   }
 
   // ── Clear output ──────────────────────────────────────────
+  function clearClauseSection() {
+    wholeLabel.classList.remove('show');
+    clauseSection.classList.remove('show');
+    clauseChips.innerHTML = '';
+    clauseArea.textContent = '';
+  }
+
   function clearOutput() {
     outputArea.textContent = 'Translation will appear here…';
     outputArea.classList.add('empty');
     copyBtn.classList.remove('show');
     lastTranslation = '';
+    clearClauseSection();
   }
 
   // ── Translate ─────────────────────────────────────────────
@@ -541,6 +606,7 @@
       if (data.error) {
         outputArea.textContent = data.error;
         outputArea.classList.add('empty');
+        clearClauseSection();
         if (data.error.includes('training')) trainingNotice.classList.add('show');
       } else {
         outputArea.textContent = data.translation;
@@ -550,6 +616,17 @@
         refreshLabels(data.detected_lang);
         copyBtn.classList.add('show');
         trainingNotice.classList.remove('show');
+
+        if (data.clause_translation) {
+          wholeLabel.classList.add('show');
+          clauseSection.classList.add('show');
+          clauseArea.textContent = data.clause_translation;
+          clauseChips.innerHTML = data.clauses
+            .map(c => `<span class="clause-chip">${c}</span>`)
+            .join('');
+        } else {
+          clearClauseSection();
+        }
       }
     } catch (e) {
       outputArea.textContent = 'Network error — is the server running?';

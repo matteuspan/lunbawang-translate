@@ -118,6 +118,28 @@ def clean_translation(text: str, source: str = "") -> str:
     return text
 
 
+# Coordinating conjunctions that warrant a clause split when each side >= 3 words
+_CONJ_RE = re.compile(r"\s+(?:and|but|or|so|yet|nor)\s+", re.IGNORECASE)
+
+def split_clauses(text: str) -> list[str]:
+    """Split English text into clauses at commas, semicolons, and coordinating
+    conjunctions (only when each side has >= 3 words to avoid splitting phrases
+    like 'bread and butter')."""
+    # First split on commas and semicolons
+    parts = re.split(r"\s*[,;]\s*", text)
+
+    # Then further split on conjunctions where both sides are substantial
+    result = []
+    for part in parts:
+        sub = _CONJ_RE.split(part)
+        if len(sub) > 1 and all(len(s.split()) >= 3 for s in sub):
+            result.extend(sub)
+        else:
+            result.append(part)
+
+    return [p.strip() for p in result if p.strip()]
+
+
 def get_state() -> dict:
     if STATE_FILE.exists():
         return json.loads(STATE_FILE.read_text())
@@ -232,22 +254,43 @@ def translate(req: TranslateRequest):
     try:
         from openai import OpenAI
         client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
-        response = client.chat.completions.create(
-            model=checkpoint,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user",   "content": user_content},
-            ],
-            max_tokens=256,
-            temperature=0.1,
-            top_p=0.9,
-        )
-        translation = clean_translation(strip_think_tags(response.choices[0].message.content), source=text)
-        return {
+
+        def _call(content: str) -> str:
+            r = client.chat.completions.create(
+                model=checkpoint,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user",   "content": content},
+                ],
+                max_tokens=256,
+                temperature=0.1,
+                top_p=0.9,
+            )
+            return strip_think_tags(r.choices[0].message.content)
+
+        # Whole-sentence translation
+        translation = clean_translation(_call(user_content), source=text)
+
+        # Clause-by-clause translation (en2lb only, when >= 2 clauses detected)
+        result = {
             "translation": translation,
             "direction": direction,
             "detected_lang": detected_lang,
         }
+
+        if direction == "en2lb":
+            clauses = split_clauses(text)
+            if len(clauses) >= 2:
+                clause_parts = []
+                for clause in clauses:
+                    clause_content = f"Translate to Lun Bawang:\n{clause}"
+                    if len(clause.split()) <= 5:
+                        clause_content += "\n(Output only the translation of this word or phrase.)"
+                    clause_parts.append(clean_translation(_call(clause_content)))
+                result["clauses"] = clauses
+                result["clause_translation"] = ", ".join(clause_parts)
+
+        return result
     except Exception as e:
         return JSONResponse(
             {"error": f"Translation failed: {e}", "translation": None},
