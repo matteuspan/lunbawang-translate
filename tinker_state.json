@@ -1,26 +1,16 @@
 {
-  "model_id": "f246f486-5e27-5171-9354-94c670255302:train:0",
+  "model_id": "42a2c780-b21f-5fde-9d37-b16e672d9043:train:0",
   "checkpoints": [
     {
       "step": 500,
-      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-500"
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-500",
+      "val_loss": 1.382046
     },
     {
       "step": 1000,
-      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-1000"
-    },
-    {
-      "step": 1500,
-      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-1500"
-    },
-    {
-      "step": 2000,
-      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-2000"
-    },
-    {
-      "step": 2500,
-      "path": "tinker://f246f486-5e27-5171-9354-94c670255302:train:0/sampler_weights/checkpoint-2500"
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-1000",
+      "val_loss": 1.034931
     }
   ],
-  "steps": 2500
+  "steps": 1000
 }

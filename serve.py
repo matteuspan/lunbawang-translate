@@ -165,26 +165,38 @@ def status():
 
 @app.get("/api/checkpoints")
 def list_checkpoints():
-    run2 = get_state().get("checkpoints", [])
-    run1 = []
+    main_state = get_state()
+    main_model_id = main_state.get("model_id", "")
+    main_ckpts = main_state.get("checkpoints", [])
+
+    run1_state = {}
     if STATE_FILE_RUN1.exists():
-        run1 = json.loads(STATE_FILE_RUN1.read_text()).get("checkpoints", [])
+        run1_state = json.loads(STATE_FILE_RUN1.read_text())
+    run1_model_id = run1_state.get("model_id", "")
+    run1_ckpts = run1_state.get("checkpoints", [])
+
+    # If the main state file has the same experiment as run1 (e.g. on Render where
+    # tinker_state.json is the committed copy of the old run), treat it as run1.
+    if main_model_id and main_model_id == run1_model_id:
+        # Merge and deduplicate by step
+        merged = {ck["step"]: ck for ck in run1_ckpts}
+        merged.update({ck["step"]: ck for ck in main_ckpts})
+        run1_ckpts = sorted(merged.values(), key=lambda x: x["step"])
+        main_ckpts = []  # nothing left for run2
 
     result = []
 
-    # Run 1 checkpoints listed first (older, so they appear at the top of the dropdown)
-    for ck in run1:
+    for ck in run1_ckpts:
         label = f"Run 1 · Step {ck['step']:,}"
         if "epoch" in ck:
             label += f" · Epoch {ck['epoch']}"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
-    # Run 2 checkpoints listed last — the final entry becomes the default selection
-    for i, ck in enumerate(run2):
+    for i, ck in enumerate(main_ckpts):
         label = f"Run 2 · Step {ck['step']:,}"
         if "epoch" in ck:
             label += f" · Epoch {ck['epoch']}"
-        if i == len(run2) - 1:
+        if i == len(main_ckpts) - 1:
             label += " (latest)"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
