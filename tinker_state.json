@@ -10,7 +10,22 @@
       "step": 1000,
       "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-1000",
       "val_loss": 1.034931
+    },
+    {
+      "step": 1500,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-1500",
+      "val_loss": 0.847537
+    },
+    {
+      "step": 2000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-2000",
+      "val_loss": 0.718543
+    },
+    {
+      "step": 2500,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-2500",
+      "val_loss": 0.621769
     }
   ],
-  "steps": 1000
+  "steps": 2500
 }

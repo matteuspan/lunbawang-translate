@@ -4,10 +4,8 @@ __pycache__/
 *.pyo
 .env
 
-# Large data files (not needed on Render)
-LunBawang-Bible.pdf
+# Intermediate build files
 bible_raw.txt
 lun_bawang_verses.csv
-parallel_corpus.csv
 web_english/
 web_english.zip
