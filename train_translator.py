@@ -26,6 +26,7 @@ Requires:
 """
 
 import os
+import re
 import csv
 import json
 import random
@@ -296,7 +297,8 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
             num_samples=1,
             sampling_params=params,
         ).result()
-        return sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True).strip()
+        raw = sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True)
+        return re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
 
     def _batch_translate(pairs, direction="lb2en"):
         """Return (hypotheses, references) lists."""

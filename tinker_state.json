@@ -19,13 +19,21 @@
     {
       "step": 2000,
       "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-2000",
-      "val_loss": 0.718543
+      "val_loss": 0.718543,
+      "val_bleu_bible": 20.49,
+      "val_exact_dict": 20.0,
+      "val_bleu_sentence": 5.62
     },
     {
       "step": 2500,
       "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-2500",
       "val_loss": 0.621769
+    },
+    {
+      "step": 3000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-3000",
+      "val_loss": 0.547271
     }
   ],
-  "steps": 2500
+  "steps": 3000
 }
