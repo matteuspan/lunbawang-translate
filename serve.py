@@ -9,15 +9,20 @@ The backend reads tinker_state.json to find the latest checkpoint and
 calls the Tinker OpenAI-compatible serving API for inference.
 """
 
+import base64
+import csv
+import io
 import json
 import os
 import re
+import sqlite3
 import argparse
 from pathlib import Path
 
-from fastapi import FastAPI
+import requests
+from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 # ── Config ─────────────────────────────────────────────────────────────────
@@ -27,6 +32,14 @@ STATE_FILE_RUN1 = Path(__file__).parent / "tinker_state_run1.json"
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
 TINKER_BASE = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
+
+FEEDBACK_DIR   = Path(os.environ.get("FEEDBACK_DIR", str(Path(__file__).parent)))
+FEEDBACK_DB    = FEEDBACK_DIR / "feedback.db"
+FEEDBACK_JSONL = FEEDBACK_DIR / "feedback.jsonl"
+
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+GITHUB_REPO  = "matteuspan/lunbawang-translate"
+GITHUB_PATH  = "feedback.csv"
 
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "
@@ -87,6 +100,30 @@ ENGLISH_WORDS = {
     "holy", "righteous", "faithful", "eternal", "blessed", "mighty",
 }
 
+
+# ── Feedback DB ────────────────────────────────────────────────────────────
+
+def init_feedback_db():
+    con = sqlite3.connect(FEEDBACK_DB)
+    con.execute("PRAGMA journal_mode=WAL")
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS feedback (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at   TEXT    NOT NULL,
+            ip_address   TEXT,
+            user_agent   TEXT,
+            source_text  TEXT    NOT NULL,
+            direction    TEXT    NOT NULL,
+            checkpoint   TEXT    NOT NULL,
+            model_output TEXT    NOT NULL,
+            rating       INTEGER NOT NULL,
+            correction   TEXT
+        )
+    """)
+    con.commit()
+    con.close()
+
+init_feedback_db()
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -172,6 +209,15 @@ class TranslateRequest(BaseModel):
     direction: str = "auto"   # "auto" | "lb2en" | "en2lb"
     checkpoint: str | None = None  # None = use latest
     clause_split: bool = False
+
+
+class FeedbackRequest(BaseModel):
+    source_text: str
+    direction: str
+    checkpoint: str
+    model_output: str
+    rating: int           # 1 or -1
+    correction: str | None = None
 
 
 @app.get("/api/status")
@@ -297,6 +343,81 @@ def translate(req: TranslateRequest):
             {"error": f"Translation failed: {e}", "translation": None},
             status_code=500,
         )
+
+
+def _push_feedback_to_github():
+    """Commit the full feedback.csv to GitHub. Runs in a background task."""
+    if not GITHUB_TOKEN:
+        return
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json",
+    }
+    cols = ["id", "created_at", "ip_address", "user_agent", "source_text",
+            "direction", "checkpoint", "model_output", "rating", "correction"]
+    con = sqlite3.connect(FEEDBACK_DB)
+    rows = con.execute("SELECT * FROM feedback ORDER BY id").fetchall()
+    con.close()
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(cols)
+    w.writerows(rows)
+    content_b64 = base64.b64encode(buf.getvalue().encode()).decode()
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_PATH}"
+    r = requests.get(url, headers=headers)
+    sha = r.json().get("sha") if r.ok else None
+    payload = {"message": "auto: update feedback.csv", "content": content_b64}
+    if sha:
+        payload["sha"] = sha
+    requests.put(url, headers=headers, json=payload)
+
+
+@app.post("/api/feedback")
+async def submit_feedback(req: FeedbackRequest, request: Request, background_tasks: BackgroundTasks):
+    from datetime import datetime, timezone
+    ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (
+         request.client.host if request.client else None)
+    ua = request.headers.get("user-agent", "")
+    created_at = datetime.now(timezone.utc).isoformat()
+    con = sqlite3.connect(FEEDBACK_DB)
+    cur = con.execute(
+        "INSERT INTO feedback "
+        "(created_at,ip_address,user_agent,source_text,direction,checkpoint,model_output,rating,correction) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (created_at, ip, ua, req.source_text, req.direction, req.checkpoint,
+         req.model_output, req.rating, req.correction),
+    )
+    row_id = cur.lastrowid
+    con.commit()
+    con.close()
+    with open(FEEDBACK_JSONL, "a", encoding="utf-8") as f:
+        f.write(json.dumps({
+            "id": row_id, "created_at": created_at, "ip_address": ip,
+            "user_agent": ua, "source_text": req.source_text,
+            "direction": req.direction, "checkpoint": req.checkpoint,
+            "model_output": req.model_output, "rating": req.rating,
+            "correction": req.correction,
+        }) + "\n")
+    background_tasks.add_task(_push_feedback_to_github)
+    return {"ok": True}
+
+
+@app.get("/api/feedback/export")
+def export_feedback():
+    cols = ["id", "created_at", "ip_address", "user_agent", "source_text",
+            "direction", "checkpoint", "model_output", "rating", "correction"]
+    con = sqlite3.connect(FEEDBACK_DB)
+    rows = con.execute("SELECT * FROM feedback ORDER BY id").fetchall()
+    con.close()
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(cols)
+    w.writerows(rows)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=feedback.csv"},
+    )
 
 
 # Static files — must be mounted last so API routes take priority

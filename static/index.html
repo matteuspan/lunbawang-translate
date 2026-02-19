@@ -343,6 +343,78 @@
     }
     .training-notice.show { display: block; }
 
+    /* ── Feedback widget ───────────────────────────────── */
+    .feedback-row {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 20px 2px;
+    }
+    .feedback-row.show { display: flex; }
+
+    .feedback-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .thumb-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.4;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .thumb-btn:hover { background: var(--bg); border-color: var(--muted); }
+    .thumb-btn.active-up   { background: var(--green-bg); border-color: var(--green); }
+    .thumb-btn.active-down { background: var(--red-bg);   border-color: var(--red);   }
+
+    .correction-box {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      padding: 4px 20px 8px;
+    }
+    .correction-box.show { display: flex; }
+
+    .correction-box textarea {
+      min-height: auto;
+      height: 60px;
+      font-size: 14px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      resize: vertical;
+      background: var(--bg);
+    }
+    .correction-box textarea:focus { border-color: var(--primary); outline: none; }
+
+    .correction-actions { display: flex; gap: 8px; }
+    .correction-actions button {
+      font-size: 13px;
+      font-family: inherit;
+      padding: 5px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    .correction-actions button:hover { background: var(--primary-light); }
+    #submitFeedbackBtn { background: var(--primary); color: white; border-color: var(--primary); }
+    #submitFeedbackBtn:hover { background: #1557b0; }
+
+    .feedback-thanks {
+      display: none;
+      padding: 4px 20px 8px;
+      font-size: 13px;
+      color: var(--green);
+    }
+    .feedback-thanks.show { display: block; }
+
     /* ── Responsive ────────────────────────────────────── */
     footer {
       text-align: center;
@@ -440,6 +512,20 @@
           </div>
           <div class="output-text" id="clauseArea"></div>
         </div>
+        <div class="feedback-row" id="feedbackRow">
+          <span class="feedback-label">Was this helpful?</span>
+          <button class="thumb-btn" id="thumbUp" title="Good translation">👍</button>
+          <button class="thumb-btn" id="thumbDown" title="Bad translation">👎</button>
+        </div>
+        <div class="correction-box" id="correctionBox">
+          <textarea id="correctionText" placeholder="Suggest a better translation…"></textarea>
+          <div class="correction-actions">
+            <button id="skipBtn">Skip</button>
+            <button id="submitFeedbackBtn">Submit</button>
+          </div>
+        </div>
+        <div class="feedback-thanks" id="feedbackThanks">Thanks for the feedback!</div>
+
         <div class="panel-footer">
           <span></span>
           <button class="copy-btn" id="copyBtn">
@@ -489,6 +575,14 @@
   const clauseSection    = document.getElementById('clauseSection');
   const clauseChips      = document.getElementById('clauseChips');
   const clauseArea       = document.getElementById('clauseArea');
+  const feedbackRow      = document.getElementById('feedbackRow');
+  const thumbUp          = document.getElementById('thumbUp');
+  const thumbDown        = document.getElementById('thumbDown');
+  const correctionBox    = document.getElementById('correctionBox');
+  const correctionText   = document.getElementById('correctionText');
+  const skipBtn          = document.getElementById('skipBtn');
+  const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+  const feedbackThanks   = document.getElementById('feedbackThanks');
 
   // ── State ─────────────────────────────────────────────────
   let modelReady      = false;
@@ -497,6 +591,8 @@
   let debounce        = null;
   let lastDetected    = null;   // 'lb' or 'en'
   let knownCheckpointCount = 0;
+  let lastDirection   = null;   // direction used for last translation
+  let lastCheckpoint  = null;   // checkpoint URI used for last translation
 
   // ── Checkpoint dropdown ───────────────────────────────────
   async function refreshCheckpoints() {
@@ -594,11 +690,21 @@
     clauseArea.textContent = '';
   }
 
+  function hideFeedback() {
+    feedbackRow.classList.remove('show');
+    correctionBox.classList.remove('show');
+    feedbackThanks.classList.remove('show');
+    thumbUp.classList.remove('active-up');
+    thumbDown.classList.remove('active-down');
+    correctionText.value = '';
+  }
+
   function clearOutput() {
     outputArea.textContent = 'Translation will appear here…';
     outputArea.classList.add('empty');
     copyBtn.classList.remove('show');
     lastTranslation = '';
+    hideFeedback();
     clearClauseSection();
   }
 
@@ -638,10 +744,14 @@
         outputArea.textContent = data.translation;
         outputArea.classList.remove('empty');
         lastTranslation = data.translation;
-        lastDetected = data.detected_lang;
+        lastDetected    = data.detected_lang;
+        lastDirection   = data.direction;
+        lastCheckpoint  = checkpointSelect.value;
         refreshLabels(data.detected_lang);
         copyBtn.classList.add('show');
         trainingNotice.classList.remove('show');
+        hideFeedback();
+        feedbackRow.classList.add('show');
 
         if (data.clause_translation) {
           wholeLabel.classList.add('show');
@@ -739,6 +849,54 @@
       clearTimeout(debounce);
       doTranslate();
     }
+  });
+
+  // ── Feedback ──────────────────────────────────────────
+  async function submitFeedback(rating, correction = null) {
+    if (!lastTranslation || !lastDirection || !lastCheckpoint) return;
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_text:  sourceText.value.trim(),
+          direction:    lastDirection,
+          checkpoint:   lastCheckpoint,
+          model_output: lastTranslation,
+          rating,
+          correction:   correction || null,
+        }),
+      });
+    } catch { /* fire and forget */ }
+  }
+
+  thumbUp.addEventListener('click', async () => {
+    thumbUp.classList.add('active-up');
+    thumbDown.classList.remove('active-down');
+    correctionBox.classList.remove('show');
+    feedbackThanks.classList.add('show');
+    await submitFeedback(1);
+  });
+
+  thumbDown.addEventListener('click', () => {
+    thumbDown.classList.add('active-down');
+    thumbUp.classList.remove('active-up');
+    correctionBox.classList.add('show');
+    feedbackThanks.classList.remove('show');
+    correctionText.focus();
+  });
+
+  skipBtn.addEventListener('click', async () => {
+    correctionBox.classList.remove('show');
+    feedbackThanks.classList.add('show');
+    await submitFeedback(-1);
+  });
+
+  submitFeedbackBtn.addEventListener('click', async () => {
+    const correction = correctionText.value.trim() || null;
+    correctionBox.classList.remove('show');
+    feedbackThanks.classList.add('show');
+    await submitFeedback(-1, correction);
   });
 </script>
 </body>

@@ -2,9 +2,10 @@
 Fine-tune a bidirectional Lun Bawang ↔ English translator using the Tinker API.
 
 Training data:
-  - parallel_corpus.csv  (Bible verse pairs, ~30k rows)  → 90/10 train/val by book
-  - aux_corpus.csv       (dictionary words + sentences)  → 80/20 train/val by source
-  Aux train examples are repeated 5× to compensate for their small size.
+  - parallel_corpus.csv   (Bible verse pairs, ~30k rows)      → 90/10 train/val by book
+  - aux_corpus.csv        (dictionary words + sentences)       → 80/20 train/val by source
+  - feedback_corpus.csv   (user corrections + thumbs-up data) → 80/20 train/val by source
+  Aux train examples are repeated 5×, feedback examples 10×, to compensate for small size.
 
 Both directions (LB→EN and EN→LB) are generated for every pair.
 
@@ -55,9 +56,11 @@ AUX_REPEAT       = 5        # repeat aux training datums N× relative to Bible d
 VAL_LOSS_SAMPLES = 200      # number of Bible val datums for val_loss
 VAL_BLEU_BIBLE   = 50       # max Bible val pairs sampled for BLEU (lb→en only)
 
-STATE_FILE    = Path(__file__).parent / "tinker_state.json"
-CORPUS_FILE   = Path(__file__).parent / "parallel_corpus.csv"
-AUX_FILE      = Path(__file__).parent / "aux_corpus.csv"
+STATE_FILE      = Path(__file__).parent / "tinker_state.json"
+CORPUS_FILE     = Path(__file__).parent / "parallel_corpus.csv"
+AUX_FILE        = Path(__file__).parent / "aux_corpus.csv"
+FEEDBACK_FILE   = Path(__file__).parent / "feedback_corpus.csv"
+FEEDBACK_REPEAT = 10   # more aggressive than AUX_REPEAT — fewer entries, higher signal
 
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "
@@ -97,6 +100,23 @@ def load_aux_corpus(path=AUX_FILE):
             lb     = row["lun_bawang"].strip()
             eng    = row["english"].strip()
             source = row.get("source", "aux").strip()
+            type_  = row.get("type", "word").strip()
+            if lb and eng:
+                rows.append((lb, eng, source, type_))
+    return rows
+
+
+def load_feedback_corpus(path=FEEDBACK_FILE):
+    """Load user feedback corpus. Same format as aux_corpus.csv.
+    Returns [] if file doesn't exist."""
+    if not Path(path).exists():
+        return []
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            lb     = row["lun_bawang"].strip()
+            eng    = row["english"].strip()
+            source = row.get("source", "user_feedback").strip()
             type_  = row.get("type", "word").strip()
             if lb and eng:
                 rows.append((lb, eng, source, type_))
@@ -387,6 +407,15 @@ def train():
     else:
         print("  aux_corpus.csv not found — run build_aux_corpus.py to add word/sentence data")
 
+    print("Loading feedback corpus…")
+    feedback_corpus = load_feedback_corpus()
+    if feedback_corpus:
+        n_words = sum(1 for r in feedback_corpus if r[3] == "word")
+        n_sents = sum(1 for r in feedback_corpus if r[3] == "sentence")
+        print(f"  {len(feedback_corpus)} feedback entries ({n_words} words, {n_sents} sentences)")
+    else:
+        print("  feedback_corpus.csv not found — skipping (run review_feedback.py to generate)")
+
     # ── Splits ──
     print("\nSplitting data…")
     bible_train, bible_val = bible_train_val_split(bible_corpus, val_fraction=0.1)
@@ -397,6 +426,15 @@ def train():
     aux_sent_val  = [r for r in aux_val if r[3] == "sentence"]
     if aux_corpus:
         print(f"  Aux:    {len(aux_train)} train / {len(aux_val)} val ({len(aux_dict_val)} words, {len(aux_sent_val)} sentences in val)")
+
+    feedback_train, feedback_val = (
+        aux_train_val_split(feedback_corpus, val_fraction=0.2)
+        if feedback_corpus else ([], [])
+    )
+    aux_dict_val += [r for r in feedback_val if r[3] == "word"]
+    aux_sent_val += [r for r in feedback_val if r[3] == "sentence"]
+    if feedback_corpus:
+        print(f"  Feedback: {len(feedback_train)} train / {len(feedback_val)} val")
 
     # ── Connect to Tinker ──
     service = ServiceClient()
@@ -435,7 +473,16 @@ def train():
     if aux_train_datums:
         print(f"  Aux train datums repeated {AUX_REPEAT}× → {len(aux_train_datums_repeated)} datums")
 
-    all_train_datums = bible_train_datums + aux_train_datums_repeated
+    print("Tokenising feedback train datums (both directions)…")
+    feedback_train_datums, skip3 = make_datums_bidirectional(tokenizer, feedback_train)
+    feedback_train_datums_repeated = feedback_train_datums * FEEDBACK_REPEAT
+    if feedback_train_datums:
+        print(f"  {len(feedback_train_datums)} datums ({skip3} skipped)")
+        print(f"  Feedback train datums repeated {FEEDBACK_REPEAT}× → {len(feedback_train_datums_repeated)} datums")
+    else:
+        print("  No feedback datums")
+
+    all_train_datums = bible_train_datums + aux_train_datums_repeated + feedback_train_datums_repeated
     print(f"\n  Total training datums: {len(all_train_datums)}")
 
     # ── Tokenise validation data ──
