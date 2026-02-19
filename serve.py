@@ -15,14 +15,14 @@ import io
 import json
 import os
 import re
-import sqlite3
 import argparse
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # ── Config ─────────────────────────────────────────────────────────────────
@@ -32,10 +32,6 @@ STATE_FILE_RUN1 = Path(__file__).parent / "tinker_state_run1.json"
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
 TINKER_BASE = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
-
-FEEDBACK_DIR   = Path(os.environ.get("FEEDBACK_DIR", str(Path(__file__).parent)))
-FEEDBACK_DB    = FEEDBACK_DIR / "feedback.db"
-FEEDBACK_JSONL = FEEDBACK_DIR / "feedback.jsonl"
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO  = "matteuspan/lunbawang-translate"
@@ -100,30 +96,6 @@ ENGLISH_WORDS = {
     "holy", "righteous", "faithful", "eternal", "blessed", "mighty",
 }
 
-
-# ── Feedback DB ────────────────────────────────────────────────────────────
-
-def init_feedback_db():
-    con = sqlite3.connect(FEEDBACK_DB)
-    con.execute("PRAGMA journal_mode=WAL")
-    con.execute("""
-        CREATE TABLE IF NOT EXISTS feedback (
-            id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            created_at   TEXT    NOT NULL,
-            ip_address   TEXT,
-            user_agent   TEXT,
-            source_text  TEXT    NOT NULL,
-            direction    TEXT    NOT NULL,
-            checkpoint   TEXT    NOT NULL,
-            model_output TEXT    NOT NULL,
-            rating       INTEGER NOT NULL,
-            correction   TEXT
-        )
-    """)
-    con.commit()
-    con.close()
-
-init_feedback_db()
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -357,13 +329,12 @@ def _truncate_ip(ip: str | None) -> str | None:
     return ":".join(parts[:3]) + ":x" if len(parts) >= 3 else ip
 
 
-def _push_feedback_to_github():
-    """Commit feedback.csv to GitHub, merging with existing rows to survive DB resets.
+def _push_feedback_to_github(new_row: dict):
+    """Append a new feedback row to eval/feedback.csv on GitHub.
 
-    Uses created_at as a dedup key: rows already in the GitHub CSV are preserved
-    even if the local feedback.db was wiped by a Render redeploy. New local rows
-    are merged in and the combined result is written back sorted by timestamp.
-    IPs are truncated to /24 for privacy.
+    Fetches the existing CSV, inserts the new row (deduped by created_at),
+    reassigns sequential ids, and writes back. GitHub is the sole store —
+    no local DB or file needed.
     """
     if not GITHUB_TOKEN:
         return
@@ -373,25 +344,13 @@ def _push_feedback_to_github():
     }
     cols = ["id", "created_at", "ip_prefix", "user_agent", "source_text",
             "direction", "checkpoint", "model_output", "rating", "correction"]
-    db_cols = ["id", "created_at", "ip_address", "user_agent", "source_text",
-               "direction", "checkpoint", "model_output", "rating", "correction"]
-    ip_idx = db_cols.index("ip_address")
-
-    # Load and sanitize local rows
-    con = sqlite3.connect(FEEDBACK_DB)
-    local_rows = con.execute("SELECT * FROM feedback ORDER BY id").fetchall()
-    con.close()
-    local_rows = [tuple(
-        _truncate_ip(v) if i == ip_idx else v
-        for i, v in enumerate(row)
-    ) for row in local_rows]
 
     # Fetch existing GitHub CSV
     url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_PATH}"
     r = requests.get(url, headers=headers)
     sha = r.json().get("sha") if r.ok else None
 
-    # Parse existing rows keyed by created_at to handle DB resets gracefully
+    # Parse existing rows keyed by created_at
     merged: dict = {}
     if r.ok:
         raw = base64.b64decode(r.json()["content"]).decode()
@@ -401,11 +360,27 @@ def _push_feedback_to_github():
             if row:
                 merged[row[1]] = row  # key by created_at (index 1)
 
-    # Merge local rows in — local takes precedence (has full data)
-    for row in local_rows:
-        merged[row[1]] = row  # created_at is index 1
+    # Insert new row if not already present (created_at is microsecond-unique)
+    ts = new_row["created_at"]
+    if ts not in merged:
+        merged[ts] = [
+            "",  # id assigned below
+            ts,
+            new_row["ip_prefix"],
+            new_row["user_agent"],
+            new_row["source_text"],
+            new_row["direction"],
+            new_row["checkpoint"],
+            new_row["model_output"],
+            new_row["rating"],
+            new_row["correction"] or "",
+        ]
 
+    # Sort by timestamp and assign sequential ids
     all_rows = sorted(merged.values(), key=lambda row: row[1])
+    for i, row in enumerate(all_rows, 1):
+        row[0] = i
+
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(cols)
@@ -419,50 +394,21 @@ def _push_feedback_to_github():
 
 @app.post("/api/feedback")
 async def submit_feedback(req: FeedbackRequest, request: Request, background_tasks: BackgroundTasks):
-    from datetime import datetime, timezone
     ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (
          request.client.host if request.client else None)
-    ua = request.headers.get("user-agent", "")
-    created_at = datetime.now(timezone.utc).isoformat()
-    con = sqlite3.connect(FEEDBACK_DB)
-    cur = con.execute(
-        "INSERT INTO feedback "
-        "(created_at,ip_address,user_agent,source_text,direction,checkpoint,model_output,rating,correction) "
-        "VALUES (?,?,?,?,?,?,?,?,?)",
-        (created_at, ip, ua, req.source_text, req.direction, req.checkpoint,
-         req.model_output, req.rating, req.correction),
-    )
-    row_id = cur.lastrowid
-    con.commit()
-    con.close()
-    with open(FEEDBACK_JSONL, "a", encoding="utf-8") as f:
-        f.write(json.dumps({
-            "id": row_id, "created_at": created_at, "ip_address": ip,
-            "user_agent": ua, "source_text": req.source_text,
-            "direction": req.direction, "checkpoint": req.checkpoint,
-            "model_output": req.model_output, "rating": req.rating,
-            "correction": req.correction,
-        }) + "\n")
-    background_tasks.add_task(_push_feedback_to_github)
+    new_row = {
+        "created_at":  datetime.now(timezone.utc).isoformat(),
+        "ip_prefix":   _truncate_ip(ip),
+        "user_agent":  request.headers.get("user-agent", ""),
+        "source_text": req.source_text,
+        "direction":   req.direction,
+        "checkpoint":  req.checkpoint,
+        "model_output": req.model_output,
+        "rating":      req.rating,
+        "correction":  req.correction,
+    }
+    background_tasks.add_task(_push_feedback_to_github, new_row)
     return {"ok": True}
-
-
-@app.get("/api/feedback/export")
-def export_feedback():
-    cols = ["id", "created_at", "ip_address", "user_agent", "source_text",
-            "direction", "checkpoint", "model_output", "rating", "correction"]
-    con = sqlite3.connect(FEEDBACK_DB)
-    rows = con.execute("SELECT * FROM feedback ORDER BY id").fetchall()
-    con.close()
-    buf = io.StringIO()
-    w = csv.writer(buf)
-    w.writerow(cols)
-    w.writerows(rows)
-    return StreamingResponse(
-        iter([buf.getvalue()]),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=feedback.csv"},
-    )
 
 
 # Static files — must be mounted last so API routes take priority
