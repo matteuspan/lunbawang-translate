@@ -122,11 +122,78 @@
     {
       "step": 10500,
       "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-10500",
-      "val_loss": 0.148578,
-      "val_bleu_bible": 51.7936,
-      "val_exact_dict": 21.8,
-      "val_bleu_sentence": 34.652
+      "val_loss": 0.148578
+    },
+    {
+      "step": 11000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-11000",
+      "val_loss": 0.144492
+    },
+    {
+      "step": 11500,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-11500",
+      "val_loss": 0.135023
+    },
+    {
+      "step": 12000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-12000",
+      "val_loss": 0.126804,
+      "val_bible_bleu": 0.0,
+      "val_dict_exact_pct": 0.0,
+      "val_sent_bleu": 0.0
+    },
+    {
+      "step": 12500,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-12500",
+      "val_loss": 0.119246
+    },
+    {
+      "step": 13000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-13000",
+      "val_loss": 0.127797
+    },
+    {
+      "step": 13500,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-13500",
+      "val_loss": 0.116358
+    },
+    {
+      "step": 14000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-14000",
+      "val_loss": 0.113845,
+      "val_bible_bleu": 0.0,
+      "val_dict_exact_pct": 0.0,
+      "val_sent_bleu": 0.0
+    },
+    {
+      "step": 14500,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-14500",
+      "val_loss": 0.102282
+    },
+    {
+      "step": 15000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-15000",
+      "val_loss": 0.101041
+    },
+    {
+      "step": 15120,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-epoch2",
+      "epoch": 2,
+      "val_loss": 0.082345
+    },
+    {
+      "step": 15500,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-15500",
+      "val_loss": 0.059534
+    },
+    {
+      "step": 16000,
+      "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-16000",
+      "val_loss": 0.053765,
+      "val_bleu_bible": 58.24,
+      "val_exact_dict": 19.5,
+      "val_bleu_sentence": 33.594
     }
   ],
-  "steps": 10500
+  "steps": 16000
 }
