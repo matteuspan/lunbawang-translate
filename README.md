@@ -163,6 +163,50 @@ The ceiling is partly set by reference translation quality and the domain gap: t
 
 ---
 
+## User Feedback Loop
+
+The web UI collects thumbs up/down feedback on every translation. This data feeds back into future fine-tuning runs to improve quality on real user input — particularly conversational Lun Bawang, which the current training data (almost entirely Biblical prose) does not cover well.
+
+### How feedback is collected
+
+After each translation, a 👍 / 👎 widget appears below the output:
+
+- **Thumbs up** — records the translation as a correct example
+- **Thumbs down** — optionally prompts for a correction; if provided, the corrected translation is used as the training target instead of the model's output; thumbs-down with no correction is discarded (we know it's wrong but not what's right)
+
+Each feedback entry records: source text, translation direction (LB→EN or EN→LB), checkpoint used, model output, rating, and correction (if provided). The raw IP address is stored locally only for spam/QC purposes; the `/24` prefix (e.g. `1.2.3.x`) is used in any exported data.
+
+### Storage
+
+- **Primary:** `feedback.db` (SQLite, WAL mode) — local, full fidelity including raw IPs
+- **Mirror:** `feedback.jsonl` — append-only line-delimited JSON, same data
+- **GitHub backup:** if `GITHUB_TOKEN` is set, every submission triggers an async commit of `feedback.csv` (truncated IPs) to the repo — no manual exports needed, data survives redeploys
+
+### Reviewing and preparing training data
+
+```bash
+python3.13 review_feedback.py --dry-run     # summary + QC flags, no file written
+python3.13 review_feedback.py               # writes feedback_corpus.csv
+python3.13 review_feedback.py --csv feedback.csv  # read from GitHub export instead of local DB
+```
+
+The QC script filters no-ops (user submitted the same text as the correction), self-copies (correction matches source), and empty corrections. It flags IP addresses submitting an unusual volume of entries for manual review.
+
+Output is `feedback_corpus.csv` with the same schema as `aux_corpus.csv` (`source`, `lun_bawang`, `english`, `type`).
+
+### Using feedback in training
+
+`train_translator.py` automatically loads `feedback_corpus.csv` if present. Feedback entries are repeated **10×** during training (vs. 5× for the aux corpus) — they represent high-confidence human signal and the dataset will be small relative to the ~30k Bible pairs.
+
+```bash
+python3.13 train_translator.py --train
+# → "Loading feedback corpus… N feedback entries"
+```
+
+Feedback val entries are merged into the existing dict/sentence evaluation sets, so BLEU and exact-match scores automatically reflect improvement on user-corrected examples.
+
+---
+
 ## Running Locally
 
 ### Prerequisites
@@ -247,8 +291,8 @@ raretranslator/
 ├── web_english/              # World English Bible chapter files
 │
 ├── eval_checkpoint.py        # Standalone BLEU/exact-match eval for a single checkpoint
+├── review_feedback.py        # QC + prepare feedback_corpus.csv for training
 ├── tinker_state.json         # Checkpoint metadata for the current run
-├── tinker_state_run1.json    # Checkpoint metadata for run 1 (archived)
 ├── requirements.txt
 └── static/
     └── index.html            # Single-page frontend
