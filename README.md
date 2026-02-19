@@ -142,15 +142,18 @@ Three validation metrics are computed during training:
 
 ### Results by checkpoint
 
-| Step | Val loss | Bible BLEU | Dict exact match | Sentence BLEU |
-|------|----------|------------|-----------------|---------------|
-| 2,000 | 0.719 | 20.49 | 20.0% | 5.62 |
-| 4,000 | 0.442 | — | — | — |
-| 6,000 | 0.325 | 41.94 | 19.5% | 30.67 |
-| **8,000** | **0.185** | **52.38** | **20.3%** | **34.98** |
-| 10,500 | 0.149 | 51.79 | 21.8% | 34.65 |
+| Step | Epoch | Val loss | Bible BLEU | Dict exact match | Sentence BLEU |
+|------|-------|----------|------------|-----------------|---------------|
+| 2,000 | 1 | 0.719 | 20.49 | 20.0% | 5.62 |
+| 4,000 | 1 | 0.442 | — | — | — |
+| 6,000 | 1 | 0.325 | 41.94 | 19.5% | 30.67 |
+| **8,000** | **1** | **0.185** | **52.38** | **20.3%** | **34.98** |
+| 10,500 | 2 | 0.149 | 51.79 | 21.8% | 34.65 |
+| 16,000 | 3 | 0.054 | 58.24 | 19.5% | 33.59 |
 
-**Step 8,000 is the default checkpoint.** Despite a lower val_loss at step 10,500, BLEU regresses slightly as the model enters a second pass over the Bible data and drifts toward Biblical register — correctly translating Bible verses but hallucinating liturgical phrasing for casual conversational input.
+Training was stopped at step 16,000 (mid-epoch 3). Val loss continued to fall sharply in epoch 3 (0.082 at epoch 2 end → 0.054 by step 16,000), indicating rapid memorisation of the Biblical training set rather than new generalisation.
+
+**Step 8,000 is the default checkpoint** for general use. It achieves the best sentence BLEU (34.98) and produces the most natural output for conversational input. Steps 10,500 and 16,000 show a register drift pattern — BLEU improves on Biblical prose but slightly regresses on conversational sentences as the model overfits to Biblical register. **Step 16,000 is the best checkpoint for Bible text specifically** (Bible BLEU 58.24).
 
 ### BLEU context
 
@@ -243,6 +246,7 @@ raretranslator/
 ├── longsemadoh.txt           # Copied from longsemadoh.wordpress.com
 ├── web_english/              # World English Bible chapter files
 │
+├── eval_checkpoint.py        # Standalone BLEU/exact-match eval for a single checkpoint
 ├── tinker_state.json         # Checkpoint metadata for the current run
 ├── tinker_state_run1.json    # Checkpoint metadata for run 1 (archived)
 ├── requirements.txt
