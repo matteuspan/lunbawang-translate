@@ -345,19 +345,39 @@ def translate(req: TranslateRequest):
         )
 
 
+def _truncate_ip(ip: str | None) -> str | None:
+    """Truncate IP to /24 prefix for privacy (1.2.3.4 → 1.2.3.x)."""
+    if not ip:
+        return ip
+    parts = ip.split(".")
+    if len(parts) == 4:           # IPv4
+        return f"{parts[0]}.{parts[1]}.{parts[2]}.x"
+    # IPv6: keep first 3 groups only
+    parts = ip.split(":")
+    return ":".join(parts[:3]) + ":x" if len(parts) >= 3 else ip
+
+
 def _push_feedback_to_github():
-    """Commit the full feedback.csv to GitHub. Runs in a background task."""
+    """Commit feedback.csv to GitHub. IPs are truncated to /24 for privacy."""
     if not GITHUB_TOKEN:
         return
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
     }
-    cols = ["id", "created_at", "ip_address", "user_agent", "source_text",
+    cols = ["id", "created_at", "ip_prefix", "user_agent", "source_text",
             "direction", "checkpoint", "model_output", "rating", "correction"]
     con = sqlite3.connect(FEEDBACK_DB)
     rows = con.execute("SELECT * FROM feedback ORDER BY id").fetchall()
     con.close()
+    # Replace full ip_address (col index 2) with truncated prefix
+    db_cols = ["id", "created_at", "ip_address", "user_agent", "source_text",
+               "direction", "checkpoint", "model_output", "rating", "correction"]
+    ip_idx = db_cols.index("ip_address")
+    rows = [tuple(
+        _truncate_ip(v) if i == ip_idx else v
+        for i, v in enumerate(row)
+    ) for row in rows]
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(cols)
