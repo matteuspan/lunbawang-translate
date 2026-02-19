@@ -1,0 +1,19 @@
+{
+  "gpt-5": {
+    "bible_bleu": 0.0,
+    "dict_exact_pct": 0.0,
+    "sentence_bleu": 0.0
+  },
+  "gpt-4o": {
+    "timestamp": "2026-02-19T19:43:48Z",
+    "bible_bleu": 10.44,
+    "dict_exact_pct": 6.0,
+    "sentence_bleu": 21.46
+  },
+  "gpt-5-mini": {
+    "timestamp": "2026-02-19T18:41:59Z",
+    "bible_bleu": 8.79,
+    "dict_exact_pct": 3.8,
+    "sentence_bleu": 10.95
+  }
+}

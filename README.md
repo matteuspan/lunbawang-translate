@@ -161,6 +161,23 @@ A BLEU score of 52 for a rare language with ~30k training sentences is strong. G
 
 The ceiling is partly set by reference translation quality and the domain gap: training data is entirely Biblical, while the evaluation sentence set is conversational.
 
+### Comparison with GPT models
+
+The same val sets were run against general-purpose OpenAI models to establish a baseline for what an off-the-shelf LLM can do with no Lun Bawang-specific training. Scripts: `eval_openai.py`, `eval_checkpoint.py`. Raw outputs saved to `eval_raw/`; combined into `eval_outputs.csv` via `merge_evals.py`.
+
+| Model | Bible BLEU | Dict exact match | Sentence BLEU | Avg ms/call | Notes |
+|-------|-----------|-----------------|---------------|-------------|-------|
+| **Our model (checkpoint-8000)** | **51.70** | **20.3%** | **30.79** | ~5,400 | Qwen3-8B + LoRA, Tinker inference |
+| gpt-4o | 10.44 | 6.0% | 21.46 | ~716 | |
+| gpt-5-mini | 8.79 | 3.8% | 10.95 | ~18,300 | Reasoning model; slow despite "mini" label |
+| gpt-4o-mini | 7.22 | 2.3% | 11.84 | — | |
+
+Key takeaways:
+- Our fine-tuned model scores **5× higher** on Bible BLEU and **3× higher** on Dict exact match than the best general GPT model (gpt-4o), despite being 8B parameters vs. GPT-4o's much larger scale.
+- gpt-5-mini is a reasoning model and takes ~18s per API call — 25× slower than gpt-4o and 3× slower than our model on Tinker. Its BLEU scores are also worse, suggesting reasoning capability does not compensate for lack of Lun Bawang training data.
+- All GPT models struggle with the dictionary exact-match task (single-word translations), confirming that Lun Bawang vocabulary is largely absent from general pre-training data.
+- The checkpoint-8000 timing (~5,400ms) reflects Tinker's cold-start latency; warm-cache requests are faster.
+
 ---
 
 ## User Feedback Loop
