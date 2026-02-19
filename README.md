@@ -42,7 +42,7 @@ Long English sentences are split on commas, semicolons, and coordinating conjunc
 
 ## Data
 
-Three sources were used, totalling ~31,000 training pairs.
+Four sources were used, totalling ~31,000 training pairs.
 
 ### 1. Lun Bawang Bible (primary corpus, ~30,000 verse pairs)
 
@@ -70,9 +70,17 @@ A language learning page from longsemadoh.wordpress.com was copied into `longsem
 
 Entries with ≥3 Lun Bawang words are classified as `sentence`; shorter entries as `word`.
 
+### 4. Mortensen (2021) — Laba' fairy tale (~54 sentence pairs)
+
+Appendix A.1 of Mortensen's PhD dissertation "The Kemaloh Lun Bawang Language of Borneo" (University of Hawai'i, UMI #10969) contains a full Mouse-deer vs. Crocodile fairy tale in two-column parallel format: Lun Bawang prose on the left, English translation on the right. This is narrative dialogue — the domain farthest from the Biblical training data — and is almost certainly absent from any LLM's pre-training corpus.
+
+`parse_mortensen.py` uses pdfminer coordinate-based column separation (left column x < 250 = LB, right column x ≥ 250 = EN) to extract and align paragraph-level pairs. Footnote starters (lines matching `^\d+[A-Za-z]`) and their continuation paragraphs are filtered; inline footnote reference numbers (e.g., `em,1 uten`) are stripped from the LB text. Output: `mortensen_corpus.csv`.
+
+Used for non-commercial research purposes.
+
 ### Combined auxiliary corpus
 
-`build_aux_corpus.py` combines sources 2 and 3 into `aux_corpus.csv` (columns: `source`, `lun_bawang`, `english`, `type`).
+`build_aux_corpus.py` combines sources 2, 3, and 4 into `aux_corpus.csv` (columns: `source`, `lun_bawang`, `english`, `type`).
 
 **Train / val split:** 80% train / 20% val, randomised per source, so each source appears in both train and val.
 
@@ -266,10 +274,13 @@ python3.13 parse_lun_bawang.py
 # 2. Align with World English Bible
 python3.13 build_parallel_corpus.py
 
-# 3. Build the auxiliary word/sentence corpus
+# 3. Parse Mortensen (2021) dissertation appendix (requires the PDF)
+python3.13 parse_mortensen.py
+
+# 4. Build the auxiliary word/sentence corpus (includes Mortensen if present)
 python3.13 build_aux_corpus.py
 
-# 4. Train (requires TINKER_API_KEY)
+# 5. Train (requires TINKER_API_KEY)
 python3.13 train_translator.py --train
 ```
 
@@ -300,14 +311,18 @@ raretranslator/
 ├── parse_lun_bawang.py       # Extract verses from LunBawang-Bible.pdf
 │
 ├── parallel_corpus.csv       # ~30k Bible verse pairs (LB + EN)
-├── aux_corpus.csv            # ~750 word/sentence pairs from web sources
+├── aux_corpus.csv            # ~800 word/sentence pairs from web + Mortensen sources
+├── mortensen_corpus.csv      # ~54 sentence pairs from Mortensen (2021) fairy tale
 ├── lun_bawang_verses.csv     # Intermediate: parsed LB verses (no EN)
 ├── LunBawang-Bible.pdf       # Source: full Lun Bawang Bible translation
 ├── borneodict.txt            # Copied from borneodictionary.com
 ├── longsemadoh.txt           # Copied from longsemadoh.wordpress.com
 ├── web_english/              # World English Bible chapter files
 │
+├── parse_mortensen.py        # Extract parallel pairs from Mortensen (2021) dissertation PDF
 ├── eval_checkpoint.py        # Standalone BLEU/exact-match eval for a single checkpoint
+├── eval_openai.py            # Eval any OpenAI model on the same val set
+├── merge_evals.py            # Merge per-run eval_raw/*.jsonl into eval_outputs.csv
 ├── review_feedback.py        # QC + prepare feedback_corpus.csv for training
 ├── tinker_state.json         # Checkpoint metadata for the current run
 ├── requirements.txt
@@ -332,5 +347,6 @@ raretranslator/
 - English reference: [World English Bible](https://worldenglish.bible) (public domain)
 - Dictionary data: borneodictionary.com
 - Phrasebook data: longsemadoh.wordpress.com
+- Narrative parallel text: Mortensen, M. (2021). *The Kemaloh Lun Bawang Language of Borneo*. PhD dissertation, University of Hawai'i at Mānoa. Used for non-commercial research purposes.
 - Fine-tuning infrastructure: [Tinker](https://thinkingmachines.ai/tinker/) by Thinking Machines
 - Base model: [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) by Alibaba Cloud

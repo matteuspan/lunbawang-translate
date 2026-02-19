@@ -94,7 +94,10 @@
       "val_loss": 0.185043,
       "val_bible_bleu": 0.0,
       "val_dict_exact_pct": 0.0,
-      "val_sent_bleu": 0.0
+      "val_sent_bleu": 0.0,
+      "val_bleu_bible": 51.702,
+      "val_exact_dict": 20.3,
+      "val_bleu_sentence": 30.786
     },
     {
       "step": 8500,

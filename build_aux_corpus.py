@@ -20,10 +20,11 @@ import random
 import argparse
 from pathlib import Path
 
-BASE_DIR    = Path(__file__).parent
-OUTPUT_FILE = BASE_DIR / "aux_corpus.csv"
-BORNEO_FILE = BASE_DIR / "borneodict.txt"
-LONGS_FILE  = BASE_DIR / "longsemadoh.txt"
+BASE_DIR        = Path(__file__).parent
+OUTPUT_FILE     = BASE_DIR / "aux_corpus.csv"
+BORNEO_FILE     = BASE_DIR / "borneodict.txt"
+LONGS_FILE      = BASE_DIR / "longsemadoh.txt"
+MORTENSEN_FILE  = BASE_DIR / "mortensen_corpus.csv"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -306,6 +307,22 @@ def parse_longsemadoh(path: Path) -> list[dict]:
     return rows
 
 
+# ── Parser 3: mortensen_corpus.csv ───────────────────────────────────────────
+#
+# Pre-parsed by parse_mortensen.py. Schema matches aux_corpus.csv:
+#   source, lun_bawang, english, type
+# Included if the file exists (optional source).
+
+def parse_mortensen_csv(path: Path) -> list[dict]:
+    rows = []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if row["lun_bawang"] and row["english"]:
+                rows.append(dict(row))
+    print(f"  mortensen_corpus.csv: {len(rows)} entries")
+    return rows
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def build(dry_run: bool = False):
@@ -315,9 +332,10 @@ def build(dry_run: bool = False):
         if not path.exists():
             sys.exit(f"Missing file: {path}\nPlease add {label} to the project directory.")
 
-    borneo_rows = parse_borneodict(BORNEO_FILE)
-    longs_rows  = parse_longsemadoh(LONGS_FILE)
-    all_rows    = borneo_rows + longs_rows
+    borneo_rows    = parse_borneodict(BORNEO_FILE)
+    longs_rows     = parse_longsemadoh(LONGS_FILE)
+    mortensen_rows = parse_mortensen_csv(MORTENSEN_FILE) if MORTENSEN_FILE.exists() else []
+    all_rows       = borneo_rows + longs_rows + mortensen_rows
 
     n_words = sum(1 for r in all_rows if r["type"] == "word")
     n_sents = sum(1 for r in all_rows if r["type"] == "sentence")
