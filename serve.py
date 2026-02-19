@@ -358,7 +358,13 @@ def _truncate_ip(ip: str | None) -> str | None:
 
 
 def _push_feedback_to_github():
-    """Commit feedback.csv to GitHub. IPs are truncated to /24 for privacy."""
+    """Commit feedback.csv to GitHub, merging with existing rows to survive DB resets.
+
+    Uses created_at as a dedup key: rows already in the GitHub CSV are preserved
+    even if the local feedback.db was wiped by a Render redeploy. New local rows
+    are merged in and the combined result is written back sorted by timestamp.
+    IPs are truncated to /24 for privacy.
+    """
     if not GITHUB_TOKEN:
         return
     headers = {
@@ -367,25 +373,44 @@ def _push_feedback_to_github():
     }
     cols = ["id", "created_at", "ip_prefix", "user_agent", "source_text",
             "direction", "checkpoint", "model_output", "rating", "correction"]
-    con = sqlite3.connect(FEEDBACK_DB)
-    rows = con.execute("SELECT * FROM feedback ORDER BY id").fetchall()
-    con.close()
-    # Replace full ip_address (col index 2) with truncated prefix
     db_cols = ["id", "created_at", "ip_address", "user_agent", "source_text",
                "direction", "checkpoint", "model_output", "rating", "correction"]
     ip_idx = db_cols.index("ip_address")
-    rows = [tuple(
+
+    # Load and sanitize local rows
+    con = sqlite3.connect(FEEDBACK_DB)
+    local_rows = con.execute("SELECT * FROM feedback ORDER BY id").fetchall()
+    con.close()
+    local_rows = [tuple(
         _truncate_ip(v) if i == ip_idx else v
         for i, v in enumerate(row)
-    ) for row in rows]
-    buf = io.StringIO()
-    w = csv.writer(buf)
-    w.writerow(cols)
-    w.writerows(rows)
-    content_b64 = base64.b64encode(buf.getvalue().encode()).decode()
+    ) for row in local_rows]
+
+    # Fetch existing GitHub CSV
     url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_PATH}"
     r = requests.get(url, headers=headers)
     sha = r.json().get("sha") if r.ok else None
+
+    # Parse existing rows keyed by created_at to handle DB resets gracefully
+    merged: dict = {}
+    if r.ok:
+        raw = base64.b64decode(r.json()["content"]).decode()
+        reader = csv.reader(io.StringIO(raw))
+        next(reader, None)  # skip header
+        for row in reader:
+            if row:
+                merged[row[1]] = row  # key by created_at (index 1)
+
+    # Merge local rows in — local takes precedence (has full data)
+    for row in local_rows:
+        merged[row[1]] = row  # created_at is index 1
+
+    all_rows = sorted(merged.values(), key=lambda row: row[1])
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(cols)
+    w.writerows(all_rows)
+    content_b64 = base64.b64encode(buf.getvalue().encode()).decode()
     payload = {"message": "auto: update feedback.csv", "content": content_b64}
     if sha:
         payload["sha"] = sha
