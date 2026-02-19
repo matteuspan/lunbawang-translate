@@ -39,7 +39,7 @@ FEEDBACK_JSONL = FEEDBACK_DIR / "feedback.jsonl"
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO  = "matteuspan/lunbawang-translate"
-GITHUB_PATH  = "feedback.csv"
+GITHUB_PATH  = "eval/feedback.csv"
 
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "

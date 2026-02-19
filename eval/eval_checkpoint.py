@@ -15,7 +15,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from openai import OpenAI
 
-STATE_FILE   = Path(__file__).parent / "tinker_state.json"
+ROOT_DIR     = Path(__file__).parent.parent
+STATE_FILE   = ROOT_DIR / "tinker_state.json"
+CORPUS_FILE  = ROOT_DIR / "corpus" / "parallel_corpus.csv"
+AUX_FILE     = ROOT_DIR / "corpus" / "aux_corpus.csv"
 TINKER_BASE  = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
 API_KEY      = os.environ["TINKER_API_KEY"]
 RAW_DIR      = Path(__file__).parent / "eval_raw"
@@ -42,7 +45,7 @@ model_label = CHECKPOINT.split("/")[-1] if "/" in CHECKPOINT else CHECKPOINT
 print(f"Checkpoint: {CHECKPOINT}\n")
 
 # ── Load + split corpora ──────────────────────────────────────────────────────
-def load_bible(path="parallel_corpus.csv"):
+def load_bible(path=CORPUS_FILE):
     rows = []
     with open(path, encoding="utf-8") as f:
         for r in csv.DictReader(f):
@@ -51,7 +54,7 @@ def load_bible(path="parallel_corpus.csv"):
                 rows.append((lb, eng, book))
     return rows
 
-def load_aux(path="aux_corpus.csv"):
+def load_aux(path=AUX_FILE):
     if not Path(path).exists(): return []
     rows = []
     with open(path, encoding="utf-8") as f:

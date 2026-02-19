@@ -16,8 +16,9 @@ import sqlite3
 from collections import Counter
 from pathlib import Path
 
-FEEDBACK_DB     = Path(__file__).parent / "feedback.db"
-OUTPUT_FILE     = Path(__file__).parent / "feedback_corpus.csv"
+ROOT_DIR        = Path(__file__).parent.parent
+FEEDBACK_DB     = ROOT_DIR / "feedback.db"
+OUTPUT_FILE     = ROOT_DIR / "feedback_corpus.csv"
 IP_FLOOD_THRESH = 10   # flag IPs with more than this many entries
 
 

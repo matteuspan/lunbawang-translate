@@ -57,8 +57,8 @@ VAL_LOSS_SAMPLES = 200      # number of Bible val datums for val_loss
 VAL_BLEU_BIBLE   = 50       # max Bible val pairs sampled for BLEU (lb→en only)
 
 STATE_FILE      = Path(__file__).parent / "tinker_state.json"
-CORPUS_FILE     = Path(__file__).parent / "parallel_corpus.csv"
-AUX_FILE        = Path(__file__).parent / "aux_corpus.csv"
+CORPUS_FILE     = Path(__file__).parent / "corpus" / "parallel_corpus.csv"
+AUX_FILE        = Path(__file__).parent / "corpus" / "aux_corpus.csv"
 FEEDBACK_FILE   = Path(__file__).parent / "feedback_corpus.csv"
 FEEDBACK_REPEAT = 10   # more aggressive than AUX_REPEAT — fewer entries, higher signal
 

@@ -9,3 +9,10 @@ bible_raw.txt
 lun_bawang_verses.csv
 web_english/
 web_english.zip
+
+# Training logs
+*.log
+
+# Runtime feedback files (written by serve.py, not for git)
+feedback.db
+feedback.jsonl

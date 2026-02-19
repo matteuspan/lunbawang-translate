@@ -27,13 +27,16 @@ SYSTEM_PROMPT = (
     "Do not add Bible verse titles, context, or anything not present in the input."
 )
 
+ROOT_DIR     = Path(__file__).parent.parent
+CORPUS_FILE  = ROOT_DIR / "corpus" / "parallel_corpus.csv"
+AUX_FILE     = ROOT_DIR / "corpus" / "aux_corpus.csv"
 RESULTS_FILE = Path(__file__).parent / "eval_results_openai.json"
 RAW_DIR      = Path(__file__).parent / "eval_raw"
 
 
 # ── Corpus loading (identical splits to eval_checkpoint.py) ──────────────────
 
-def load_bible(path="parallel_corpus.csv"):
+def load_bible(path=CORPUS_FILE):
     rows = []
     with open(path, encoding="utf-8") as f:
         for r in csv.DictReader(f):
@@ -45,7 +48,7 @@ def load_bible(path="parallel_corpus.csv"):
     return rows
 
 
-def load_aux(path="aux_corpus.csv"):
+def load_aux(path=AUX_FILE):
     if not Path(path).exists():
         return []
     rows = []
