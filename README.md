@@ -199,20 +199,17 @@ After each translation, a 👍 / 👎 widget appears below the output:
 - **Thumbs up** — records the translation as a correct example
 - **Thumbs down** — optionally prompts for a correction; if provided, the corrected translation is used as the training target instead of the model's output; thumbs-down with no correction is discarded (we know it's wrong but not what's right)
 
-Each feedback entry records: source text, translation direction (LB→EN or EN→LB), checkpoint used, model output, rating, and correction (if provided). The raw IP address is stored locally only for spam/QC purposes; the `/24` prefix (e.g. `1.2.3.x`) is used in any exported data.
+Each feedback entry records: source text, translation direction (LB→EN or EN→LB), checkpoint used, model output, rating, and correction (if provided). IPs are truncated to the `/24` prefix (e.g. `1.2.3.x`) before being written anywhere.
 
 ### Storage
 
-- **Primary:** `feedback.db` (SQLite, WAL mode) — local, full fidelity including raw IPs
-- **Mirror:** `feedback.jsonl` — append-only line-delimited JSON, same data
-- **GitHub backup:** if `GITHUB_TOKEN` is set, every submission triggers an async commit of `feedback.csv` (truncated IPs) to the repo — no manual exports needed, data survives redeploys
+- **Sole store:** `eval/feedback.csv` in the GitHub repo — if `GITHUB_TOKEN` is set, every submission triggers an async commit that fetches the current CSV, appends the new row, and writes it back. No local database or file is used; data survives Render redeploys automatically.
 
 ### Reviewing and preparing training data
 
 ```bash
-python3.13 eval/review_feedback.py --dry-run     # summary + QC flags, no file written
-python3.13 eval/review_feedback.py               # writes feedback_corpus.csv
-python3.13 eval/review_feedback.py --csv eval/feedback.csv  # read from GitHub export instead of local DB
+python3.13 eval/review_feedback.py --dry-run                # summary + QC flags, no file written
+python3.13 eval/review_feedback.py --csv eval/feedback.csv  # writes feedback_corpus.csv
 ```
 
 The QC script filters no-ops (user submitted the same text as the correction), self-copies (correction matches source), and empty corrections. It flags IP addresses submitting an unusual volume of entries for manual review.
@@ -330,7 +327,7 @@ raretranslator/
     ├── eval_openai.py        # Eval any OpenAI model on the same val set
     ├── merge_evals.py        # Merge per-run eval_raw/*.jsonl into eval_outputs.csv
     ├── review_feedback.py    # QC + prepare feedback_corpus.csv for training
-    ├── feedback.csv          # GitHub-mirrored feedback export
+    ├── feedback.csv          # sole feedback store — appended to on every submission
     ├── eval_outputs.csv      # Combined eval results across all runs
     ├── eval_results_openai.json
     └── eval_raw/             # Per-run JSONL output files
