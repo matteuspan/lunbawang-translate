@@ -1,6 +1,6 @@
 # LunBawang Translate
 
-A bidirectional **Lun Bawang ↔ English** machine translator, built by fine-tuning Qwen3-8B on the first parallel corpus ever assembled for the language. The web interface is deployed on Render and runs against a fine-tuned model served via the [Tinker](https://tinker.thinkingmachines.dev) API.
+A bidirectional **Lun Bawang ↔ English** machine translator, built by fine-tuning Qwen3-8B on the first parallel corpus ever assembled for the language. The web interface is deployed on Render and runs against a fine-tuned model served via the [Tinker](https://thinkingmachines.ai/tinker/) API.
 
 ---
 
@@ -80,7 +80,7 @@ Entries with ≥3 Lun Bawang words are classified as `sentence`; shorter entries
 
 ## Tinker Setup
 
-[Tinker](https://tinker.thinkingmachines.dev) is a hosted fine-tuning and inference service. It provides a Python SDK (`tinker`) and an OpenAI-compatible REST API for serving.
+[Tinker](https://thinkingmachines.ai/tinker/) is a hosted fine-tuning and inference service. It provides a Python SDK (`tinker`) and an OpenAI-compatible REST API for serving.
 
 **Base model:** `Qwen/Qwen3-8B`
 **Adaptation:** LoRA, rank 16
@@ -265,5 +265,5 @@ raretranslator/
 - English reference: [World English Bible](https://worldenglish.bible) (public domain)
 - Dictionary data: borneodictionary.com
 - Phrasebook data: longsemadoh.wordpress.com
-- Fine-tuning infrastructure: [Tinker](https://tinker.thinkingmachines.dev) by Thinking Machines
+- Fine-tuning infrastructure: [Tinker](https://thinkingmachines.ai/tinker/) by Thinking Machines
 - Base model: [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) by Alibaba Cloud
