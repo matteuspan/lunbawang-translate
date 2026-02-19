@@ -1,5 +1,7 @@
 # LunBawang Translate
 
+**Live demo:** https://lunbawang-translate.onrender.com/
+
 A bidirectional **Lun Bawang ↔ English** machine translator, built by fine-tuning Qwen3-8B on the first parallel corpus ever assembled for the language. The web interface is deployed on Render and runs against a fine-tuned model served via the [Tinker](https://thinkingmachines.ai/tinker/) API.
 
 ---
