@@ -1,0 +1,3 @@
+id,created_at,ip_prefix,user_agent,source_text,direction,checkpoint,model_output,rating,correction
+1,2026-02-19T18:21:10.032095+00:00,76.103.181.x,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36","Hello, my name is Eliza",en2lb,tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-8000,"Hello, ngadananku Elisa",1,
+2,2026-02-19T18:21:41.020608+00:00,76.103.181.x,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36","Hello, my name is Eliza",en2lb,tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-8000,"Hello, ngadananku Elisa",-1,
