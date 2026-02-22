@@ -3,7 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LunBawang Translate</title>
+  <title>Lun Bawang Translator | Lun Dayeh ↔ English</title>
+  <meta name="description" content="Free online Lun Bawang (Lun Dayeh / Lundayeh) to English translator. AI model fine-tuned on the first parallel corpus for the Lun Bawang language of Borneo — translate text, look up words, and contribute corrections." />
+  <link rel="canonical" href="https://lunbawang-translate.onrender.com/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://lunbawang-translate.onrender.com/" />
+  <meta property="og:title"       content="Lun Bawang Translator | Lun Dayeh ↔ English" />
+  <meta property="og:description" content="Free online Lun Bawang (Lun Dayeh / Lundayeh) to English translator. AI model fine-tuned on the first parallel corpus for the Lun Bawang language of Borneo." />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="Lun Bawang Translator | Lun Dayeh ↔ English" />
+  <meta name="twitter:description" content="Free online Lun Bawang (Lun Dayeh / Lundayeh) to English translator. AI model fine-tuned on the first parallel corpus for the Lun Bawang language of Borneo." />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Lun Bawang Translator",
+    "alternateName": ["Lun Dayeh Translator", "Lundayeh Translator"],
+    "description": "Free online Lun Bawang (Lun Dayeh / Lundayeh) to English translator and dictionary. AI fine-tuned on the first parallel corpus for the language of Borneo.",
+    "url": "https://lunbawang-translate.onrender.com/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "inLanguage": ["en", "lnd"]
+  }
+  </script>
+
   <script data-goatcounter="https://lunbawang-translate.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
   <style>
@@ -46,13 +76,14 @@
       z-index: 10;
     }
 
-    .logo {
+    h1.logo {
       font-size: 20px;
       font-weight: 600;
       color: var(--primary);
       letter-spacing: -0.3px;
+      margin: 0;
     }
-    .logo em { color: var(--accent); font-style: normal; }
+    h1.logo em { color: var(--accent); font-style: normal; }
 
     .header-right {
       margin-left: auto;
@@ -417,6 +448,17 @@
     }
     .feedback-thanks.show { display: block; }
 
+    /* ── About blurb ───────────────────────────────────── */
+    .about {
+      max-width: 1100px;
+      margin: 16px auto 0;
+      padding: 0 20px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+    }
+
     /* ── Responsive ────────────────────────────────────── */
     footer {
       text-align: center;
@@ -451,7 +493,7 @@
 <body>
 
 <header>
-  <div class="logo">Lun<em>Bawang</em> Translate</div>
+  <h1 class="logo">Lun<em>Bawang</em> Translate</h1>
   <div class="header-right">
     <label class="clause-toggle">
       <input type="checkbox" id="clauseToggle" />
@@ -559,6 +601,13 @@
     This page checks automatically — just leave it open.
   </div>
 </main>
+
+<section class="about">
+  <p>A free <strong>Lun Bawang ↔ English translator</strong> built by fine-tuning an AI model on the first
+  parallel corpus ever assembled for the <strong>Lun Bawang language</strong> (also called <strong>Lun Dayeh</strong>
+  or <strong>Lundayeh</strong>) — spoken by ~50,000–80,000 people across the highlands of Borneo
+  (Sarawak, Kalimantan, and Brunei). Translate sentences, look up words, and help improve the model by rating translations.</p>
+</section>
 
 <footer>
   Made with love by the Tagal-Pans &nbsp;·&nbsp;
