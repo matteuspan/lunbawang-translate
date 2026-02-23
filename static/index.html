@@ -477,17 +477,35 @@
     }
     footer a:hover { color: var(--text); }
 
+    /* ── Mobile controls ─────────────────────────────────── */
+    .mobile-controls { display: none; }
+
     @media (max-width: 640px) {
-      .lang-bar, .panels {
-        grid-template-columns: 1fr;
-      }
-      .swap-col, .panel-divider {
+      /* Hide desktop controls from header */
+      header .clause-toggle,
+      header .checkpoint-wrap,
+      header .checkpoint-wrap.show { display: none; }
+
+      /* Stack panels vertically; lang-bar stays horizontal */
+      .panels { grid-template-columns: 1fr; }
+      .panel-divider {
         border-left: none;
         border-right: none;
         border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        height: 48px;
+        height: 6px;
+        background: var(--bg);
       }
+
+      /* Mobile controls bar below the card */
+      .mobile-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        flex-wrap: wrap;
+      }
+      .mobile-controls .checkpoint-wrap        { display: none; }
+      .mobile-controls .checkpoint-wrap.show   { display: flex; }
     }
   </style>
 </head>
@@ -601,6 +619,17 @@
     Translation will become available once training reaches that milestone.
     This page checks automatically — just leave it open.
   </div>
+
+  <div class="mobile-controls">
+    <label class="clause-toggle">
+      <input type="checkbox" id="clauseToggleMobile" />
+      Clause-by-clause
+    </label>
+    <div class="checkpoint-wrap" id="checkpointWrapMobile">
+      <span>Checkpoint:</span>
+      <select class="checkpoint-select" id="checkpointSelectMobile"></select>
+    </div>
+  </div>
 </main>
 
 <section class="about">
@@ -656,6 +685,9 @@
   const skipBtn          = document.getElementById('skipBtn');
   const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
   const feedbackThanks   = document.getElementById('feedbackThanks');
+  const clauseToggleMobile     = document.getElementById('clauseToggleMobile');
+  const checkpointWrapMobile   = document.getElementById('checkpointWrapMobile');
+  const checkpointSelectMobile = document.getElementById('checkpointSelectMobile');
 
   // ── State ─────────────────────────────────────────────────
   let modelReady      = false;
@@ -689,21 +721,30 @@
       const defaultPath = step8000?.path ?? checkpoints.at(-1)?.path ?? '';
       checkpointSelect.value = paths.includes(prev) ? prev : defaultPath;
       checkpointWrap.classList.toggle('show', checkpoints.length > 0);
+      checkpointSelectMobile.innerHTML = checkpointSelect.innerHTML;
+      checkpointSelectMobile.value = checkpointSelect.value;
+      checkpointWrapMobile.classList.toggle('show', checkpoints.length > 0);
     } catch { /* ignore */ }
   }
 
   checkpointSelect.addEventListener('change', () => {
-    if (sourceText.value.trim()) {
-      clearTimeout(debounce);
-      doTranslate();
-    }
+    checkpointSelectMobile.value = checkpointSelect.value;
+    if (sourceText.value.trim()) { clearTimeout(debounce); doTranslate(); }
+  });
+
+  checkpointSelectMobile.addEventListener('change', () => {
+    checkpointSelect.value = checkpointSelectMobile.value;
+    if (sourceText.value.trim()) { clearTimeout(debounce); doTranslate(); }
   });
 
   clauseToggle.addEventListener('change', () => {
-    if (sourceText.value.trim()) {
-      clearTimeout(debounce);
-      doTranslate();
-    }
+    clauseToggleMobile.checked = clauseToggle.checked;
+    if (sourceText.value.trim()) { clearTimeout(debounce); doTranslate(); }
+  });
+
+  clauseToggleMobile.addEventListener('change', () => {
+    clauseToggle.checked = clauseToggleMobile.checked;
+    if (sourceText.value.trim()) { clearTimeout(debounce); doTranslate(); }
   });
 
   // ── Status polling ────────────────────────────────────────
