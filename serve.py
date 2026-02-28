@@ -40,7 +40,10 @@ GITHUB_PATH  = "eval/feedback.csv"
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "
     "Translate ONLY the exact text provided — output just the translation, nothing else. "
-    "Do not add Bible verse titles, context, or anything not present in the input."
+    "Use everyday conversational language, not religious or scriptural register. "
+    "Proper names (e.g. Bethel, Joyce, Sarah) are names of ordinary people — do not treat them as biblical references. "
+    "Do not expand, paraphrase, or add any meaning not present in the input. "
+    "Do not produce Bible verse language."
 )
 
 # Common English words for language auto-detection.
@@ -262,12 +265,12 @@ def translate(req: TranslateRequest):
         direction = detect_language(text)
 
     if direction == "lb2en":
-        user_content = f"Translate to English:\n{text}"
+        user_content = f"Translate this everyday Lun Bawang sentence to English:\n{text}"
         if len(text.split()) <= 5:
             user_content += "\n(Output only the translation of this word or phrase.)"
         detected_lang = "lb"
     else:
-        user_content = f"Translate to Lun Bawang:\n{text}"
+        user_content = f"Translate this everyday English sentence to Lun Bawang:\n{text}"
         detected_lang = "en"
 
     try:
@@ -302,7 +305,7 @@ def translate(req: TranslateRequest):
             if len(clauses) >= 2:
                 clause_parts = []
                 for clause in clauses:
-                    clause_content = f"Translate to Lun Bawang:\n{clause}"
+                    clause_content = f"Translate this everyday English sentence to Lun Bawang:\n{clause}"
                     if len(clause.split()) <= 5:
                         clause_content += "\n(Output only the translation of this word or phrase.)"
                     clause_parts.append(clean_translation(_call(clause_content)))
