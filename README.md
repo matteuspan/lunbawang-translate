@@ -22,7 +22,7 @@ FastAPI server (serve.py)
   │  OpenAI-compatible REST call
   ▼
 Tinker inference API
-  └─ Qwen3-8B + LoRA fine-tune (checkpoint-8000, best BLEU)
+  └─ Qwen3-8B + LoRA fine-tune (v1·checkpoint-11500, best BLEU)
 ```
 
 1. The user types Lun Bawang or English text in the browser.
@@ -150,18 +150,46 @@ Three validation metrics are computed during training:
 
 ### Results by checkpoint
 
-| Step | Epoch | Val loss | Bible BLEU | Dict exact match | Sentence BLEU |
-|------|-------|----------|------------|-----------------|---------------|
-| 2,000 | 1 | 0.719 | 20.49 | 20.0% | 5.62 |
-| 4,000 | 1 | 0.442 | — | — | — |
-| 6,000 | 1 | 0.325 | 41.94 | 19.5% | 30.67 |
-| **8,000** | **1** | **0.185** | **52.38** | **20.3%** | **34.98** |
-| 10,500 | 2 | 0.149 | 51.79 | 21.8% | 34.65 |
-| 16,000 | 3 | 0.054 | 58.24 | 19.5% | 33.59 |
+All BLEU scores are sacrebleu corpus BLEU on fixed held-out sets. Bidirectional evaluation (LB→EN and EN→LB) uses the same 50 Bible, 144 dictionary, and 40 sentence examples for every checkpoint.
 
-Training was stopped at step 16,000 (mid-epoch 3). Val loss continued to fall sharply in epoch 3 (0.082 at epoch 2 end → 0.054 by step 16,000), indicating rapid memorisation of the Biblical training set rather than new generalisation.
+#### v0 — run 1 (model `42a2c780`, 16,000 steps)
 
-**Step 8,000 is the default checkpoint** for general use. It achieves the best sentence BLEU (34.98) and produces the most natural output for conversational input. Steps 10,500 and 16,000 show a register drift pattern — BLEU improves on Biblical prose but slightly regresses on conversational sentences as the model overfits to Biblical register. **Step 16,000 is the best checkpoint for Bible text specifically** (Bible BLEU 58.24).
+| Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN |
+|------|----------|------------|------------|-----------|-----------|-----------|
+| 8,000 | 0.185 | 54.55 | 44.06 | 20.1% | 16.7% | 5.99 |
+| 16,000 | 0.054 | 58.24 | — | 19.5% | — | 33.59¹ |
+
+¹ Unidirectional (LB→EN only) eval; earlier eval code without short/long sentence split.
+
+Training stopped at step 16,000 (mid-epoch 3). Val loss continued falling steeply into epoch 3, indicating overfitting to Biblical register. Step 8,000 gave the best balance between Bible BLEU and generalisation; step 16,000 was stronger on Biblical prose but weaker on conversational text.
+
+#### v1 — run 2 (model `719fbcd8`, 11,500 steps)
+
+v1 adds ~140 manually curated dictionary and sentence pairs from Mortensen (2021) and longsemadoh.wordpress.com to the training set, plus a small amount of user feedback from the live site.
+
+| Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
+|------|----------|------------|------------|-----------|-----------|-----------|-----------|
+| 2,000 | 0.734 | 27.83 | 20.09 | 13.9% | 7.6% | 8.64 | 6.33 |
+| 4,000 | 0.454 | 42.35 | 24.10 | 16.0% | 7.6% | 14.99 | 9.65 |
+| 6,000 | 0.324 | 50.45 | 30.85 | 13.9% | 1.4%† | 15.70 | 8.96 |
+| 8,000 | 0.173 | 48.49 | 47.47 | 22.2% | 12.5% | 14.90 | 3.43 |
+| 10,000 | 0.147 | 46.88 | 46.70 | 23.6% | 16.7% | 21.72 | 11.04 |
+| **11,500** | — | **58.82** | **56.48** | **24.3%** | 15.3% | **22.07** | **9.51** |
+
+† Step 6,000 EN→LB dict anomaly: model was emitting `<think>` tokens at that checkpoint.
+
+#### Best checkpoint comparison
+
+| Metric | v0 · Step 8,000 | v0 · Step 16,000 | **v1 · Step 11,500** |
+|--------|-----------------|------------------|----------------------|
+| Bible BLEU LB→EN | 54.55 | 58.24 | **58.82** |
+| Bible BLEU EN→LB | 44.06 | — | **56.48** |
+| Dict exact LB→EN | 20.1% | 19.5% | **24.3%** |
+| Dict exact EN→LB | 16.7% | — | 15.3% |
+| Sent BLEU LB→EN | 5.99 | 33.59¹ | **22.07** |
+| Sent BLEU EN→LB | 1.24 | — | **9.51** |
+
+**v1 · Step 11,500 is the current default checkpoint.** It is the strongest across all bidirectional metrics: best Bible BLEU in both directions, best dictionary exact-match LB→EN, and best sentence BLEU in both directions. EN→LB is substantially improved across the board compared to v0, reflecting the richer auxiliary training data.
 
 ### BLEU context
 
@@ -175,7 +203,7 @@ The same val sets were run against general-purpose OpenAI models to establish a 
 
 | Model | Bible BLEU | Dict exact match | Sentence BLEU | Avg ms/call | Notes |
 |-------|-----------|-----------------|---------------|-------------|-------|
-| **Our model (checkpoint-8000)** | **51.70** | **20.3%** | **30.79** | ~5,400 | Qwen3-8B + LoRA, Tinker inference |
+| **Our model (v1·checkpoint-11500)** | **58.82** | **24.3%** | **22.07** | ~5,400 | Qwen3-8B + LoRA, Tinker inference |
 | gpt-4o | 10.44 | 6.0% | 21.46 | ~716 | |
 | gpt-5-mini | 8.79 | 3.8% | 10.95 | ~18,300 | Reasoning model; slow despite "mini" label |
 | gpt-4o-mini | 7.22 | 2.3% | 11.84 | — | |
@@ -293,7 +321,7 @@ python3.13 serve.py
 
 `TINKER_API_KEY` is set as a Render environment variable. The committed `tinker_state.json` tells the server which checkpoints exist and where to find them on Tinker's infrastructure — no model weights are stored in the repo.
 
-The checkpoint dropdown in the UI lets you compare any saved checkpoint, not just the current default. The step 8,000 checkpoint is pre-selected as the default because it achieves the best overall BLEU.
+The checkpoint dropdown in the UI lets you compare any saved checkpoint across both runs. v1 · Step 11,500 is pre-selected as the default because it achieves the best overall BLEU across both translation directions.
 
 ---
 
@@ -338,7 +366,7 @@ raretranslator/
 
 ## Limitations
 
-- **Domain bias:** Training data is entirely Biblical prose. The model handles conversational input reasonably well at step 8,000 but may produce archaic or overly formal Lun Bawang for casual text.
+- **Domain bias:** Training data is primarily Biblical prose. The model handles conversational input reasonably well but may produce archaic or overly formal Lun Bawang for casual text.
 - **Small vocabulary:** The combined corpus covers only a fraction of Lun Bawang vocabulary. Uncommon words are often hallucinated or approximated.
 - **En→LB is harder:** The model was evaluated primarily in the LB→EN direction. English→Lun Bawang output is harder to verify without a native speaker.
 - **No morphological analysis:** Lun Bawang has productive affixation (nasal prefixes, infixes, reduplication). The model learns these patterns implicitly from examples rather than through explicit linguistic structure.

@@ -251,10 +251,12 @@ def list_checkpoints():
             label += f" · Epoch {ck['epoch']}"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
-    for ck in v1_ckpts:
+    for i, ck in enumerate(v1_ckpts):
         label = ck.get("label") or f"v1 · Step {ck['step']:,}"
         if "epoch" in ck and not ck.get("label"):
             label += f" · Epoch {ck['epoch']}"
+        if i == len(v1_ckpts) - 1 and not main_ckpts:
+            label += " (latest)"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
     for i, ck in enumerate(main_ckpts):
