@@ -13,14 +13,12 @@ Usage:
 import argparse
 import csv
 import sqlite3
-from collections import Counter
 from pathlib import Path
 
-ROOT_DIR        = Path(__file__).parent.parent
-FEEDBACK_DB     = ROOT_DIR / "feedback.db"
-FEEDBACK_CSV    = Path(__file__).parent / "feedback.csv"
-OUTPUT_FILE     = ROOT_DIR / "feedback_corpus.csv"
-IP_FLOOD_THRESH = 10   # flag IPs with more than this many entries
+ROOT_DIR     = Path(__file__).parent.parent
+FEEDBACK_DB  = ROOT_DIR / "feedback.db"
+FEEDBACK_CSV = Path(__file__).parent / "feedback.csv"
+OUTPUT_FILE  = ROOT_DIR / "feedback_corpus.csv"
 
 
 def load_from_db(path=FEEDBACK_DB):
@@ -47,10 +45,6 @@ def qc_and_summarise(rows, dry_run=False):
     thumbs_down     = [r for r in rows if r["rating"] == -1]
     with_correction = [r for r in thumbs_down if (r.get("correction") or "").strip()]
 
-    # IP flood detection (column is ip_address from DB, ip_prefix from CSV)
-    ip_counts = Counter(r.get("ip_address") or r.get("ip_prefix", "") for r in rows)
-    flood_ips = {ip: c for ip, c in ip_counts.items() if c > IP_FLOOD_THRESH}
-
     # Suspicious user-agent detection
     suspect_ua = [r for r in rows if not (r.get("user_agent") or "").strip()]
 
@@ -63,12 +57,7 @@ def qc_and_summarise(rows, dry_run=False):
     print(f"    With correction:   {len(with_correction)}")
     print(f"    Without:           {len(thumbs_down) - len(with_correction)}")
     print()
-    print("QC flags (review manually):")
-    if flood_ips:
-        for ip, count in flood_ips.items():
-            print(f"  IP flood (>{IP_FLOOD_THRESH} entries): {count} entries from {ip}")
-    else:
-        print(f"  IP flood (>{IP_FLOOD_THRESH} from same IP): none")
+    print("QC flags:")
     print(f"  Suspicious user-agent (empty): {len(suspect_ua)}")
     print()
 

@@ -725,9 +725,10 @@
         opt.textContent = ck.label;
         checkpointSelect.appendChild(opt);
       });
-      // Default to latest checkpoint, restore previous selection if still valid
+      // Default to v0 step 8000 (stable released model); fall back to latest
       const paths = checkpoints.map(c => c.path);
-      const defaultPath = checkpoints.at(-1)?.path ?? '';
+      const v0stable = checkpoints.find(c => c.step === 8000 && c.label?.startsWith('v0'));
+      const defaultPath = v0stable?.path ?? checkpoints.at(-1)?.path ?? '';
       checkpointSelect.value = paths.includes(prev) ? prev : defaultPath;
       checkpointWrap.classList.toggle('show', checkpoints.length > 0);
     } catch { /* ignore */ }
