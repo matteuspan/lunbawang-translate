@@ -154,27 +154,47 @@ All BLEU scores are sacrebleu corpus BLEU on fixed held-out sets. Bidirectional 
 
 #### v0 — run 1 (model `42a2c780`, 16,000 steps)
 
-| Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN |
-|------|----------|------------|------------|-----------|-----------|-----------|
-| 8,000 | 0.185 | 54.55 | 44.06 | 20.1% | 16.7% | 5.99 |
-| 16,000 | 0.054 | 58.24 | — | 19.5% | — | 33.59¹ |
+| Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
+|------|----------|------------|------------|-----------|-----------|-----------|-----------|
+| 8,000 | 0.185 | 54.55 | 44.06 | 20.1% | 16.7% | 34.98² | 1.24 |
+| 16,000 | 0.054 | 58.24 | — | 19.5% | — | 33.59¹ | — |
 
-¹ Unidirectional (LB→EN only) eval; earlier eval code without short/long sentence split.
+¹ Unidirectional (LB→EN only) eval; earlier eval code.
+² Measured on the original sentence val set (longsemadoh conversational sentences only, before Mortensen narrative prose was added to the val set in v1). With the current val set the score is 5.99.
 
 Training stopped at step 16,000 (mid-epoch 3). Val loss continued falling steeply into epoch 3, indicating overfitting to Biblical register. Step 8,000 gave the best balance between Bible BLEU and generalisation; step 16,000 was stronger on Biblical prose but weaker on conversational text.
 
+##### Comparison with GPT models (v0 val set)
+
+The same val sets were run against general-purpose OpenAI models to establish a baseline for what an off-the-shelf LLM can do with no Lun Bawang-specific training. Scripts: `eval/eval_openai.py`, `eval/eval_checkpoint.py`. Raw outputs saved to `eval/eval_raw/`; combined into `eval/eval_outputs.csv` via `eval/merge_evals.py`.
+
+| Model | Bible BLEU | Dict exact match | Sentence BLEU | Avg ms/call | Notes |
+|-------|-----------|-----------------|---------------|-------------|-------|
+| **Our model (v0·checkpoint-8000)** | **51.70** | **20.3%** | **30.79** | ~5,400 | Qwen3-8B + LoRA, Tinker inference |
+| gpt-4o | 10.44 | 6.0% | 21.46 | ~716 | |
+| gpt-5-mini | 8.79 | 3.8% | 10.95 | ~18,300 | Reasoning model; slow despite "mini" label |
+| gpt-4o-mini | 7.22 | 2.3% | 11.84 | — | |
+
+Key takeaways:
+- Our fine-tuned model scores **5× higher** on Bible BLEU and **3× higher** on Dict exact match than the best general GPT model (gpt-4o), despite being 8B parameters vs. GPT-4o's much larger scale.
+- gpt-5-mini is a reasoning model and takes ~18s per API call — 25× slower than gpt-4o and 3× slower than our model on Tinker. Its BLEU scores are also worse, suggesting reasoning capability does not compensate for lack of Lun Bawang training data.
+- All GPT models struggle with the dictionary exact-match task (single-word translations), confirming that Lun Bawang vocabulary is largely absent from general pre-training data.
+- The ~5,400ms timing reflects Tinker's cold-start latency; warm-cache requests are faster.
+
 #### v1 — run 2 (model `719fbcd8`, 11,500 steps)
 
-v1 adds manually transcribed entries from the Mortensen (2021) dissertation appendix and a small amount of user feedback from the live site to the training set.
+v1 adds manually transcribed entries from the Mortensen (2021) dissertation appendix and a small amount of user feedback from the live site to the training set. The Mortensen narrative sentences also join the sentence val set, making v1 sentence BLEU scores not directly comparable to v0.
 
-| Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
-|------|----------|------------|------------|-----------|-----------|-----------|-----------|
-| 2,000 | 0.734 | 27.83 | 20.09 | 13.9% | 7.6% | 8.64 | 6.33 |
-| 4,000 | 0.454 | 42.35 | 24.10 | 16.0% | 7.6% | 14.99 | 9.65 |
-| 6,000 | 0.324 | 50.45 | 30.85 | 13.9% | 1.4%† | 15.70 | 8.96 |
-| 8,000 | 0.173 | 48.49 | 47.47 | 22.2% | 12.5% | 14.90 | 3.43 |
-| 10,000 | 0.147 | 46.88 | 46.70 | 23.6% | 16.7% | 21.72 | 11.04 |
-| **11,500** | — | **58.82** | **56.48** | **24.3%** | 15.3% | **22.07** | **9.51** |
+Sentence BLEU is split by reference length: **sh** = short (≤10 words), **lg** = long (>10 words).
+
+| Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN (sh / lg) | Sent EN→LB (sh / lg) |
+|------|----------|------------|------------|-----------|-----------|----------------------|----------------------|
+| 2,000 | 0.734 | 27.83 | 20.09 | 13.9% | 7.6% | 8.64 (13.2 / 7.6) | 6.33 (1.4 / 7.1) |
+| 4,000 | 0.454 | 42.35 | 24.10 | 16.0% | 7.6% | 14.99 (15.3 / 14.7) | 9.65 (1.6 / 11.4) |
+| 6,000 | 0.324 | 50.45 | 30.85 | 13.9% | 1.4%† | 15.70 (15.7 / 15.4) | 8.96 (3.1 / 9.9) |
+| 8,000 | 0.173 | 48.49 | 47.47 | 22.2% | 12.5% | 14.90 (18.6 / 13.6) | 3.43 (5.3 / 3.5) |
+| 10,000 | 0.147 | 46.88 | 46.70 | 23.6% | 16.7% | 21.72 (20.1 / 22.4) | 11.04 (2.3 / 12.8) |
+| **11,500** | — | **58.82** | **56.48** | **24.3%** | 15.3% | **22.07 (20.3 / 22.2)** | **9.51 (4.2 / 10.3)** |
 
 † Step 6,000 EN→LB dict anomaly: model was emitting `<think>` tokens at that checkpoint.
 
@@ -186,33 +206,18 @@ v1 adds manually transcribed entries from the Mortensen (2021) dissertation appe
 | Bible BLEU EN→LB | 44.06 | — | **56.48** |
 | Dict exact LB→EN | 20.1% | 19.5% | **24.3%** |
 | Dict exact EN→LB | 16.7% | — | 15.3% |
-| Sent BLEU LB→EN | 5.99 | 33.59¹ | **22.07** |
-| Sent BLEU EN→LB | 1.24 | — | **9.51** |
+| Sent BLEU LB→EN | 34.98² | 33.59¹ | **22.07**³ |
+| Sent BLEU EN→LB | 1.24 | — | **9.51**³ |
 
-**v1 · Step 11,500 is the current default checkpoint.** It is the strongest across all bidirectional metrics: best Bible BLEU in both directions, best dictionary exact-match LB→EN, and best sentence BLEU in both directions. EN→LB is substantially improved across the board compared to v0, reflecting the richer auxiliary training data.
+³ Measured on updated val set including Mortensen narrative sentences; not directly comparable to v0.
+
+**v1 · Step 11,500 is the current default checkpoint.** It achieves the best Bible BLEU in both directions and best dictionary exact-match, and EN→LB is substantially improved across the board compared to v0.
 
 ### BLEU context
 
-A BLEU score of 52 for a rare language with ~30k training sentences is strong. Google Translate achieves ~40 BLEU for well-resourced language pairs like French→English with billions of sentence pairs. For comparison, published results on similarly low-resource languages (Swahili, Welsh, Basque at small data scales) typically fall in the 20–35 range with equivalent training set sizes.
+A Bible BLEU score above 50 for a rare language with ~30k training sentences is strong. Google Translate achieves ~40 BLEU for well-resourced language pairs like French→English with billions of sentence pairs. For comparison, published results on similarly low-resource languages (Swahili, Welsh, Basque at small data scales) typically fall in the 20–35 range with equivalent training set sizes.
 
-The ceiling is partly set by reference translation quality and the domain gap: training data is entirely Biblical, while the evaluation sentence set is conversational.
-
-### Comparison with GPT models
-
-The same val sets were run against general-purpose OpenAI models to establish a baseline for what an off-the-shelf LLM can do with no Lun Bawang-specific training. Scripts: `eval/eval_openai.py`, `eval/eval_checkpoint.py`. Raw outputs saved to `eval/eval_raw/`; combined into `eval/eval_outputs.csv` via `eval/merge_evals.py`.
-
-| Model | Bible BLEU | Dict exact match | Sentence BLEU | Avg ms/call | Notes |
-|-------|-----------|-----------------|---------------|-------------|-------|
-| **Our model (v1·checkpoint-11500)** | **58.82** | **24.3%** | **22.07** | ~5,400 | Qwen3-8B + LoRA, Tinker inference |
-| gpt-4o | 10.44 | 6.0% | 21.46 | ~716 | |
-| gpt-5-mini | 8.79 | 3.8% | 10.95 | ~18,300 | Reasoning model; slow despite "mini" label |
-| gpt-4o-mini | 7.22 | 2.3% | 11.84 | — | |
-
-Key takeaways:
-- Our fine-tuned model scores **5× higher** on Bible BLEU and **3× higher** on Dict exact match than the best general GPT model (gpt-4o), despite being 8B parameters vs. GPT-4o's much larger scale.
-- gpt-5-mini is a reasoning model and takes ~18s per API call — 25× slower than gpt-4o and 3× slower than our model on Tinker. Its BLEU scores are also worse, suggesting reasoning capability does not compensate for lack of Lun Bawang training data.
-- All GPT models struggle with the dictionary exact-match task (single-word translations), confirming that Lun Bawang vocabulary is largely absent from general pre-training data.
-- The checkpoint-8000 timing (~5,400ms) reflects Tinker's cold-start latency; warm-cache requests are faster.
+The ceiling is partly set by reference translation quality and the domain gap: training data is primarily Biblical, while the sentence evaluation set is conversational and narrative.
 
 ---
 
