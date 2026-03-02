@@ -165,7 +165,7 @@ Training stopped at step 16,000 (mid-epoch 3). Val loss continued falling steepl
 
 #### v1 — run 2 (model `719fbcd8`, 11,500 steps)
 
-v1 adds ~140 manually curated dictionary and sentence pairs from Mortensen (2021) and longsemadoh.wordpress.com to the training set, plus a small amount of user feedback from the live site.
+v1 adds manually transcribed entries from the Mortensen (2021) dissertation appendix and a small amount of user feedback from the live site to the training set.
 
 | Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
 |------|----------|------------|------------|-----------|-----------|-----------|-----------|
