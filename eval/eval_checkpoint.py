@@ -258,22 +258,30 @@ jsonl_file.close()
 
 # ── Update tinker_state.json / tinker_state_run1.json ────────────────────────
 if step is not None:
-    target_state = run1_state if run == "v0" else state
-    target_file  = RUN1_FILE  if run == "v0" else STATE_FILE
-    for ck in target_state["checkpoints"]:
-        if ck["step"] == step:
-            ck["val_bleu_bible"]            = round(bible_bleu, 3)
-            ck["val_bleu_bible_en2lb"]      = round(bible_bleu_el, 3)
-            ck["val_exact_dict"]            = round(dict_pct, 1)
-            ck["val_exact_dict_en2lb"]      = round(dict_pct_el, 1)
-            ck["val_bleu_sentence"]         = round(sent_bleu, 3)
-            ck["val_bleu_sent_short"]       = round(short_bleu, 3)
-            ck["val_bleu_sent_long"]        = round(long_bleu, 3)
-            ck["val_bleu_sentence_en2lb"]   = round(sent_bleu_el, 3)
-            ck["val_bleu_sent_short_en2lb"] = round(short_bleu_el, 3)
-            ck["val_bleu_sent_long_en2lb"]  = round(long_bleu_el, 3)
-            break
-    target_file.write_text(json.dumps(target_state, indent=2))
+    import fcntl
+    target_file = RUN1_FILE if run == "v0" else STATE_FILE
+    new_fields = {
+        "val_bleu_bible":            round(bible_bleu, 3),
+        "val_bleu_bible_en2lb":      round(bible_bleu_el, 3),
+        "val_exact_dict":            round(dict_pct, 1),
+        "val_exact_dict_en2lb":      round(dict_pct_el, 1),
+        "val_bleu_sentence":         round(sent_bleu, 3),
+        "val_bleu_sent_short":       round(short_bleu, 3),
+        "val_bleu_sent_long":        round(long_bleu, 3),
+        "val_bleu_sentence_en2lb":   round(sent_bleu_el, 3),
+        "val_bleu_sent_short_en2lb": round(short_bleu_el, 3),
+        "val_bleu_sent_long_en2lb":  round(long_bleu_el, 3),
+    }
+    with open(target_file, "r+") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        current = json.load(f)
+        for ck in current["checkpoints"]:
+            if ck["step"] == step:
+                ck.update(new_fields)
+                break
+        f.seek(0)
+        json.dump(current, f, indent=2)
+        f.truncate()
     print(f"Saved to {target_file.name}\n")
 
 print(f"Raw JSONL → {jsonl_path}")

@@ -358,21 +358,43 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         print(f"  Dict val exact match: {dict_exact_pct:.1f}% ({n_correct}/{len(dict_val_pairs)})")
 
     # ── Sentence val BLEU (lb→en) ──
-    sent_bleu = None
+    sent_bleu = sent_bleu_short = sent_bleu_long = None
     if sent_val_pairs:
         print(f"  Translating {len(sent_val_pairs)} sentence val examples (lb→en)…")
         hyps, refs = _batch_translate(sent_val_pairs, "lb2en")
         sent_bleu = sb.corpus_bleu(hyps, [refs]).score
-        print(f"  Sentence val BLEU: {sent_bleu:.2f}")
+        short_pairs = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) <= 10]
+        long_pairs  = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) >  10]
+        sent_bleu_short = sb.corpus_bleu([p[0] for p in short_pairs], [[p[1] for p in short_pairs]]).score if short_pairs else 0.0
+        sent_bleu_long  = sb.corpus_bleu([p[0] for p in long_pairs],  [[p[1] for p in long_pairs]]).score  if long_pairs  else 0.0
+        print(f"  Sentence val BLEU: {sent_bleu:.2f}  (short ≤10: {sent_bleu_short:.2f} | long >10: {sent_bleu_long:.2f})")
 
-    return bible_bleu, dict_exact_pct, sent_bleu
+    return bible_bleu, dict_exact_pct, sent_bleu, sent_bleu_short, sent_bleu_long
 
 
 # ── State persistence ─────────────────────────────────────────────────────────
 
 def save_state(state: dict):
-    with open(STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2)
+    import fcntl
+    if not STATE_FILE.exists():
+        with open(STATE_FILE, "w") as f:
+            json.dump(state, f, indent=2)
+    else:
+        with open(STATE_FILE, "r+") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            try:
+                on_disk = json.load(f)
+                disk_by_step = {ck["step"]: ck for ck in on_disk.get("checkpoints", [])}
+                for ck in state["checkpoints"]:
+                    if ck["step"] in disk_by_step:
+                        for k, v in disk_by_step[ck["step"]].items():
+                            if k not in ck:
+                                ck[k] = v
+            except (json.JSONDecodeError, KeyError):
+                pass
+            f.seek(0)
+            json.dump(state, f, indent=2)
+            f.truncate()
     print(f"State saved → {STATE_FILE}")
 
 
@@ -541,7 +563,7 @@ def train():
 
                 # ── Val BLEU every VAL_BLEU_EVERY steps ──
                 if global_step % VAL_BLEU_EVERY == 0:
-                    bible_bleu, dict_exact, sent_bleu = compute_val_bleu(
+                    bible_bleu, dict_exact, sent_bleu, sent_short, sent_long = compute_val_bleu(
                         service, ckpt, tokenizer,
                         bible_val_pairs=bible_val,
                         dict_val_pairs=aux_dict_val,
@@ -553,7 +575,9 @@ def train():
                     if dict_exact is not None:
                         metrics["val_dict_exact_pct"] = round(dict_exact, 1)
                     if sent_bleu is not None:
-                        metrics["val_sent_bleu"] = round(sent_bleu, 2)
+                        metrics["val_sent_bleu"]       = round(sent_bleu, 2)
+                        metrics["val_sent_bleu_short"] = round(sent_short, 2)
+                        metrics["val_sent_bleu_long"]  = round(sent_long, 2)
                     if metrics:
                         state["checkpoints"][-1].update(metrics)
                         save_state(state)
