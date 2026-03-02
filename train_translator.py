@@ -558,6 +558,20 @@ def train():
                         state["checkpoints"][-1].update(metrics)
                         save_state(state)
 
+                    # ── Launch full bidirectional eval in background ──
+                    import subprocess, sys, os
+                    eval_script = Path(__file__).parent / "eval" / "eval_checkpoint.py"
+                    api_key = os.environ.get("TINKER_API_KEY", "")
+                    if eval_script.exists() and api_key:
+                        env = {**os.environ, "TINKER_API_KEY": api_key, "PYTHONUNBUFFERED": "1"}
+                        subprocess.Popen(
+                            [sys.executable, str(eval_script), ckpt],
+                            env=env,
+                            stdout=open(Path(__file__).parent / f"eval_run_step{global_step}.log", "w"),
+                            stderr=subprocess.STDOUT,
+                        )
+                        print(f"    Full bidirectional eval launched → eval_run_step{global_step}.log")
+
         # ── End-of-epoch checkpoint ──
         print(f"\nEpoch {epoch+1} done — saving checkpoint…")
         result = tc.save_weights_for_sampler(f"checkpoint-epoch{epoch+1}").result()
