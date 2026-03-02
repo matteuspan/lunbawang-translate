@@ -18,6 +18,7 @@ from pathlib import Path
 
 ROOT_DIR        = Path(__file__).parent.parent
 FEEDBACK_DB     = ROOT_DIR / "feedback.db"
+FEEDBACK_CSV    = Path(__file__).parent / "feedback.csv"
 OUTPUT_FILE     = ROOT_DIR / "feedback_corpus.csv"
 IP_FLOOD_THRESH = 10   # flag IPs with more than this many entries
 
@@ -46,8 +47,8 @@ def qc_and_summarise(rows, dry_run=False):
     thumbs_down     = [r for r in rows if r["rating"] == -1]
     with_correction = [r for r in thumbs_down if (r.get("correction") or "").strip()]
 
-    # IP flood detection
-    ip_counts = Counter(r["ip_address"] for r in rows if r["ip_address"])
+    # IP flood detection (column is ip_address from DB, ip_prefix from CSV)
+    ip_counts = Counter(r.get("ip_address") or r.get("ip_prefix", "") for r in rows)
     flood_ips = {ip: c for ip, c in ip_counts.items() if c > IP_FLOOD_THRESH}
 
     # Suspicious user-agent detection
@@ -129,12 +130,14 @@ def main():
 
     if args.csv:
         rows = load_from_csv(args.csv)
-    else:
-        if not FEEDBACK_DB.exists():
-            print(f"No feedback.db found at {FEEDBACK_DB}")
-            print("Tip: run the server, collect some feedback, or use --csv to load an export.")
-            return
+    elif FEEDBACK_DB.exists():
         rows = load_from_db()
+    elif FEEDBACK_CSV.exists():
+        print(f"feedback.db not found — using {FEEDBACK_CSV}")
+        rows = load_from_csv(FEEDBACK_CSV)
+    else:
+        print(f"No feedback found. Run with --csv eval/feedback.csv or collect feedback via the web UI.")
+        return
 
     if not rows:
         print("No feedback entries found.")
