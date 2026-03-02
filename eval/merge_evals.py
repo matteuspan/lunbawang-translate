@@ -1,13 +1,22 @@
 """
-Merge all per-run JSONL files in eval_raw/ into a single eval_outputs.csv.
+Merge all per-run JSONL files in eval_raw/ into eval_outputs.csv files.
 
 Usage:
-  python3.13 merge_evals.py              # writes eval_outputs.csv
+  python3.13 merge_evals.py              # writes eval_outputs.csv + per-generation CSVs
   python3.13 merge_evals.py --dry-run    # prints summary, no file written
+
+Output files (all in the same directory as this script):
+  eval_outputs.csv          — combined, all models
+  eval_outputs_v0.csv       — v0·* checkpoints only
+  eval_outputs_v1.csv       — v1·* checkpoints only
+  eval_outputs_<gen>.csv    — one file per generation prefix
+
+The model label format is "<gen>·<checkpoint>" (e.g. "v0·checkpoint-8000").
+Generation is the part before the first "·", or the full model name if no "·".
 
 The CSV has one row per translation with columns:
   timestamp         — ISO-8601 UTC time the eval run started
-  model             — model name or checkpoint label (e.g. gpt-4o, checkpoint-8000)
+  model             — model name or checkpoint label
   eval_set          — bible | dict | sentence
   input_lb          — Lun Bawang input text
   raw_output        — exactly what the model returned (before any post-processing)
@@ -78,12 +87,27 @@ def main():
     # then preserve original order within each group
     rows.sort(key=lambda r: (r["model"], EVAL_SET_ORDER.get(r["eval_set"], 99)))
 
-    with open(OUTPUT_FILE, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=COLS, extrasaction="ignore")
-        w.writeheader()
-        w.writerows(rows)
+    def write_csv(path, subset):
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=COLS, extrasaction="ignore")
+            w.writeheader()
+            w.writerows(subset)
 
+    # Combined
+    write_csv(OUTPUT_FILE, rows)
     print(f"Written {len(rows)} rows → {OUTPUT_FILE}")
+
+    # Per-generation (prefix before "·", or full model name if no "·")
+    by_gen = defaultdict(list)
+    for r in rows:
+        gen = r["model"].split("·")[0] if "·" in r["model"] else r["model"]
+        by_gen[gen].append(r)
+
+    for gen, gen_rows in sorted(by_gen.items()):
+        safe = gen.replace("/", "-").replace(" ", "_")
+        gen_path = OUTPUT_FILE.parent / f"eval_outputs_{safe}.csv"
+        write_csv(gen_path, gen_rows)
+        print(f"Written {len(gen_rows)} rows → {gen_path.name}")
 
 
 if __name__ == "__main__":

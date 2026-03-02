@@ -215,16 +215,29 @@ if step is not None:
 print(f"Raw JSONL → {jsonl_path}")
 
 # ── Auto-merge into eval_outputs.csv ─────────────────────────────────────────
-import importlib.util, types
+import importlib.util
 _spec = importlib.util.spec_from_file_location("merge_evals", Path(__file__).parent / "merge_evals.py")
 _mod  = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
-_mod.main.__globals__["__name__"] = ""   # prevent argparse from seeing CLI args
 rows, files = _mod.load_all_jsonl()
 rows.sort(key=lambda r: (r["model"], _mod.EVAL_SET_ORDER.get(r["eval_set"], 99)))
-with open(_mod.OUTPUT_FILE, "w", newline="", encoding="utf-8") as f:
-    import csv as _csv
-    w = _csv.DictWriter(f, fieldnames=_mod.COLS, extrasaction="ignore")
-    w.writeheader()
-    w.writerows(rows)
-print(f"eval_outputs.csv updated → {len(rows)} rows across {len(files)} run(s)")
+
+import csv as _csv
+from collections import defaultdict as _dd
+
+def _write_csv(path, subset):
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = _csv.DictWriter(f, fieldnames=_mod.COLS, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(subset)
+
+_write_csv(_mod.OUTPUT_FILE, rows)
+by_gen = _dd(list)
+for r in rows:
+    gen = r["model"].split("·")[0] if "·" in r["model"] else r["model"]
+    by_gen[gen].append(r)
+for gen, gen_rows in sorted(by_gen.items()):
+    safe = gen.replace("/", "-").replace(" ", "_")
+    _write_csv(_mod.OUTPUT_FILE.parent / f"eval_outputs_{safe}.csv", gen_rows)
+
+print(f"eval_outputs.csv updated → {len(rows)} rows across {len(files)} run(s) | {len(by_gen)} generation(s)")
