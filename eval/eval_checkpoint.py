@@ -201,4 +201,18 @@ if step is not None:
     print("Saved to tinker_state.json\n")
 
 print(f"Raw JSONL → {jsonl_path}")
-print(f"Run 'python3.13 merge_evals.py' to rebuild eval_outputs.csv")
+
+# ── Auto-merge into eval_outputs.csv ─────────────────────────────────────────
+import importlib.util, types
+_spec = importlib.util.spec_from_file_location("merge_evals", Path(__file__).parent / "merge_evals.py")
+_mod  = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+_mod.main.__globals__["__name__"] = ""   # prevent argparse from seeing CLI args
+rows, files = _mod.load_all_jsonl()
+rows.sort(key=lambda r: (r["model"], _mod.EVAL_SET_ORDER.get(r["eval_set"], 99)))
+with open(_mod.OUTPUT_FILE, "w", newline="", encoding="utf-8") as f:
+    import csv as _csv
+    w = _csv.DictWriter(f, fieldnames=_mod.COLS, extrasaction="ignore")
+    w.writeheader()
+    w.writerows(rows)
+print(f"eval_outputs.csv updated → {len(rows)} rows across {len(files)} run(s)")
