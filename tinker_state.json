@@ -1,5 +1,154 @@
 {
   "model_id": "719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0",
-  "checkpoints": [],
-  "steps": 0
+  "checkpoints": [
+    {
+      "step": 500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-500",
+      "val_loss": 1.380296
+    },
+    {
+      "step": 1000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-1000",
+      "val_loss": 1.027932
+    },
+    {
+      "step": 1500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-1500",
+      "val_loss": 0.854562
+    },
+    {
+      "step": 2000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-2000",
+      "val_loss": 0.734419,
+      "val_bible_bleu": 29.52,
+      "val_dict_exact_pct": 13.2,
+      "val_sent_bleu": 10.7,
+      "val_bleu_bible": 27.83,
+      "val_bleu_bible_en2lb": 20.09,
+      "val_exact_dict": 13.9,
+      "val_exact_dict_en2lb": 7.6,
+      "val_bleu_sentence": 8.64,
+      "val_bleu_sent_short": 13.16,
+      "val_bleu_sent_long": 7.55,
+      "val_bleu_sentence_en2lb": 6.33,
+      "val_bleu_sent_short_en2lb": 1.35,
+      "val_bleu_sent_long_en2lb": 7.14
+    },
+    {
+      "step": 2500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-2500",
+      "val_loss": 0.630639
+    },
+    {
+      "step": 3000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-3000",
+      "val_loss": 0.572817
+    },
+    {
+      "step": 3500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-3500",
+      "val_loss": 0.506662
+    },
+    {
+      "step": 4000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-4000",
+      "val_loss": 0.45427,
+      "val_bible_bleu": 36.18,
+      "val_dict_exact_pct": 16.7,
+      "val_sent_bleu": 14.89,
+      "val_bleu_bible": 42.35,
+      "val_bleu_bible_en2lb": 24.097,
+      "val_exact_dict": 16.0,
+      "val_exact_dict_en2lb": 7.6,
+      "val_bleu_sentence": 14.993,
+      "val_bleu_sent_short": 15.296,
+      "val_bleu_sent_long": 14.737,
+      "val_bleu_sentence_en2lb": 9.653,
+      "val_bleu_sent_short_en2lb": 1.635,
+      "val_bleu_sent_long_en2lb": 11.412
+    },
+    {
+      "step": 4500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-4500",
+      "val_loss": 0.418775
+    },
+    {
+      "step": 5000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-5000",
+      "val_loss": 0.384189
+    },
+    {
+      "step": 5500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-5500",
+      "val_loss": 0.351326
+    },
+    {
+      "step": 6000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-6000",
+      "val_loss": 0.323891,
+      "val_bible_bleu": 48.55,
+      "val_dict_exact_pct": 20.8,
+      "val_sent_bleu": 17.39,
+      "val_bleu_bible": 50.446,
+      "val_bleu_bible_en2lb": 30.846,
+      "val_exact_dict": 13.9,
+      "val_exact_dict_en2lb": 1.4,
+      "val_bleu_sentence": 15.696,
+      "val_bleu_sent_short": 15.654,
+      "val_bleu_sent_long": 15.399,
+      "val_bleu_sentence_en2lb": 8.962,
+      "val_bleu_sent_short_en2lb": 3.097,
+      "val_bleu_sent_long_en2lb": 9.87
+    },
+    {
+      "step": 6500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-6500",
+      "val_loss": 0.310795
+    },
+    {
+      "step": 7000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-7000",
+      "val_loss": 0.293739
+    },
+    {
+      "step": 7500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-7500",
+      "val_loss": 0.267144
+    },
+    {
+      "step": 7771,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-epoch1",
+      "epoch": 1,
+      "val_loss": 0.233361
+    },
+    {
+      "step": 8000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-8000",
+      "val_loss": 0.173445,
+      "val_bible_bleu": 57.67,
+      "val_dict_exact_pct": 22.9,
+      "val_sent_bleu": 15.89,
+      "val_bleu_bible": 48.487,
+      "val_bleu_bible_en2lb": 47.469,
+      "val_exact_dict": 22.2,
+      "val_exact_dict_en2lb": 12.5,
+      "val_bleu_sentence": 14.904,
+      "val_bleu_sent_short": 18.574,
+      "val_bleu_sent_long": 13.592,
+      "val_bleu_sentence_en2lb": 3.431,
+      "val_bleu_sent_short_en2lb": 5.258,
+      "val_bleu_sent_long_en2lb": 3.524
+    },
+    {
+      "step": 8500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-8500",
+      "val_loss": 0.176559
+    },
+    {
+      "step": 9000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-9000",
+      "val_loss": 0.170817
+    }
+  ],
+  "steps": 9000
 }
