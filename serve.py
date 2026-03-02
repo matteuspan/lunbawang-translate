@@ -28,6 +28,7 @@ from pydantic import BaseModel
 # ── Config ─────────────────────────────────────────────────────────────────
 
 STATE_FILE      = Path(__file__).parent / "tinker_state.json"
+STATE_FILE_V1   = Path(__file__).parent / "tinker_state_v1.json"
 STATE_FILE_RUN1 = Path(__file__).parent / "tinker_state_run1.json"
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
@@ -160,11 +161,15 @@ def get_state() -> dict:
 
 
 def _all_checkpoints() -> list[dict]:
-    """Return all checkpoints across current run + run1 fallback, newest first."""
+    """Return all checkpoints across all runs, newest first."""
     current = get_state().get("checkpoints", [])
     if current:
         return current
-    # New run has no checkpoints yet — fall back to the previous run
+    # No active run — fall back to most recent archived run
+    if STATE_FILE_V1.exists():
+        ckpts = json.loads(STATE_FILE_V1.read_text()).get("checkpoints", [])
+        if ckpts:
+            return ckpts
     if STATE_FILE_RUN1.exists():
         return json.loads(STATE_FILE_RUN1.read_text()).get("checkpoints", [])
     return []
@@ -210,24 +215,33 @@ def status():
 
 @app.get("/api/checkpoints")
 def list_checkpoints():
+    def _load(path):
+        return json.loads(path.read_text()) if path.exists() else {}
+
+    run1_state = _load(STATE_FILE_RUN1)
+    v1_state   = _load(STATE_FILE_V1)
     main_state = get_state()
+
+    run1_model_id = run1_state.get("model_id", "")
+    v1_model_id   = v1_state.get("model_id", "")
     main_model_id = main_state.get("model_id", "")
+
+    run1_ckpts = run1_state.get("checkpoints", [])
+    v1_ckpts   = v1_state.get("checkpoints", [])
     main_ckpts = main_state.get("checkpoints", [])
 
-    run1_state = {}
-    if STATE_FILE_RUN1.exists():
-        run1_state = json.loads(STATE_FILE_RUN1.read_text())
-    run1_model_id = run1_state.get("model_id", "")
-    run1_ckpts = run1_state.get("checkpoints", [])
-
-    # If the main state file has the same experiment as run1 (e.g. on Render where
-    # tinker_state.json is the committed copy of the old run), treat it as run1.
+    # If main state file matches an archived run (e.g. on Render where
+    # tinker_state.json is the committed copy), merge into that run's list.
     if main_model_id and main_model_id == run1_model_id:
-        # Merge and deduplicate by step
         merged = {ck["step"]: ck for ck in run1_ckpts}
         merged.update({ck["step"]: ck for ck in main_ckpts})
         run1_ckpts = sorted(merged.values(), key=lambda x: x["step"])
-        main_ckpts = []  # nothing left for run2
+        main_ckpts = []
+    elif main_model_id and main_model_id == v1_model_id:
+        merged = {ck["step"]: ck for ck in v1_ckpts}
+        merged.update({ck["step"]: ck for ck in main_ckpts})
+        v1_ckpts = sorted(merged.values(), key=lambda x: x["step"])
+        main_ckpts = []
 
     result = []
 
@@ -237,8 +251,14 @@ def list_checkpoints():
             label += f" · Epoch {ck['epoch']}"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
-    for i, ck in enumerate(main_ckpts):
+    for ck in v1_ckpts:
         label = ck.get("label") or f"v1 · Step {ck['step']:,}"
+        if "epoch" in ck and not ck.get("label"):
+            label += f" · Epoch {ck['epoch']}"
+        result.append({"label": label, "path": ck["path"], "step": ck["step"]})
+
+    for i, ck in enumerate(main_ckpts):
+        label = ck.get("label") or f"v2 · Step {ck['step']:,}"
         if "epoch" in ck and not ck.get("label"):
             label += f" · Epoch {ck['epoch']}"
         if i == len(main_ckpts) - 1:
