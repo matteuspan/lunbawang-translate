@@ -148,7 +148,30 @@
       "step": 9000,
       "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-9000",
       "val_loss": 0.170817
+    },
+    {
+      "step": 9500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-9500",
+      "val_loss": 0.161769
+    },
+    {
+      "step": 10000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-10000",
+      "val_loss": 0.146793,
+      "val_bible_bleu": 49.53,
+      "val_dict_exact_pct": 22.9,
+      "val_sent_bleu": 23.49
+    },
+    {
+      "step": 10500,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-10500",
+      "val_loss": 0.145275
+    },
+    {
+      "step": 11000,
+      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-11000",
+      "val_loss": 0.135488
     }
   ],
-  "steps": 9000
+  "steps": 11000
 }
