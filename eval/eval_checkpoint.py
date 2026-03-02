@@ -191,7 +191,15 @@ for i, (lb, eng, *_) in enumerate(sent_val, 1):
     write_row("sentence", lb, raw, proc, eng, call_ms)
     if i % 10 == 0: print(f"  {i}/{len(sent_val)}…")
 sent_bleu = sb.corpus_bleu(s_hyps, [s_refs]).score
-print(f"  → {sent_bleu:.2f}\n")
+print(f"  → {sent_bleu:.2f} (combined)\n")
+
+# Short (≤10 ref words) vs long (>10 ref words) split
+short_pairs = [(h, r) for h, r in zip(s_hyps, s_refs) if len(r.split()) <= 10]
+long_pairs  = [(h, r) for h, r in zip(s_hyps, s_refs) if len(r.split()) >  10]
+short_bleu = sb.corpus_bleu([p[0] for p in short_pairs], [[p[1] for p in short_pairs]]).score if short_pairs else 0.0
+long_bleu  = sb.corpus_bleu([p[0] for p in long_pairs],  [[p[1] for p in long_pairs]]).score  if long_pairs  else 0.0
+print(f"  Short (ref ≤10 words): {len(short_pairs)} examples → {short_bleu:.2f}")
+print(f"  Long  (ref >10 words): {len(long_pairs)}  examples → {long_bleu:.2f}\n")
 
 jsonl_file.close()
 
@@ -205,9 +213,11 @@ if step is not None:
     target_file  = RUN1_FILE  if run == "v0" else STATE_FILE
     for ck in target_state["checkpoints"]:
         if ck["step"] == step:
-            ck["val_bleu_bible"]    = round(bible_bleu, 3)
-            ck["val_exact_dict"]    = round(dict_pct, 1)
-            ck["val_bleu_sentence"] = round(sent_bleu, 3)
+            ck["val_bleu_bible"]         = round(bible_bleu, 3)
+            ck["val_exact_dict"]         = round(dict_pct, 1)
+            ck["val_bleu_sentence"]      = round(sent_bleu, 3)
+            ck["val_bleu_sent_short"]    = round(short_bleu, 3)
+            ck["val_bleu_sent_long"]     = round(long_bleu, 3)
             break
     target_file.write_text(json.dumps(target_state, indent=2))
     print(f"Saved to {target_file.name}\n")
