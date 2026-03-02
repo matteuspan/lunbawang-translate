@@ -407,7 +407,7 @@ def load_state():
 
 # ── Training ──────────────────────────────────────────────────────────────────
 
-def train():
+def train(new_run: bool = False):
     print(f"Model:      {BASE_MODEL}")
     print(f"LoRA rank:  {LORA_RANK}")
     print(f"Batch size: {BATCH_SIZE}")
@@ -476,7 +476,17 @@ def train():
         save_state(state)
         print(f"  New experiment ID: {info.model_id}")
     else:
-        print("\nStarting new training experiment…")
+        # Guard: refuse to silently overwrite an existing run
+        if not new_run and state and state.get("checkpoints"):
+            print("\nERROR: tinker_state.json has existing checkpoints but no resume path.")
+            print("  This means the previous training session ended without saving a training state.")
+            print("  To start a completely new experiment, run with --new-run.")
+            print("  To warm-start from a sampler checkpoint, add 'warm_start_path' to tinker_state.json.")
+            raise SystemExit(1)
+        if new_run and state and state.get("checkpoints"):
+            print(f"\nStarting new experiment (--new-run; previous run had {state['steps']} steps)…")
+        else:
+            print("\nStarting new training experiment…")
         tc = service.create_lora_training_client(
             base_model=BASE_MODEL,
             rank=LORA_RANK,
@@ -709,6 +719,7 @@ def interactive_translate(direction="lb2en"):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Lun Bawang ↔ English translator (Tinker/Qwen3-8B)")
     parser.add_argument("--train",     action="store_true", help="Run fine-tuning")
+    parser.add_argument("--new-run",   action="store_true", help="Start a fresh experiment (ignores existing checkpoints)")
     parser.add_argument("--translate", action="store_true", help="Interactive translation")
     parser.add_argument("--direction", choices=["lb2en", "en2lb"], default="lb2en",
                         help="Translation direction (default: lb2en)")
@@ -717,7 +728,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.train:
-        train()
+        train(new_run=args.new_run)
     elif args.translate:
         if args.text:
             result = translate(args.text, args.direction, args.checkpoint)
