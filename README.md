@@ -200,18 +200,20 @@ Sentence BLEU is split by reference length: **sh** = short (≤10 words), **lg**
 
 #### Best checkpoint comparison
 
+All scores on the v1 val set (50 Bible, 144 dict, 40 sentence examples including Mortensen narrative prose). Sentence BLEU: **sh** = short (≤10 words), **lg** = long (>10 words).
+
 | Metric | v0 · Step 8,000 | v0 · Step 16,000 | **v1 · Step 11,500** |
 |--------|-----------------|------------------|----------------------|
 | Bible BLEU LB→EN | 54.55 | 58.24 | **58.82** |
 | Bible BLEU EN→LB | 44.06 | — | **56.48** |
 | Dict exact LB→EN | 20.1% | 19.5% | **24.3%** |
 | Dict exact EN→LB | 16.7% | — | 15.3% |
-| Sent BLEU LB→EN | 34.98² | 33.59¹ | **22.07**³ |
-| Sent BLEU EN→LB | 1.24 | — | **9.51**³ |
+| Sent BLEU LB→EN | 5.99 (13.8 / 2.6) | —⁴ | **22.07 (20.3 / 22.2)** |
+| Sent BLEU EN→LB | 1.24 (1.4 / 1.4) | — | **9.51 (4.2 / 10.3)** |
 
-³ Measured on updated val set including Mortensen narrative sentences; not directly comparable to v0.
+⁴ v0·step-16000 not re-evaluated on the v1 val set.
 
-**v1 · Step 11,500 is the current default checkpoint.** It achieves the best Bible BLEU in both directions and best dictionary exact-match, and EN→LB is substantially improved across the board compared to v0.
+**v1 · Step 11,500 is the current default checkpoint.** It achieves the best Bible BLEU in both directions and best dictionary exact-match, and EN→LB is substantially improved across the board compared to v0. The sentence BLEU gap is particularly stark: v0 scores 5.99 LB→EN and 1.24 EN→LB on the v1 val set; v1 scores 22.07 and 9.51.
 
 ### BLEU context
 
