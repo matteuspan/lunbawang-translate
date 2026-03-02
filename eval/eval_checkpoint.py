@@ -28,6 +28,7 @@ SYSTEM_PROMPT = (
     "Translate ONLY the exact text provided — output just the translation, nothing else. "
     "Use everyday conversational language, not religious or scriptural register. "
     "Proper names (e.g. Bethel, Joyce, Sarah) are names of ordinary people — do not treat them as biblical references. "
+    "Preserve proper nouns (personal names, place names) exactly as they appear in the input unless you are certain of the standard equivalent in the target language. "
     "Do not expand, paraphrase, or add any meaning not present in the input. "
     "Do not produce Bible verse language."
 )
