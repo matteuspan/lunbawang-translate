@@ -34,7 +34,11 @@ OUTPUT_FILE = Path(__file__).parent / "eval_outputs.csv"
 COLS        = ["timestamp", "model", "eval_set", "input_lb",
                "raw_output", "processed_output", "reference", "call_ms"]
 
-EVAL_SET_ORDER = {"bible": 0, "dict": 1, "sentence": 2}
+EVAL_SET_ORDER = {
+    "bible": 0, "bible_en2lb": 1,
+    "dict": 2,  "dict_en2lb": 3,
+    "sentence": 4, "sentence_en2lb": 5,
+}
 
 
 def load_all_jsonl():

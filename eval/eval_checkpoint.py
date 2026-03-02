@@ -152,7 +152,7 @@ def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None):
 
 import sacrebleu as sb
 
-# ── Bible BLEU ────────────────────────────────────────────────────────────────
+# ── Bible BLEU (lb→en) ────────────────────────────────────────────────────────
 rng = random.Random(42)
 sample = rng.sample(bible_val, min(50, len(bible_val)))
 print(f"Bible BLEU (50 examples, lb→en)…")
@@ -165,7 +165,18 @@ for i, (lb, eng, *_) in enumerate(sample, 1):
 bible_bleu = sb.corpus_bleu(hyps, [refs]).score
 print(f"  → {bible_bleu:.2f}\n")
 
-# ── Dict exact match ──────────────────────────────────────────────────────────
+# ── Bible BLEU (en→lb) ────────────────────────────────────────────────────────
+print(f"Bible BLEU (50 examples, en→lb)…")
+hyps_el, refs_el = [], []
+for i, (lb, eng, *_) in enumerate(sample, 1):
+    raw, proc, call_ms = translate(eng, "en2lb")
+    hyps_el.append(proc); refs_el.append(lb)
+    write_row("bible_en2lb", eng, raw, proc, lb, call_ms)
+    if i % 10 == 0: print(f"  {i}/50…")
+bible_bleu_el = sb.corpus_bleu(hyps_el, [refs_el]).score
+print(f"  → {bible_bleu_el:.2f}\n")
+
+# ── Dict exact match (lb→en) ──────────────────────────────────────────────────
 print(f"Dict exact match ({len(dict_val)} examples, lb→en)…")
 d_hyps, d_refs = [], []
 for i, (lb, eng, *_) in enumerate(dict_val, 1):
@@ -177,12 +188,29 @@ correct  = sum(h.lower().strip()==r.lower().strip() for h,r in zip(d_hyps, d_ref
 dict_pct = correct / len(d_refs) * 100
 print(f"  → {dict_pct:.1f}% ({correct}/{len(d_refs)})\n")
 
-print("Dict samples:")
+print("Dict samples (lb→en):")
 for lb, hyp, ref in zip([r[0] for r in dict_val], d_hyps, d_refs):
     mark = "✓" if hyp.lower().strip()==ref.lower().strip() else "✗"
     print(f"  {mark} '{lb}' → '{hyp}' (ref: '{ref}')")
 
-# ── Sentence BLEU ─────────────────────────────────────────────────────────────
+# ── Dict exact match (en→lb) ──────────────────────────────────────────────────
+print(f"\nDict exact match ({len(dict_val)} examples, en→lb)…")
+d_hyps_el, d_refs_el = [], []
+for i, (lb, eng, *_) in enumerate(dict_val, 1):
+    raw, proc, call_ms = translate(eng, "en2lb")
+    d_hyps_el.append(proc); d_refs_el.append(lb)
+    write_row("dict_en2lb", eng, raw, proc, lb, call_ms)
+    if i % 10 == 0: print(f"  {i}/{len(dict_val)}…")
+correct_el  = sum(h.lower().strip()==r.lower().strip() for h,r in zip(d_hyps_el, d_refs_el))
+dict_pct_el = correct_el / len(d_refs_el) * 100
+print(f"  → {dict_pct_el:.1f}% ({correct_el}/{len(d_refs_el)})\n")
+
+print("Dict samples (en→lb):")
+for lb, hyp, ref in zip([r[0] for r in dict_val], d_hyps_el, d_refs_el):
+    mark = "✓" if hyp.lower().strip()==ref.lower().strip() else "✗"
+    print(f"  {mark} '{ref}' → '{hyp}' (ref: '{lb}')")
+
+# ── Sentence BLEU (lb→en) ─────────────────────────────────────────────────────
 print(f"\nSentence BLEU ({len(sent_val)} examples, lb→en)…")
 s_hyps, s_refs = [], []
 for i, (lb, eng, *_) in enumerate(sent_val, 1):
@@ -193,7 +221,6 @@ for i, (lb, eng, *_) in enumerate(sent_val, 1):
 sent_bleu = sb.corpus_bleu(s_hyps, [s_refs]).score
 print(f"  → {sent_bleu:.2f} (combined)\n")
 
-# Short (≤10 ref words) vs long (>10 ref words) split
 short_pairs = [(h, r) for h, r in zip(s_hyps, s_refs) if len(r.split()) <= 10]
 long_pairs  = [(h, r) for h, r in zip(s_hyps, s_refs) if len(r.split()) >  10]
 short_bleu = sb.corpus_bleu([p[0] for p in short_pairs], [[p[1] for p in short_pairs]]).score if short_pairs else 0.0
@@ -201,11 +228,33 @@ long_bleu  = sb.corpus_bleu([p[0] for p in long_pairs],  [[p[1] for p in long_pa
 print(f"  Short (ref ≤10 words): {len(short_pairs)} examples → {short_bleu:.2f}")
 print(f"  Long  (ref >10 words): {len(long_pairs)}  examples → {long_bleu:.2f}\n")
 
-jsonl_file.close()
-
-print("Sentence samples:")
+print("Sentence samples (lb→en):")
 for (lb,*_), hyp, ref in zip(sent_val, s_hyps, s_refs):
     print(f"  LB:  {lb}\n  Got: {hyp}\n  Ref: {ref}\n")
+
+# ── Sentence BLEU (en→lb) ─────────────────────────────────────────────────────
+print(f"Sentence BLEU ({len(sent_val)} examples, en→lb)…")
+s_hyps_el, s_refs_el = [], []
+for i, (lb, eng, *_) in enumerate(sent_val, 1):
+    raw, proc, call_ms = translate(eng, "en2lb")
+    s_hyps_el.append(proc); s_refs_el.append(lb)
+    write_row("sentence_en2lb", eng, raw, proc, lb, call_ms)
+    if i % 10 == 0: print(f"  {i}/{len(sent_val)}…")
+sent_bleu_el = sb.corpus_bleu(s_hyps_el, [s_refs_el]).score
+print(f"  → {sent_bleu_el:.2f} (combined)\n")
+
+short_pairs_el = [(h, r) for h, r in zip(s_hyps_el, s_refs_el) if len(r.split()) <= 10]
+long_pairs_el  = [(h, r) for h, r in zip(s_hyps_el, s_refs_el) if len(r.split()) >  10]
+short_bleu_el = sb.corpus_bleu([p[0] for p in short_pairs_el], [[p[1] for p in short_pairs_el]]).score if short_pairs_el else 0.0
+long_bleu_el  = sb.corpus_bleu([p[0] for p in long_pairs_el],  [[p[1] for p in long_pairs_el]]).score  if long_pairs_el  else 0.0
+print(f"  Short (ref ≤10 words): {len(short_pairs_el)} examples → {short_bleu_el:.2f}")
+print(f"  Long  (ref >10 words): {len(long_pairs_el)}  examples → {long_bleu_el:.2f}\n")
+
+print("Sentence samples (en→lb):")
+for (lb,*_), hyp, ref in zip(sent_val, s_hyps_el, s_refs_el):
+    print(f"  EN:  {ref}\n  Got: {hyp}\n  Ref: {lb}\n")
+
+jsonl_file.close()
 
 # ── Update tinker_state.json / tinker_state_run1.json ────────────────────────
 if step is not None:
@@ -213,11 +262,16 @@ if step is not None:
     target_file  = RUN1_FILE  if run == "v0" else STATE_FILE
     for ck in target_state["checkpoints"]:
         if ck["step"] == step:
-            ck["val_bleu_bible"]         = round(bible_bleu, 3)
-            ck["val_exact_dict"]         = round(dict_pct, 1)
-            ck["val_bleu_sentence"]      = round(sent_bleu, 3)
-            ck["val_bleu_sent_short"]    = round(short_bleu, 3)
-            ck["val_bleu_sent_long"]     = round(long_bleu, 3)
+            ck["val_bleu_bible"]            = round(bible_bleu, 3)
+            ck["val_bleu_bible_en2lb"]      = round(bible_bleu_el, 3)
+            ck["val_exact_dict"]            = round(dict_pct, 1)
+            ck["val_exact_dict_en2lb"]      = round(dict_pct_el, 1)
+            ck["val_bleu_sentence"]         = round(sent_bleu, 3)
+            ck["val_bleu_sent_short"]       = round(short_bleu, 3)
+            ck["val_bleu_sent_long"]        = round(long_bleu, 3)
+            ck["val_bleu_sentence_en2lb"]   = round(sent_bleu_el, 3)
+            ck["val_bleu_sent_short_en2lb"] = round(short_bleu_el, 3)
+            ck["val_bleu_sent_long_en2lb"]  = round(long_bleu_el, 3)
             break
     target_file.write_text(json.dumps(target_state, indent=2))
     print(f"Saved to {target_file.name}\n")
