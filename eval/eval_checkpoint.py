@@ -33,17 +33,27 @@ SYSTEM_PROMPT = (
 )
 
 # ── Checkpoint selection ──────────────────────────────────────────────────────
-state = json.loads(STATE_FILE.read_text())
+RUN1_FILE  = ROOT_DIR / "tinker_state_run1.json"
+state      = json.loads(STATE_FILE.read_text())
+run1_state = json.loads(RUN1_FILE.read_text()) if RUN1_FILE.exists() else {"model_id": "", "checkpoints": []}
+
 if len(sys.argv) > 1:
     CHECKPOINT = sys.argv[1]
     step = next((c["step"] for c in state["checkpoints"] if c["path"] == CHECKPOINT), None)
+    run  = "v1"
+    if step is None:
+        step = next((c["step"] for c in run1_state["checkpoints"] if c["path"] == CHECKPOINT), None)
+        if step is not None:
+            run = "v0"
 else:
     ck = state["checkpoints"][-1]
     CHECKPOINT = ck["path"]
     step = ck["step"]
+    run  = "v1"
 
-# Short label for the JSONL filename (e.g. "checkpoint-8000")
-model_label = CHECKPOINT.split("/")[-1] if "/" in CHECKPOINT else CHECKPOINT
+# Short label for the JSONL filename (e.g. "v1·checkpoint-8000")
+ck_label    = CHECKPOINT.split("/")[-1] if "/" in CHECKPOINT else CHECKPOINT
+model_label = f"{run}·{ck_label}"
 
 print(f"Checkpoint: {CHECKPOINT}\n")
 
@@ -189,16 +199,18 @@ print("Sentence samples:")
 for (lb,*_), hyp, ref in zip(sent_val, s_hyps, s_refs):
     print(f"  LB:  {lb}\n  Got: {hyp}\n  Ref: {ref}\n")
 
-# ── Update tinker_state.json ──────────────────────────────────────────────────
+# ── Update tinker_state.json / tinker_state_run1.json ────────────────────────
 if step is not None:
-    for ck in state["checkpoints"]:
+    target_state = run1_state if run == "v0" else state
+    target_file  = RUN1_FILE  if run == "v0" else STATE_FILE
+    for ck in target_state["checkpoints"]:
         if ck["step"] == step:
             ck["val_bleu_bible"]    = round(bible_bleu, 3)
             ck["val_exact_dict"]    = round(dict_pct, 1)
             ck["val_bleu_sentence"] = round(sent_bleu, 3)
             break
-    STATE_FILE.write_text(json.dumps(state, indent=2))
-    print("Saved to tinker_state.json\n")
+    target_file.write_text(json.dumps(target_state, indent=2))
+    print(f"Saved to {target_file.name}\n")
 
 print(f"Raw JSONL → {jsonl_path}")
 
