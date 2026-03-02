@@ -26,7 +26,10 @@ RAW_DIR      = Path(__file__).parent / "eval_raw"
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "
     "Translate ONLY the exact text provided — output just the translation, nothing else. "
-    "Do not add Bible verse titles, context, or anything not present in the input."
+    "Use everyday conversational language, not religious or scriptural register. "
+    "Proper names (e.g. Bethel, Joyce, Sarah) are names of ordinary people — do not treat them as biblical references. "
+    "Do not expand, paraphrase, or add any meaning not present in the input. "
+    "Do not produce Bible verse language."
 )
 
 # ── Checkpoint selection ──────────────────────────────────────────────────────
