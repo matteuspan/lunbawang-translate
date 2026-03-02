@@ -2,21 +2,6 @@
   "model_id": "719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0",
   "checkpoints": [
     {
-      "step": 500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-500",
-      "val_loss": 1.380296
-    },
-    {
-      "step": 1000,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-1000",
-      "val_loss": 1.027932
-    },
-    {
-      "step": 1500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-1500",
-      "val_loss": 0.854562
-    },
-    {
       "step": 2000,
       "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-2000",
       "val_loss": 0.734419,
@@ -33,21 +18,6 @@
       "val_bleu_sentence_en2lb": 6.33,
       "val_bleu_sent_short_en2lb": 1.35,
       "val_bleu_sent_long_en2lb": 7.14
-    },
-    {
-      "step": 2500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-2500",
-      "val_loss": 0.630639
-    },
-    {
-      "step": 3000,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-3000",
-      "val_loss": 0.572817
-    },
-    {
-      "step": 3500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-3500",
-      "val_loss": 0.506662
     },
     {
       "step": 4000,
@@ -68,21 +38,6 @@
       "val_bleu_sent_long_en2lb": 11.412
     },
     {
-      "step": 4500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-4500",
-      "val_loss": 0.418775
-    },
-    {
-      "step": 5000,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-5000",
-      "val_loss": 0.384189
-    },
-    {
-      "step": 5500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-5500",
-      "val_loss": 0.351326
-    },
-    {
       "step": 6000,
       "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-6000",
       "val_loss": 0.323891,
@@ -99,21 +54,6 @@
       "val_bleu_sentence_en2lb": 8.962,
       "val_bleu_sent_short_en2lb": 3.097,
       "val_bleu_sent_long_en2lb": 9.87
-    },
-    {
-      "step": 6500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-6500",
-      "val_loss": 0.310795
-    },
-    {
-      "step": 7000,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-7000",
-      "val_loss": 0.293739
-    },
-    {
-      "step": 7500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-7500",
-      "val_loss": 0.267144
     },
     {
       "step": 7771,
@@ -140,21 +80,6 @@
       "val_bleu_sent_long_en2lb": 3.524
     },
     {
-      "step": 8500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-8500",
-      "val_loss": 0.176559
-    },
-    {
-      "step": 9000,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-9000",
-      "val_loss": 0.170817
-    },
-    {
-      "step": 9500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-9500",
-      "val_loss": 0.161769
-    },
-    {
       "step": 10000,
       "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-10000",
       "val_loss": 0.146793,
@@ -171,16 +96,6 @@
       "val_bleu_sentence_en2lb": 11.044,
       "val_bleu_sent_short_en2lb": 2.287,
       "val_bleu_sent_long_en2lb": 12.777
-    },
-    {
-      "step": 10500,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-10500",
-      "val_loss": 0.145275
-    },
-    {
-      "step": 11000,
-      "path": "tinker://719fbcd8-7cd9-5734-a1d8-bf728c38c77f:train:0/sampler_weights/checkpoint-11000",
-      "val_loss": 0.135488
     },
     {
       "step": 11500,
