@@ -463,8 +463,18 @@ def train():
     state = load_state()
 
     if state and state.get("training_state_path"):
+        # Full resume: restores weights + optimizer state (Adam momentum, LR schedule)
         print(f"\nResuming from training state: {state['training_state_path']}")
-        tc = service.create_training_client_from_state(state["training_state_path"])
+        tc = service.create_training_client_from_state_with_optimizer(state["training_state_path"])
+    elif state and state.get("warm_start_path"):
+        # Warm start: load learned weights from a sampler checkpoint, reset optimizer
+        print(f"\nWarm-starting from checkpoint: {state['warm_start_path']}")
+        tc = service.create_training_client_from_state(state["warm_start_path"])
+        info = tc.get_info()
+        state["model_id"] = info.model_id
+        del state["warm_start_path"]
+        save_state(state)
+        print(f"  New experiment ID: {info.model_id}")
     else:
         print("\nStarting new training experiment…")
         tc = service.create_lora_training_client(
@@ -545,12 +555,16 @@ def train():
             )
 
             if global_step % SAVE_EVERY == 0:
-                # ── Save checkpoint ──
+                # ── Save sampler weights (for inference) ──
                 print(f"  → Saving checkpoint at step {global_step}…")
                 result = tc.save_weights_for_sampler(f"checkpoint-{global_step}").result()
                 ckpt = result.path
                 state["checkpoints"].append({"step": global_step, "path": ckpt})
                 state["steps"] = global_step
+
+                # ── Save full training state (weights + optimizer) for crash recovery ──
+                training_state = tc.save_state(f"checkpoint-{global_step}").result()
+                state["training_state_path"] = training_state.path
 
                 # ── Val loss (forward-only, no optim) ──
                 if bible_val_datums:
@@ -606,6 +620,10 @@ def train():
             "epoch": epoch + 1,
         })
         state["steps"] = global_step
+
+        # Save full training state at epoch boundary too
+        training_state = tc.save_state(f"checkpoint-epoch{epoch+1}").result()
+        state["training_state_path"] = training_state.path
 
         # Val metrics at epoch boundary
         if bible_val_datums:

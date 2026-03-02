@@ -1,16 +1,5 @@
 {
-  "model_id": "dac111bb-cd6b-5ca8-afce-0a142a512626:train:0",
-  "checkpoints": [
-    {
-      "step": 500,
-      "path": "tinker://dac111bb-cd6b-5ca8-afce-0a142a512626:train:0/sampler_weights/checkpoint-500",
-      "val_loss": 1.43197
-    },
-    {
-      "step": 1000,
-      "path": "tinker://dac111bb-cd6b-5ca8-afce-0a142a512626:train:0/sampler_weights/checkpoint-1000",
-      "val_loss": 1.073291
-    }
-  ],
-  "steps": 1000
+  "model_id": "87bb1a6d-99db-5bcd-96d2-4f48515328ed:train:0",
+  "checkpoints": [],
+  "steps": 0
 }
