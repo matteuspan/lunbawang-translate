@@ -251,8 +251,8 @@ print(f"  Short (ref ≤10 words): {len(short_pairs_el)} examples → {short_ble
 print(f"  Long  (ref >10 words): {len(long_pairs_el)}  examples → {long_bleu_el:.2f}\n")
 
 print("Sentence samples (en→lb):")
-for (lb,*_), hyp, ref in zip(sent_val, s_hyps_el, s_refs_el):
-    print(f"  EN:  {ref}\n  Got: {hyp}\n  Ref: {lb}\n")
+for (lb, eng, *_), hyp in zip(sent_val, s_hyps_el):
+    print(f"  EN:  {eng}\n  Got: {hyp}\n  Ref: {lb}\n")
 
 jsonl_file.close()
 
