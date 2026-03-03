@@ -60,7 +60,9 @@ STATE_FILE      = Path(__file__).parent / "tinker_state.json"
 CORPUS_FILE     = Path(__file__).parent / "corpus" / "parallel_corpus.csv"
 AUX_FILE        = Path(__file__).parent / "corpus" / "aux_corpus.csv"
 FEEDBACK_FILE   = Path(__file__).parent / "feedback_corpus.csv"
+CONV_FILE       = Path(__file__).parent / "corpus" / "conversational_corpus.csv"
 FEEDBACK_REPEAT = 10   # more aggressive than AUX_REPEAT — fewer entries, higher signal
+CONV_REPEAT     = 3    # T4T conversational dialogue verses; 3× weighting
 
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "
@@ -438,6 +440,13 @@ def train(new_run: bool = False):
     else:
         print("  feedback_corpus.csv not found — skipping (run review_feedback.py to generate)")
 
+    print("Loading conversational corpus (T4T dialogue verses)…")
+    conv_corpus = load_aux_corpus(CONV_FILE) if CONV_FILE.exists() else []
+    if conv_corpus:
+        print(f"  {len(conv_corpus)} conversational sentence pairs")
+    else:
+        print("  conversational_corpus.csv not found — run corpus/build_conversational_corpus.py")
+
     # ── Splits ──
     print("\nSplitting data…")
     bible_train, bible_val = bible_train_val_split(bible_corpus, val_fraction=0.1)
@@ -457,6 +466,14 @@ def train(new_run: bool = False):
     aux_sent_val += [r for r in feedback_val if r[3] == "sentence"]
     if feedback_corpus:
         print(f"  Feedback: {len(feedback_train)} train / {len(feedback_val)} val")
+
+    conv_train, conv_val = (
+        aux_train_val_split(conv_corpus, val_fraction=0.2)
+        if conv_corpus else ([], [])
+    )
+    aux_sent_val += conv_val
+    if conv_corpus:
+        print(f"  Conv:     {len(conv_train)} train / {len(conv_val)} val")
 
     # ── Connect to Tinker ──
     service = ServiceClient()
@@ -524,7 +541,17 @@ def train(new_run: bool = False):
     else:
         print("  No feedback datums")
 
-    all_train_datums = bible_train_datums + aux_train_datums_repeated + feedback_train_datums_repeated
+    print("Tokenising conversational train datums (both directions)…")
+    conv_train_datums, skip4 = make_datums_bidirectional(tokenizer, conv_train)
+    conv_train_datums_repeated = conv_train_datums * CONV_REPEAT
+    if conv_train_datums:
+        print(f"  {len(conv_train_datums)} datums ({skip4} skipped)")
+        print(f"  Conv train datums repeated {CONV_REPEAT}× → {len(conv_train_datums_repeated)} datums")
+    else:
+        print("  No conversational datums")
+
+    all_train_datums = (bible_train_datums + aux_train_datums_repeated
+                        + feedback_train_datums_repeated + conv_train_datums_repeated)
     print(f"\n  Total training datums: {len(all_train_datums)}")
 
     # ── Tokenise validation data ──
