@@ -5,15 +5,8 @@ __pycache__/
 .env
 
 # Intermediate build files
-bible_raw.txt
-lun_bawang_verses.csv
-web_english/
-web_english.zip
-t4t_english/
-t4t_english.zip
 
 # Training logs
-*.log
 
 # Runtime feedback files (written by serve.py, not for git)
 feedback.db

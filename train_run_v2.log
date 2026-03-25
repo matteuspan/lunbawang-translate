@@ -1,0 +1,47 @@
+Model:      Qwen/Qwen3-8B
+LoRA rank:  16
+Batch size: 8
+Epochs:     3
+Direction:  bidirectional (LB↔EN)
+
+Loading Bible corpus…
+  30251 verse pairs
+Loading auxiliary corpus…
+  937 aux entries (750 words, 177 sentences)
+Loading feedback corpus…
+  9 feedback entries (4 words, 5 sentences)
+
+Splitting data…
+  Bible:  27256 train / 2995 val (stratified by book)
+  Aux:    751 train / 186 val (144 words, 40 sentences in val)
+  Feedback: 8 train / 1 val
+
+Starting new training experiment…
+State saved → /Users/matteuspan/claude/raretranslator/tinker_state.json
+  Experiment ID: 87bb1a6d-99db-5bcd-96d2-4f48515328ed:train:0
+
+Fetching tokenizer…
+PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+  Vocab size: 151643
+
+Tokenising Bible train datums (both directions)…
+  54498 datums (14 skipped as too long)
+Tokenising aux train datums (both directions)…
+  1502 datums (0 skipped)
+  Aux train datums repeated 5× → 7510 datums
+Tokenising feedback train datums (both directions)…
+  16 datums (0 skipped)
+  Feedback train datums repeated 10× → 160 datums
+
+  Total training datums: 62168
+
+Tokenising Bible val datums (for val_loss)…
+  5988 Bible val datums
+
+Starting training from step 0…
+
+── Epoch 1/3  (7771 batches) ──
+  step     1 | train_loss 5.1116 | epoch 1 batch 1/7771
+  step     2 | train_loss 5.3916 | epoch 1 batch 2/7771
+  step     3 | train_loss 5.6409 | epoch 1 batch 3/7771
+  step     4 | train_loss 5.7893 | epoch 1 batch 4/7771
