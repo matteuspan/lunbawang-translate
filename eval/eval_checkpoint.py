@@ -3,6 +3,11 @@ Quick BLEU/exact-match eval for a single checkpoint.
 Usage: python3.13 eval_checkpoint.py [checkpoint_path]
 Defaults to the latest checkpoint in tinker_state.json.
 
+For checkpoints from a separate experiment (different base model, own state
+file), pass --state-file so results are labeled and written back correctly
+instead of being bucketed into the default v1/v0 labels:
+  python3.13 eval_checkpoint.py <checkpoint> --state-file tinker_state_inkling.json --label inkling-small
+
 Outputs (per run):
   eval_raw/<checkpoint>_<timestamp>.jsonl  — one JSON object per line, flushed
                                              after each row (crash-safe)
@@ -10,7 +15,7 @@ Outputs (per run):
 
 Run merge_evals.py to combine all JSONL files into eval_outputs.csv.
 """
-import os, csv, json, re, random, sys
+import os, csv, json, re, random, sys, argparse
 from datetime import datetime, timezone
 from pathlib import Path
 from openai import OpenAI
@@ -38,8 +43,27 @@ RUN1_FILE  = ROOT_DIR / "tinker_state_run1.json"
 state      = json.loads(STATE_FILE.read_text())
 run1_state = json.loads(RUN1_FILE.read_text()) if RUN1_FILE.exists() else {"model_id": "", "checkpoints": []}
 
-if len(sys.argv) > 1:
-    CHECKPOINT = sys.argv[1]
+_arg_parser = argparse.ArgumentParser(add_help=False)
+_arg_parser.add_argument("checkpoint", nargs="?", default=None)
+_arg_parser.add_argument("--state-file", type=str, default=None,
+                          help="Explicit state file for a separate experiment "
+                               "(e.g. tinker_state_inkling.json) — results are "
+                               "labeled and written back here instead of v0/v1")
+_arg_parser.add_argument("--label", type=str, default=None,
+                          help="Override the run label used in output filenames/CSVs")
+cli_args = _arg_parser.parse_args()
+
+if cli_args.state_file:
+    target_state_file = Path(cli_args.state_file)
+    if not target_state_file.is_absolute():
+        target_state_file = ROOT_DIR / target_state_file
+    ext_state = json.loads(target_state_file.read_text())
+    CHECKPOINT = cli_args.checkpoint or ext_state["checkpoints"][-1]["path"]
+    step = next((c["step"] for c in ext_state["checkpoints"] if c["path"] == CHECKPOINT), None)
+    run  = cli_args.label or target_state_file.stem.removeprefix("tinker_state_") or "custom"
+    STATE_FILE = target_state_file   # so the write-back block below updates the right file
+elif cli_args.checkpoint:
+    CHECKPOINT = cli_args.checkpoint
     step = next((c["step"] for c in state["checkpoints"] if c["path"] == CHECKPOINT), None)
     run  = "v1"
     if step is None:

@@ -744,7 +744,7 @@ def interactive_translate(direction="lb2en"):
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Lun Bawang ↔ English translator (Tinker/Qwen3-8B)")
+    parser = argparse.ArgumentParser(description="Lun Bawang ↔ English translator (Tinker)")
     parser.add_argument("--train",     action="store_true", help="Run fine-tuning")
     parser.add_argument("--new-run",   action="store_true", help="Start a fresh experiment (ignores existing checkpoints)")
     parser.add_argument("--translate", action="store_true", help="Interactive translation")
@@ -752,7 +752,20 @@ if __name__ == "__main__":
                         help="Translation direction (default: lb2en)")
     parser.add_argument("--text",      type=str, help="Single text to translate")
     parser.add_argument("--checkpoint", type=str, help="Specific checkpoint path")
+    parser.add_argument("--base-model", type=str, default=BASE_MODEL,
+                        help=f"Tinker base model to fine-tune (default: {BASE_MODEL})")
+    parser.add_argument("--state-file", type=str, default=None,
+                        help="Override tinker_state.json path — use a separate file per "
+                             "base model (e.g. tinker_state_inkling.json) so parallel "
+                             "experiments don't clobber each other's checkpoints")
+    parser.add_argument("--lora-rank", type=int, default=LORA_RANK,
+                        help=f"LoRA rank (default: {LORA_RANK})")
     args = parser.parse_args()
+
+    BASE_MODEL = args.base_model
+    LORA_RANK  = args.lora_rank
+    if args.state_file:
+        STATE_FILE = Path(args.state_file)
 
     if args.train:
         train(new_run=args.new_run)
