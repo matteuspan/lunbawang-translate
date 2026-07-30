@@ -31,3 +31,22 @@ You are using a model of type `inkling_mm_model` to instantiate a model of type 
   Vocab size: 199998
 
 Tokenising Bible train datums (both directions)…
+  54498 datums (14 skipped as too long)
+Tokenising aux train datums (both directions)…
+  1502 datums (0 skipped)
+  Aux train datums repeated 5× → 7510 datums
+Tokenising feedback train datums (both directions)…
+  42 datums (0 skipped)
+  Feedback train datums repeated 10× → 420 datums
+Tokenising conversational train datums (both directions)…
+  9572 datums (0 skipped)
+  Conv train datums repeated 3× → 28716 datums
+
+  Total training datums: 91144
+
+Tokenising Bible val datums (for val_loss)…
+  5988 Bible val datums
+
+Starting training from step 0…
+
+── Epoch 1/3  (11393 batches) ──
