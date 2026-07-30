@@ -60,3 +60,9 @@ Starting training from step 0…
   step     9 | train_loss 3.3065 | epoch 1 batch 9/11394
   step    10 | train_loss 3.1222 | epoch 1 batch 10/11394
   → Saving checkpoint at step 10…
+  val_loss: 3.9130  (train_loss: 3.1222)
+State saved → tinker_state_inkling_smoketest.json
+    Checkpoint: tinker://8642119f-4ca5-519e-a493-f0f539150971:train:0/sampler_weights/checkpoint-10
+
+✓ Reached max_steps=10 — stopping early for step-matched comparison.
+  Final checkpoint: tinker://8642119f-4ca5-519e-a493-f0f539150971:train:0/sampler_weights/checkpoint-10
