@@ -1,0 +1,75 @@
+Model:      thinkingmachines/Inkling-Small
+LoRA rank:  16
+Batch size: 8
+Epochs:     3
+Direction:  bidirectional (LB↔EN)
+Max steps:  10 (stops early for step-matched comparison)
+
+Loading Bible corpus…
+  30251 verse pairs
+Loading auxiliary corpus…
+  937 aux entries (750 words, 177 sentences)
+Loading feedback corpus…
+  26 feedback entries (13 words, 13 sentences)
+Loading conversational corpus (T4T dialogue verses)…
+  5982 conversational sentence pairs
+
+Splitting data…
+  Bible:  27256 train / 2995 val (stratified by book)
+  Aux:    751 train / 186 val (144 words, 40 sentences in val)
+  Feedback: 21 train / 5 val
+  Conv:     4786 train / 1196 val
+
+Starting new training experiment…
+Traceback (most recent call last):
+  File "/home/user/lunbawang-translate/train_translator.py", line 921, in <module>
+    train(new_run=args.new_run, max_steps=args.max_steps)
+  File "/home/user/lunbawang-translate/train_translator.py", line 640, in train
+    tc = service.create_lora_training_client(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/sync_only.py", line 75, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/public_interfaces/service_client.py", line 244, in create_lora_training_client
+    return self._create_lora_training_client_submit(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/public_interfaces/service_client.py", line 167, in _create_lora_training_client_submit
+    session_id = self.holder.get_session_id()
+                 ^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/public_interfaces/service_client.py", line 114, in holder
+    return self._get_session_holder()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/public_interfaces/service_client.py", line 91, in _get_session_holder
+    self._session_holder = InternalClientHolder(
+                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/internal_client_holder.py", line 221, in __init__
+    ).result()
+      ^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/public_interfaces/api_future.py", line 127, in result
+    return self._future.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/internal_client_holder.py", line 499, in _fetch_client_config
+    return await self.execute_with_retries(_once)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/internal_client_holder.py", line 680, in execute_with_retries
+    raise e
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/internal_client_holder.py", line 636, in execute_with_retries
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/lib/internal_client_holder.py", line 495, in _once
+    return await client.service.client_config(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/resources/service.py", line 105, in client_config
+    return await self._post(
+           ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/_base_client.py", line 1259, in post
+    return await self.request(cast_to, opts, stream=stream, stream_cls=stream_cls)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/tinker/_base_client.py", line 1060, in request
+    raise self._make_status_error_from_response(err.response) from None
+tinker.PermissionDeniedError: Host not in allowlist: tinker.thinkingmachines.dev. Add this host to your network egress settings to allow access.

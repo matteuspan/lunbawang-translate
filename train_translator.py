@@ -24,6 +24,12 @@ Requires:
   TINKER_API_KEY env var
   parallel_corpus.csv  (from build_parallel_corpus.py)
   aux_corpus.csv       (from build_aux_corpus.py — optional but recommended)
+
+  For --base-model thinkingmachines/* (Inkling family) only: `pip install
+  tml-renderers torch`. These models use a native TML chat format that's
+  incompatible with the generic HF chat template — tml-renderers renders
+  training/inference prompts the same way Tinker's serving endpoint does
+  server-side. Not required for Qwen/other HF-tokenizer models.
 """
 
 import os
@@ -169,6 +175,85 @@ def aux_train_val_split(corpus, val_fraction=0.2, seed=42):
 
 # ── Tokenisation + Datum construction ────────────────────────────────────────
 
+def _uses_tml_renderer(model_name: str) -> bool:
+    """thinkingmachines/* models (Inkling family) use a native TML chat format
+    (<|message_system|>, <|content_text|>, ... — see tml_renderers) that is
+    completely different from the generic HF chat template. Tinker's serving
+    endpoint renders with TML server-side, so training must match it exactly
+    or the fine-tuned model won't respond through that endpoint at all."""
+    return model_name.split(":")[0].startswith(("thinkingmachines/", "TML/"))
+
+
+_tml_renderer = None
+
+def _get_tml_renderer():
+    global _tml_renderer
+    if _tml_renderer is None:
+        from tml_renderers.v0 import Renderer
+        from tml_renderers.tokenizers import o200k_base_chat
+        _tml_renderer = Renderer(o200k_base_chat())
+    return _tml_renderer
+
+
+def _make_datum_tml(user_content, assistant_content, max_tokens):
+    from tml_renderers.chat import MessageList
+    from tml_renderers.tinker import training_example_to_tinker_model_input_and_weights
+
+    renderer = _get_tml_renderer()
+    messages = MessageList.from_oss_messages([
+        {"role": "system",    "content": SYSTEM_PROMPT},
+        {"role": "user",      "content": user_content},
+        {"role": "assistant", "content": assistant_content},
+    ])
+    examples = renderer.render_for_sft(messages)
+    if not examples:
+        return None
+
+    model_input, weights_unshifted = training_example_to_tinker_model_input_and_weights(examples[-1])
+    full_tokens = [t for chunk in model_input.chunks for t in chunk.tokens]
+
+    if len(full_tokens) > max_tokens or len(full_tokens) != len(weights_unshifted):
+        return None
+
+    # Same next-token shift as the HF path: weights_unshifted[i] says whether
+    # predicting token[i] counts toward loss, so after shifting, the weight
+    # for target_tokens[i] (= full_tokens[i+1]) is weights_unshifted[i+1].
+    input_tokens  = full_tokens[:-1]
+    target_tokens = full_tokens[1:]
+    weights       = weights_unshifted[1:]
+
+    return Datum(
+        model_input=ModelInput.from_ints(tokens=input_tokens),
+        loss_fn_inputs=dict(weights=weights, target_tokens=target_tokens),
+    )
+
+
+def _translate_one_tml(sampling_client, user_content, params):
+    """Sample one completion for a thinkingmachines/* model, rendering the
+    prompt with the native TML format (matching what Tinker's serving
+    endpoint applies server-side) and parsing the response back into
+    channel-tagged messages instead of regex-stripping <think> tags (Inkling
+    uses an Analysis/Final channel split, not literal <think> tags)."""
+    from tml_renderers.chat import MessageList, MessageChannel, Text
+    from tml_renderers.tinker import token_spans_to_tinker_model_input
+
+    renderer = _get_tml_renderer()
+    messages = MessageList.from_oss_messages([
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user",   "content": user_content},
+    ])
+    spans, parser = renderer.render_for_completion_with_effort(messages, 0.0)
+    prompt = token_spans_to_tinker_model_input(spans)
+    result = sampling_client.sample(prompt, num_samples=1, sampling_params=params).result()
+    parsed = parser.parse_tokens(list(result.sequences[0].tokens))
+    for msg in parsed:
+        if msg.channel_enum == MessageChannel.Analysis:
+            continue
+        if isinstance(msg.content, Text):
+            return msg.content.text.strip()
+    return ""
+
+
 def get_tokenizer(client, model_name):
     """Tinker's built-in get_tokenizer() needs the private `tml_tokenizers`
     package for thinkingmachines/* models. Fall back to loading the HF
@@ -209,6 +294,9 @@ def make_datum(tokenizer, source_text, target_text, direction="lb2en", max_token
     else:
         user_content = f"Translate to Lun Bawang:\n{source_text}"
         assistant_content = target_text
+
+    if _uses_tml_renderer(BASE_MODEL):
+        return _make_datum_tml(user_content, assistant_content, max_tokens)
 
     messages = [
         {"role": "system",    "content": SYSTEM_PROMPT},
@@ -343,6 +431,9 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
             f"Translate to English:\n{src}" if direction == "lb2en"
             else f"Translate to Lun Bawang:\n{src}"
         )
+        if _uses_tml_renderer(BASE_MODEL):
+            return _translate_one_tml(sc, user_content, params)
+
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user",   "content": user_content},
@@ -746,13 +837,18 @@ def translate(text: str, direction: str = "lb2en", checkpoint_path: str = None):
 
     service = ServiceClient()
     sc = service.create_sampling_client(checkpoint_path)
-    tokenizer = get_tokenizer(sc, BASE_MODEL)
 
     if direction == "lb2en":
         user_content = f"Translate to English:\n{text}"
     else:
         user_content = f"Translate to Lun Bawang:\n{text}"
 
+    params = SamplingParams(max_tokens=256, temperature=0.1, top_p=0.9)
+
+    if _uses_tml_renderer(BASE_MODEL):
+        return _translate_one_tml(sc, user_content, params)
+
+    tokenizer = get_tokenizer(sc, BASE_MODEL)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user",   "content": user_content},
@@ -762,8 +858,6 @@ def translate(text: str, direction: str = "lb2en", checkpoint_path: str = None):
     ))
 
     prompt = ModelInput.from_ints(tokens=prompt_tokens)
-    params = SamplingParams(max_tokens=256, temperature=0.1, top_p=0.9)
-
     result = sc.sample(prompt, num_samples=1, sampling_params=params).result()
     output_tokens = result.sequences[0].tokens
     return tokenizer.decode(output_tokens, skip_special_tokens=True).strip()
