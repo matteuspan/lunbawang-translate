@@ -314,6 +314,30 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
     sc_tokenizer = get_tokenizer(sc, BASE_MODEL)
     params = SamplingParams(max_tokens=128, temperature=0.1, top_p=0.9)
 
+    # ── Crash-safe resume cache ──
+    # A container/process restart mid-eval used to lose every translation done
+    # so far, forcing a full re-run. Cache each (eval_set, idx) result to CSV
+    # as it's produced, flushed immediately, and skip anything already cached.
+    cache_dir = Path(__file__).parent / "eval" / "val_bleu_cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    ck_slug = re.sub(r"[^A-Za-z0-9_\-]", "_", checkpoint_path)
+    cache_path = cache_dir / f"{ck_slug}.csv"
+
+    cached: dict[tuple[str, int], str] = {}
+    if cache_path.exists():
+        with open(cache_path, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                cached[(row["eval_set"], int(row["idx"]))] = row["hyp"]
+        if cached:
+            print(f"  Resuming from cache: {len(cached)} translations already done → {cache_path.name}")
+
+    cache_is_new = not cache_path.exists()
+    cache_file = open(cache_path, "a", newline="", encoding="utf-8")
+    cache_writer = csv.writer(cache_file)
+    if cache_is_new:
+        cache_writer.writerow(["eval_set", "idx", "direction", "input", "hyp", "ref"])
+        cache_file.flush()
+
     def _translate_one(src: str, direction: str) -> str:
         user_content = (
             f"Translate to English:\n{src}" if direction == "lb2en"
@@ -334,19 +358,28 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         raw = sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True)
         return re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
 
-    def _batch_translate(pairs, direction="lb2en"):
-        """Return (hypotheses, references) lists."""
+    def _batch_translate(pairs, direction="lb2en", eval_set="eval"):
+        """Return (hypotheses, references) lists. Skips pairs already cached
+        from a prior (crashed) run of this same checkpoint's eval."""
         src_idx = 0 if direction == "lb2en" else 1
         ref_idx = 1 if direction == "lb2en" else 0
         hyps, refs = [], []
-        for pair in pairs:
-            try:
-                hyp = _translate_one(pair[src_idx], direction)
-            except Exception as e:
-                print(f"  [warn] translate failed: {e}")
-                hyp = ""
+        for idx, pair in enumerate(pairs):
+            src, ref = pair[src_idx], pair[ref_idx]
+            key = (eval_set, idx)
+            if key in cached:
+                hyp = cached[key]
+            else:
+                try:
+                    hyp = _translate_one(src, direction)
+                except Exception as e:
+                    print(f"  [warn] translate failed: {e}")
+                    hyp = ""
+                cached[key] = hyp
+                cache_writer.writerow([eval_set, idx, direction, src, hyp, ref])
+                cache_file.flush()
             hyps.append(hyp)
-            refs.append(pair[ref_idx])
+            refs.append(ref)
         return hyps, refs
 
     # ── Bible val BLEU (lb→en, up to VAL_BLEU_BIBLE examples) ──
@@ -355,7 +388,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         rng = random.Random(42)
         sample = rng.sample(bible_val_pairs, min(VAL_BLEU_BIBLE, len(bible_val_pairs)))
         print(f"  Translating {len(sample)} Bible val examples (lb→en)…")
-        hyps, refs = _batch_translate(sample, "lb2en")
+        hyps, refs = _batch_translate(sample, "lb2en", "bible")
         bible_bleu = sb.corpus_bleu(hyps, [refs]).score
         print(f"  Bible val BLEU: {bible_bleu:.2f}")
 
@@ -363,7 +396,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
     dict_exact_pct = None
     if dict_val_pairs:
         print(f"  Translating {len(dict_val_pairs)} dictionary val examples (lb→en)…")
-        hyps, refs = _batch_translate(dict_val_pairs, "lb2en")
+        hyps, refs = _batch_translate(dict_val_pairs, "lb2en", "dict")
         n_correct = sum(
             h.lower().strip() == r.lower().strip()
             for h, r in zip(hyps, refs)
@@ -375,7 +408,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
     sent_bleu = sent_bleu_short = sent_bleu_long = None
     if sent_val_pairs:
         print(f"  Translating {len(sent_val_pairs)} sentence val examples (lb→en)…")
-        hyps, refs = _batch_translate(sent_val_pairs, "lb2en")
+        hyps, refs = _batch_translate(sent_val_pairs, "lb2en", "sentence")
         sent_bleu = sb.corpus_bleu(hyps, [refs]).score
         short_pairs = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) <= 10]
         long_pairs  = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) >  10]
@@ -383,6 +416,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         sent_bleu_long  = sb.corpus_bleu([p[0] for p in long_pairs],  [[p[1] for p in long_pairs]]).score  if long_pairs  else 0.0
         print(f"  Sentence val BLEU: {sent_bleu:.2f}  (short ≤10: {sent_bleu_short:.2f} | long >10: {sent_bleu_long:.2f})")
 
+    cache_file.close()
     return bible_bleu, dict_exact_pct, sent_bleu, sent_bleu_short, sent_bleu_long
 
 
