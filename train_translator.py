@@ -169,6 +169,18 @@ def aux_train_val_split(corpus, val_fraction=0.2, seed=42):
 
 # ── Tokenisation + Datum construction ────────────────────────────────────────
 
+def get_tokenizer(client, model_name):
+    """Tinker's built-in get_tokenizer() needs the private `tml_tokenizers`
+    package for thinkingmachines/* models. Fall back to loading the HF
+    tokenizer directly — Inkling's tokenizer files are public, and its
+    apply_chat_template output shape is already handled by _token_ids()."""
+    try:
+        return client.get_tokenizer()
+    except ModuleNotFoundError:
+        from transformers import AutoTokenizer
+        return AutoTokenizer.from_pretrained(model_name.split(":")[0])
+
+
 def _token_ids(result):
     """apply_chat_template may return a list or a BatchEncoding."""
     if isinstance(result, list):
@@ -299,7 +311,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
 
     print("  Computing val BLEU (creating sampling client)…")
     sc = service.create_sampling_client(checkpoint_path)
-    sc_tokenizer = sc.get_tokenizer()
+    sc_tokenizer = get_tokenizer(sc, BASE_MODEL)
     params = SamplingParams(max_tokens=128, temperature=0.1, top_p=0.9)
 
     def _translate_one(src: str, direction: str) -> str:
@@ -409,12 +421,14 @@ def load_state():
 
 # ── Training ──────────────────────────────────────────────────────────────────
 
-def train(new_run: bool = False):
+def train(new_run: bool = False, max_steps: int | None = None):
     print(f"Model:      {BASE_MODEL}")
     print(f"LoRA rank:  {LORA_RANK}")
     print(f"Batch size: {BATCH_SIZE}")
     print(f"Epochs:     {EPOCHS}")
     print(f"Direction:  bidirectional (LB↔EN)")
+    if max_steps:
+        print(f"Max steps:  {max_steps} (stops early for step-matched comparison)")
     print()
 
     # ── Load corpora ──
@@ -515,7 +529,7 @@ def train(new_run: bool = False):
         print(f"  Experiment ID: {info.model_id}")
 
     print("\nFetching tokenizer…")
-    tokenizer = tc.get_tokenizer()
+    tokenizer = get_tokenizer(tc, BASE_MODEL)
     print(f"  Vocab size: {tokenizer.vocab_size}")
 
     # ── Tokenise training data ──
@@ -591,7 +605,7 @@ def train(new_run: bool = False):
                 f"| epoch {epoch+1} batch {step+1}/{len(batches)}"
             )
 
-            if global_step % SAVE_EVERY == 0:
+            if global_step % SAVE_EVERY == 0 or global_step == max_steps:
                 # ── Save sampler weights (for inference) ──
                 print(f"  → Saving checkpoint at step {global_step}…")
                 result = tc.save_weights_for_sampler(f"checkpoint-{global_step}").result()
@@ -639,13 +653,24 @@ def train(new_run: bool = False):
                     api_key = os.environ.get("TINKER_API_KEY", "")
                     if eval_script.exists() and api_key:
                         env = {**os.environ, "TINKER_API_KEY": api_key, "PYTHONUNBUFFERED": "1"}
+                        eval_cmd = [sys.executable, str(eval_script), ckpt]
+                        if STATE_FILE.name != "tinker_state.json":
+                            # Separate experiment (e.g. alternate base model) — keep its
+                            # results out of the default v0/v1 buckets and state file.
+                            label = STATE_FILE.stem.removeprefix("tinker_state_")
+                            eval_cmd += ["--state-file", str(STATE_FILE), "--label", label]
                         subprocess.Popen(
-                            [sys.executable, str(eval_script), ckpt],
+                            eval_cmd,
                             env=env,
                             stdout=open(Path(__file__).parent / f"eval_run_step{global_step}.log", "w"),
                             stderr=subprocess.STDOUT,
                         )
                         print(f"    Full bidirectional eval launched → eval_run_step{global_step}.log")
+
+            if max_steps and global_step >= max_steps:
+                print(f"\n✓ Reached max_steps={max_steps} — stopping early for step-matched comparison.")
+                print(f"  Final checkpoint: {state['checkpoints'][-1]['path']}")
+                return
 
         # ── End-of-epoch checkpoint ──
         print(f"\nEpoch {epoch+1} done — saving checkpoint…")
@@ -687,7 +712,7 @@ def translate(text: str, direction: str = "lb2en", checkpoint_path: str = None):
 
     service = ServiceClient()
     sc = service.create_sampling_client(checkpoint_path)
-    tokenizer = sc.get_tokenizer()
+    tokenizer = get_tokenizer(sc, BASE_MODEL)
 
     if direction == "lb2en":
         user_content = f"Translate to English:\n{text}"
@@ -760,6 +785,9 @@ if __name__ == "__main__":
                              "experiments don't clobber each other's checkpoints")
     parser.add_argument("--lora-rank", type=int, default=LORA_RANK,
                         help=f"LoRA rank (default: {LORA_RANK})")
+    parser.add_argument("--max-steps", type=int, default=None,
+                        help="Stop after this many global steps (e.g. to match another "
+                             "run's step count for a fair comparison)")
     args = parser.parse_args()
 
     BASE_MODEL = args.base_model
@@ -768,7 +796,7 @@ if __name__ == "__main__":
         STATE_FILE = Path(args.state_file)
 
     if args.train:
-        train(new_run=args.new_run)
+        train(new_run=args.new_run, max_steps=args.max_steps)
     elif args.translate:
         if args.text:
             result = translate(args.text, args.direction, args.checkpoint)

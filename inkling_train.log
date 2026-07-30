@@ -1,0 +1,33 @@
+Model:      thinkingmachines/Inkling-Small
+LoRA rank:  16
+Batch size: 8
+Epochs:     3
+Direction:  bidirectional (LB↔EN)
+Max steps:  11500 (stops early for step-matched comparison)
+
+Loading Bible corpus…
+  30251 verse pairs
+Loading auxiliary corpus…
+  937 aux entries (750 words, 177 sentences)
+Loading feedback corpus…
+  26 feedback entries (13 words, 13 sentences)
+Loading conversational corpus (T4T dialogue verses)…
+  5982 conversational sentence pairs
+
+Splitting data…
+  Bible:  27256 train / 2995 val (stratified by book)
+  Aux:    751 train / 186 val (144 words, 40 sentences in val)
+  Feedback: 21 train / 5 val
+  Conv:     4786 train / 1196 val
+
+Starting new training experiment…
+State saved → tinker_state_inkling.json
+  Experiment ID: 430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0
+
+Fetching tokenizer…
+PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+You are using a model of type `inkling_mm_model` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+  Vocab size: 199998
+
+Tokenising Bible train datums (both directions)…
