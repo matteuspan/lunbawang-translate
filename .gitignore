@@ -11,3 +11,7 @@ __pycache__/
 # Runtime feedback files (written by serve.py, not for git)
 feedback.db
 feedback.jsonl
+
+# Actively-written training log (races with the per-turn git hook while a
+# background run is in progress) — committed as a finished snapshot instead
+inkling_train.log
