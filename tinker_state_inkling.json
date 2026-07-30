@@ -15,8 +15,13 @@
       "step": 1500,
       "path": "tinker://430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0/sampler_weights/checkpoint-1500",
       "val_loss": 0.605674
+    },
+    {
+      "step": 2000,
+      "path": "tinker://430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0/sampler_weights/checkpoint-2000",
+      "val_loss": 0.464042
     }
   ],
-  "steps": 1500,
-  "training_state_path": "tinker://430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0/weights/checkpoint-1500"
+  "steps": 2000,
+  "training_state_path": "tinker://430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0/weights/checkpoint-2000"
 }
