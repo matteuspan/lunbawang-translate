@@ -1,5 +1,12 @@
 {
   "model_id": "430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0",
-  "checkpoints": [],
-  "steps": 0
+  "checkpoints": [
+    {
+      "step": 500,
+      "path": "tinker://430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0/sampler_weights/checkpoint-500",
+      "val_loss": 1.315737
+    }
+  ],
+  "steps": 500,
+  "training_state_path": "tinker://430aa57c-f75d-5f7f-88c5-3dd9812efc1e:train:0/weights/checkpoint-500"
 }
