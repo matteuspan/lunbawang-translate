@@ -70,8 +70,13 @@
       "val_bleu_sentence_en2lb": 7.982,
       "val_bleu_sent_short_en2lb": 3.924,
       "val_bleu_sent_long_en2lb": 8.755
+    },
+    {
+      "step": 4500,
+      "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-4500",
+      "val_loss": 0.189856
     }
   ],
-  "steps": 4000,
-  "training_state_path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/weights/checkpoint-4000"
+  "steps": 4500,
+  "training_state_path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/weights/checkpoint-4500"
 }
