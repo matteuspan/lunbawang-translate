@@ -89,7 +89,12 @@
     {
       "step": 6000,
       "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-6000",
-      "val_loss": 0.124511
+      "val_loss": 0.124511,
+      "val_bible_bleu": 57.38,
+      "val_dict_exact_pct": 22.6,
+      "val_sent_bleu": 15.49,
+      "val_sent_bleu_short": 15.97,
+      "val_sent_bleu_long": 15.49
     }
   ],
   "steps": 6000,
