@@ -38,6 +38,7 @@ import csv
 import json
 import random
 import argparse
+import threading
 import numpy as np
 from pathlib import Path
 
@@ -61,6 +62,11 @@ VAL_BLEU_EVERY   = 2000     # additionally compute BLEU + exact-match every N st
 AUX_REPEAT       = 5        # repeat aux training datums N× relative to Bible datums
 VAL_LOSS_SAMPLES = 200      # number of Bible val datums for val_loss
 VAL_BLEU_BIBLE   = 50       # max Bible val pairs sampled for BLEU (lb→en only)
+VAL_BLEU_SENT    = 100      # max sentence val pairs sampled for BLEU — sent_val_pairs
+                             # has grown to 1000+ (mostly T4T conversational data that
+                             # postdates the v1 Qwen run) so evaluating all of it is both
+                             # slow and not a like-for-like comparison population
+VAL_BLEU_WORKERS = 10       # concurrent sampling calls — sequential was the dominant cost
 
 STATE_FILE      = Path(__file__).parent / "tinker_state.json"
 CORPUS_FILE     = Path(__file__).parent / "corpus" / "parallel_corpus.csv"
@@ -185,14 +191,18 @@ def _uses_tml_renderer(model_name: str) -> bool:
 
 
 _tml_renderer = None
+_tml_lock = threading.Lock()  # guards the renderer singleton + its (uncertain
+                               # thread-safety) native calls; the network .sample()
+                               # call itself stays outside the lock for concurrency
 
 def _get_tml_renderer():
     global _tml_renderer
-    if _tml_renderer is None:
-        from tml_renderers.v0 import Renderer
-        from tml_renderers.tokenizers import o200k_base_chat
-        _tml_renderer = Renderer(o200k_base_chat())
-    return _tml_renderer
+    with _tml_lock:
+        if _tml_renderer is None:
+            from tml_renderers.v0 import Renderer
+            from tml_renderers.tokenizers import o200k_base_chat
+            _tml_renderer = Renderer(o200k_base_chat())
+        return _tml_renderer
 
 
 def _make_datum_tml(user_content, assistant_content, max_tokens):
@@ -242,10 +252,15 @@ def _translate_one_tml(sampling_client, user_content, params):
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user",   "content": user_content},
     ])
-    spans, parser = renderer.render_for_completion_with_effort(messages, 0.0)
+    # Native (Rust) renderer/parser calls are of uncertain thread-safety, so
+    # they're serialized; the slow network .sample() call stays unlocked so
+    # concurrent callers still overlap on the part that actually dominates cost.
+    with _tml_lock:
+        spans, parser = renderer.render_for_completion_with_effort(messages, 0.0)
     prompt = token_spans_to_tinker_model_input(spans)
     result = sampling_client.sample(prompt, num_samples=1, sampling_params=params).result()
-    parsed = parser.parse_tokens(list(result.sequences[0].tokens))
+    with _tml_lock:
+        parsed = parser.parse_tokens(list(result.sequences[0].tokens))
     for msg in parsed:
         if msg.channel_enum == MessageChannel.Analysis:
             continue
@@ -451,26 +466,42 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
 
     def _batch_translate(pairs, direction="lb2en", eval_set="eval"):
         """Return (hypotheses, references) lists. Skips pairs already cached
-        from a prior (crashed) run of this same checkpoint's eval."""
+        from a prior (crashed) run of this same checkpoint's eval. Translates
+        concurrently — sequential calls were the dominant cost of this eval."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         src_idx = 0 if direction == "lb2en" else 1
         ref_idx = 1 if direction == "lb2en" else 0
-        hyps, refs = [], []
+
+        hyps = [None] * len(pairs)
+        refs = [None] * len(pairs)
+        to_fetch = []
         for idx, pair in enumerate(pairs):
             src, ref = pair[src_idx], pair[ref_idx]
+            refs[idx] = ref
             key = (eval_set, idx)
             if key in cached:
-                hyp = cached[key]
+                hyps[idx] = cached[key]
             else:
-                try:
-                    hyp = _translate_one(src, direction)
-                except Exception as e:
-                    print(f"  [warn] translate failed: {e}")
-                    hyp = ""
-                cached[key] = hyp
-                cache_writer.writerow([eval_set, idx, direction, src, hyp, ref])
-                cache_file.flush()
-            hyps.append(hyp)
-            refs.append(ref)
+                to_fetch.append((idx, src))
+
+        def _do(idx, src):
+            try:
+                return idx, src, _translate_one(src, direction)
+            except Exception as e:
+                print(f"  [warn] translate failed: {e}")
+                return idx, src, ""
+
+        if to_fetch:
+            with ThreadPoolExecutor(max_workers=VAL_BLEU_WORKERS) as ex:
+                futures = [ex.submit(_do, idx, src) for idx, src in to_fetch]
+                for fut in as_completed(futures):
+                    idx, src, hyp = fut.result()
+                    hyps[idx] = hyp
+                    cached[(eval_set, idx)] = hyp
+                    cache_writer.writerow([eval_set, idx, direction, src, hyp, refs[idx]])
+                    cache_file.flush()
+
         return hyps, refs
 
     # ── Bible val BLEU (lb→en, up to VAL_BLEU_BIBLE examples) ──
@@ -495,11 +526,13 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         dict_exact_pct = n_correct / len(dict_val_pairs) * 100
         print(f"  Dict val exact match: {dict_exact_pct:.1f}% ({n_correct}/{len(dict_val_pairs)})")
 
-    # ── Sentence val BLEU (lb→en) ──
+    # ── Sentence val BLEU (lb→en, up to VAL_BLEU_SENT examples) ──
     sent_bleu = sent_bleu_short = sent_bleu_long = None
     if sent_val_pairs:
-        print(f"  Translating {len(sent_val_pairs)} sentence val examples (lb→en)…")
-        hyps, refs = _batch_translate(sent_val_pairs, "lb2en", "sentence")
+        rng_sent = random.Random(42)
+        sent_sample = rng_sent.sample(sent_val_pairs, min(VAL_BLEU_SENT, len(sent_val_pairs)))
+        print(f"  Translating {len(sent_sample)} sentence val examples (lb→en)…")
+        hyps, refs = _batch_translate(sent_sample, "lb2en", "sentence")
         sent_bleu = sb.corpus_bleu(hyps, [refs]).score
         short_pairs = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) <= 10]
         long_pairs  = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) >  10]
@@ -778,7 +811,7 @@ def train(new_run: bool = False, max_steps: int | None = None):
                     api_key = os.environ.get("TINKER_API_KEY", "")
                     if eval_script.exists() and api_key:
                         env = {**os.environ, "TINKER_API_KEY": api_key, "PYTHONUNBUFFERED": "1"}
-                        eval_cmd = [sys.executable, str(eval_script), ckpt]
+                        eval_cmd = [sys.executable, str(eval_script), ckpt, "--base-model", BASE_MODEL]
                         if STATE_FILE.name != "tinker_state.json":
                             # Separate experiment (e.g. alternate base model) — keep its
                             # results out of the default v0/v1 buckets and state file.
