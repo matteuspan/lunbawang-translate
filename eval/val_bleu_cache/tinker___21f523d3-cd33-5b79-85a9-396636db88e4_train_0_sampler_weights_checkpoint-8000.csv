@@ -89,3 +89,149 @@ dict,30,lb2en,necan,leave,(to leave something behind)
 dict,33,lb2en,neh,that (near the speaker),that
 dict,38,lb2en,meran,correct (your answer is correct),lite
 dict,39,lb2en,mesiri,correct (your answer is correct),straight (ahead)
+dict,45,lb2en,lawid,salmon,fish
+dict,49,lb2en,tepun cur,grandfather,grandmother
+dict,47,lb2en,liwa,chicken,"nine, 9"
+dict,42,lb2en,mesusa niat,sad,sad
+dict,46,lb2en,lati,farm,rice paddy
+dict,44,lb2en,limeh,snake,"five, 5"
+dict,40,lb2en,do pekak,tomorrow,good morning
+dict,43,lb2en,nered,leech,old
+dict,41,lb2en,ninger,hear,listening
+dict,48,lb2en,bang,"in, inside, within",in
+dict,50,lb2en,megai,expensive,always
+dict,52,lb2en,ayat,verse,words
+dict,59,lb2en,madu,honey,forehead
+dict,53,lb2en,fa,a few,water
+dict,55,lb2en,pingit,climbing,cheek
+dict,51,lb2en,bata' langit,rainbow,blue
+dict,54,lb2en,todo,again,sit
+dict,56,lb2en,mekatu,kind,good
+dict,58,lb2en,lubed,around,return (from somewhere)
+dict,57,lb2en,sayur,vegetable,vegetable
+dict,68,lb2en,mait,pain,sick
+dict,69,lb2en,nerung,cook,put
+dict,60,lb2en,umak,oil,come up
+dict,65,lb2en,bua' ticu,finger,fingers
+dict,63,lb2en,mucih,few,late
+dict,66,lb2en,kuman,eat,eat
+dict,62,lb2en,nanak,cook,born
+dict,64,lb2en,metutun,sharp,shallow
+dict,67,lb2en,pudut,again,building
+dict,61,lb2en,nehrninger,snake,listen
+dict,72,lb2en,fa,pot,1) drink; 2) river
+dict,74,lb2en,ba ulai,very slow,late
+dict,76,lb2en,bawang rayeh,city,town
+dict,77,lb2en,rat yapeh,where,from
+dict,75,lb2en,merita,pain,tall
+dict,78,lb2en,luk sulad,chili,last (the last one)
+dict,79,lb2en,ding rumah,inside the house,family
+dict,71,lb2en,nalap,take,1) accept; 2) take
+dict,70,lb2en,meno,again,steal
+dict,73,lb2en,pad,"for, to",the same
+dict,83,lb2en,bulu mateh,eyebrow,eyebrow
+dict,86,lb2en,ngirup,drink,drink
+dict,82,lb2en,peped/,flat,end
+dict,84,lb2en,Ame’ kiteh,Let's go,we go
+dict,85,lb2en,sigapung,hide,hide
+dict,87,lb2en,lawid,salmon,fish
+dict,88,lb2en,lisun,leech,finger nail
+dict,80,lb2en,dat,bad,ugly
+dict,81,lb2en,apo,grandfather,roof
+dict,89,lb2en,peburi,"speak, talk",Speak
+dict,99,lb2en,ide’,around,who
+dict,91,lb2en,bata langit,rainbow,blue
+dict,93,lb2en,sesuut,a little,a few
+dict,98,lb2en,sigageh,monkey,temporary
+dict,96,lb2en,mada’,tell,tell
+dict,95,lb2en,boastful,mana’,mesido’
+dict,92,lb2en,bata don,white,green
+dict,90,lb2en,kareb,when,when
+dict,94,lb2en,irang,leech,sloop
+dict,97,lb2en,dat taga,ugly,ugly
+dict,107,lb2en,lipen,ear,tooth
+dict,105,lb2en,alung,nose,valley
+dict,109,lb2en,dei,they,there
+dict,101,lb2en,luk kanen/nuba’,food,food
+dict,100,lb2en,met uluh,headache,headache
+dict,103,lb2en,ara,do not want to,don’t want
+dict,104,lb2en,batu rayeh,rock,rock
+dict,106,lb2en,langen,ear,arm
+dict,108,lb2en,maya’ negku,follow me,follow me
+dict,102,lb2en,met kated,stomachache,backache
+dict,114,lb2en,bua’ kukud,banana,toe
+dict,113,lb2en,rengeb,rainy,cliff
+dict,115,lb2en,sapeh,which one,which
+dict,110,lb2en,mudur/tuped/umak,stand,arise
+dict,111,lb2en,uluh,head,head
+dict,118,lb2en,talau,wild,barking deer
+dict,119,lb2en,mepad,similar,unchange
+dict,112,lb2en,masang,tomorrow,"fixing, switch on"
+dict,117,lb2en,suit,white,bird
+dict,116,lb2en,Iko mesido’,You are angry,you are very proud
+dict,123,lb2en,ame dei,come here,go(there)
+dict,121,lb2en,batek,stomach,stomach
+dict,128,lb2en,dapar,cooking,foot
+dict,129,lb2en,abpuk,short,hair
+dict,126,lb2en,awang,spouse,joy
+dict,124,lb2en,becuk,monkey,short tail monkey
+dict,122,lb2en,ngitek,close,shut(door)
+dict,127,lb2en,tebubpun,gather together,worship service
+dict,120,lb2en,mula’,many,many
+dict,125,lb2en,kuman,eat,Eat
+dict,131,lb2en,puet,navel,buttock
+dict,138,lb2en,Dane,Dan,those
+dict,130,lb2en,kated,back,back
+dict,137,lb2en,nguab,add,yawn
+dict,135,lb2en,Pekatu,solid,join together
+dict,133,lb2en,pelengit,ear,sit close to one another
+dict,132,lb2en,sapi,cow,cow
+dict,134,lb2en,laga,chase each other,"pillow, cushion"
+dict,136,lb2en,Tuda’,how many,how many/much?
+dict,145,lb2en,Migu',shy,Shameful
+dict,143,lb2en,denganak,siblings,siblings
+dict,140,lb2en,mengered,dry,old
+dict,141,lb2en,gio,"talk, speak",move the body
+dict,144,lb2en,Meriruh,Merari,laugh
+dict,142,lb2en,buro,run,flee
+dict,139,lb2en,usu,dog,chase
+sentence,3,lb2en,"""Tuhan nemudut negku pun-pun, atun ratnan kekamenNeh luk mon.","Yahweh created me at the beginning of his work, before his deeds of old.","Yahweh created me, wisdom, when he began to create the world; he created me to do my work before he created anything else."
+sentence,1,lb2en,pad Ui nemaré neneh kuan lun Asur luk inanneh mawa idi luk pianneh.,I will give him to the king of Babylon for his land which he has coveted.,"So I allowed the Assyrian soldiers, whom she wanted to have sex with, to capture her."
+sentence,8,lb2en,"Idi Tuhan nengecuk neneh, kebalaNeh, ""Amée' iko dengan amung tueh luk namu, idi muit nelun Israil rat nelun Midian. Ui ini luk ngecuk namu.”","Yahweh looked at him and said, “Go in this your might, and save Israel from the hand of Midian. Haven’t I sent you?”","Then Yahweh turned toward him and said, “I will give you strength to enable you to rescue the Israelis from the people of Midian. I am sending you to do that!”"
+sentence,5,lb2en,"Denak-denak Yésus nepapu' nedeh, keburi'Neh, ""Awang kuan muyuh."" Idi ideh iné' ngapel kukudNeh idi netekeradung sembayang Neneh.","Jesus met them and said, “Peace be with you!” They came and took hold of his feet and worshiped him.","Suddenly, as they were running, Jesus appeared to them. He said, “Greetings!” The women came close to him. They knelt down and clasped his feet and worshipped him."
+sentence,9,lb2en,"Iamo' arangdeh inan luk nepebala, ""Ieh negedo' mateh lun mebuser ineh. Ngudehké Ieh na nengedo' ni Lasarus pad ieh na naté?”","But some of them said, “He who opened the eyes of him who was blind, couldn’t he have also done something that Lazarus wouldn’t have died?”","But some others said, “He enabled a blind man to see. So ◄he should have been able to heal this man so that he did not die!/why did he not heal this man so that he did not die?► RHQ”"
+sentence,2,lb2en,"Idi kebala Tuhan neneh, ""Ui ini Tuhan luk nenated namu remuat rat bang bawang Ur Kasdim, pad maré tana' ini ku babpatmu ruked-ruked.”","Yahweh said to Abram, “I am Yahweh who brought you out of Ur of the Chaldees, to give you this land to inherit it.”","Yahweh also said to him, “I am Yahweh. I am the one who brought you from Ur in Chaldea land. I brought you here to give you this land to possess.”"
+sentence,4,lb2en,"Idi kebala Musa, ""Pad pianmu. Na tu-tu iko miak nier negku peh!""","Moses said, “You must let me alone, for you have tested me, and you have not accepted me as your servant. If you will not let me go, I will kill you with the sword.”","Moses/I replied, “You are correct! You will never see me SYN again!”"
+sentence,6,lb2en,"Kebala Tuhan, ""Lun Israil na ugka' nganau' sala' pa kiungKu rat kareb ideh nenganau' sala' déi' Gibia. Idi ideh miak pebunu' déi' Gibia teh.","Yahweh said, “The children of Israel will again play the prostitute with me, and the children of Judah will also be false to me,” says Yahweh.","You people of Israel, ever since your ancestors did evil things at Gibeah, you have continued to sin. When the people at PRS Gibeah did evil things, the result was a war in which thousands of people died."
+sentence,0,lb2en,"Idi luk kedueh iné' neneh, keburi'neh, 'O tuan, sebalad amasmu ineh pangeh mangun ku limeh balad.'","Then the servant who had received the one talent came and said, ‘Lord, I knew you to be a hard man, reaping where you didn’t sow, and gathering where you didn’t scatter.","Then the second servant came and said, ‘Sir, with your one coin I have earned five more coins!’"
+sentence,7,lb2en,"Idi Allah nemaré peruan kuan didueh. Idi kebala Allah nedidueh, ""Do' medueh mula' anak, pad inul medueh manu' tana' ini idi ngimet neneh, idi ngimet amung-amung lawid, idi suit, idi pung luk meliput, luk rayeh idi luk isuut teh.”","God blessed them. God said to them, “Be fruitful, multiply, fill the earth, and subdue it. Have dominion over the fish of the sea, over the birds of the sky, and over every living thing that moves on the earth.”","God blessed them, saying, “Produce many children, who will live all over the earth and rule over it. I want them to rule over the fish and the birds and over all creatures that scurry across the ground.”"
+sentence,10,lb2en,"Idi ini bala luk matu: ""Kudeng tau pangeh naté pad-pad denganNeh. tau miak mulun pad-pad denganNeh.","This saying is trustworthy: “For if we died with him, we will also live with him.","Endure everything as you remember that these words that we all say/sing (OR, that we teach people) are trustworthy: Since we have stopped behaving as we did in the past, as though we died when he died, we shall also live with him."
+sentence,17,lb2en,"""Do' mada' kuan amung lun Israil kudeng ini: Kudeng selemulun pejani' maré raga seburur lemulun kuan Tuhan, do' maya' raga luk litep ini:","“Tell the Israeli people this: ‘If someone solemnly promises to give to me the amount of money that a person is worth,","“Tell the Israeli people that this is what I am saying to them: If anyone solemnly promises to dedicate another person to work solely for me, the person who is dedicated to me is allowed to be free from having to do that by someone paying to the priest a fixed amount of money. The money that is given must be calculated by comparing it with the official pieces of silver in the Sacred Tent."
+sentence,12,lb2en,"Kebala Isak, ""Siruh, ui pangeh mengered; idi na ui kali' idan karebku maté.","Isaac said, “Behold, now I am old. I don’t know the day of my death.","and said to him, “My son?” Esau replied, “Here I am!”"
+sentence,16,lb2en,"""Idi do' nganau' aceh dicing ratnan kibung luk do', idi kibung pu luk inuper, idi luk ayu bata' melaco, sia' merirem, idi sia' melidang, tibaruh do'-do' ku melaikat karub.","“Tell them to make a curtain of fine twined linen, and blue, purple, and scarlet yarn. They shall make it with cherubim, the work of a skillful workman.","“Tell them to make a curtain from fine linen. A skilled craftsman must embroider it with blue, purple, and red yarn/thread, making designs to represent the winged creatures that are above the chest."
+sentence,13,lb2en,"""Tuhan nengecuk namu mabpat tana' ineh kuan lun Israil ku babpatdeh dengan nala' udi. Idi teh Tuhan nengecuk namu maré babpat Selopehad luk kinanak kai kuan anak-anakneh luk decur.",Yahweh commanded Moses to give the land of Canaan to the children of Israel for an inheritance by lot; and Yahweh commanded Moses to give the inheritance of Zelophehad our brother to his daughters.,"They said to Moses/me, “Yahweh commanded you, our leader, to apportion the land to the Israeli tribes by throwing ◄lots/stones that have been marked► to decide which group would get which area. Yahweh also commanded you to give the land that belonged to our fellow Israeli Zelophehad to his daughters."
+sentence,15,lb2en,"""Idi rat arang amung bawang luk barén muyuh nelun Liwi, do' inan anem bawang luk inan sigapung, pad lemulun luk ngaté lemulun baken dengan rungen, miak buro amé' déi'. Idi baken ratnan ineh do' muyuh maré apat ngepulu' dueh bawang baruh teh.","“‘Of the cities which you shall give to the Levites, there shall be six cities of refuge, which you shall appoint for the man slayer to flee to. To these you shall add forty-two cities.","“Six of the cities that you give to the descendants of Levi will be cities to which people can run to be safe. If someone accidentally kills someone else, the one who killed that person may run to one of those cities to be safe."
+sentence,11,lb2en,"Idi kebala melaikat luk pun-pun ineh inan melaikat luk baken, ""Do' upun amé' mada' anak adi' luk ngimet luk pinari ineh, kebalamu, 'Aleg nganau' alad bawang Yerusalim, ngaceku mula' lemulun idi sapi' pana' miak macing bang bawang neh.","Then the angel who had been talking to me said to me, “Proclaim this message: ‘This is what Yahweh says: “I will be a wall of fire all around Jerusalem, and I will be the glory within it.”’","That other angel said to him, “Run and tell that young man that some day there will be very many people and livestock in Jerusalem, with the result that there will be too many to live inside the city walls; many will live outside the walls."
+sentence,19,lb2en,"Idi kebala Akis kuan amung lun tarehneh, ""Naké muyuh kali' lun ini meruden, ngudeh muyuh nguit neneh amé' negku?","Then Achish called David and said to him, “As Yahweh lives, you are upright, and your going out and your coming in with me in the army is good in my sight; for I have not found evil in you from the day of your coming to me to this day. Nevertheless the lords don’t favor you.","Then King Achish said to his men, “Look at this man! He is acting like an insane man! Why have you brought him to me?"
+sentence,26,lb2en,Ngadan ku Balang,The name of the tiger is,My name is Balang
+sentence,23,lb2en,"Idi kebala Tuhan negku, ""Iko miak nier kekamendeh luk meluun dat ratnan ineh.”","Then Yahweh said to me, “You will see things that are even worse than that!”","He also said, “But you will see things that are even more detestable!”"
+sentence,25,lb2en,"Idi kebala Yésus nelun duken ineh, ""Do' manu' amung rubi ini ku abpa'."" Idi ideh nenganau' abpa' pad macing mepanu'.","Jesus said to the servants, “Fill the jars with water.” So they filled them to the brim.","Jesus said to the servants, “Fill the jars with water!” So they filled the jars to the brim."
+sentence,24,lb2en,"""Mesusa' kuan muyuh lun nguyut luk mebuser, luk pebala, 'Idé-idé luk pebulung ku Ruma' Allah ineh, aganeh mo', iamo' idé-idé luk pebulung ku amas luk bang Ruma' Allah, ieh luk mabeh bulung ineh peh.'","“Woe to you, blind guides, who say, ‘Whoever swears by the temple, it is nothing; but whoever swears by the gold of the temple, he is obligated.’","You are fools, and you are like people who are blind MET! The gold that is in the Temple is important, but the Temple is even more important RHQ, because it is the Temple that the gold is in that sets the gold apart for a special use for God."
+sentence,20,lb2en,"Idi amung-amung anakneh luk deléi idi decur nacing ngubuk neneh. Iamo' na ieh sikal buken, kebalaneh, ""Ngaceku anakku ini na idi, ui temido pad macing bang su inan até."" Idi kudeng ineh tangi' tamanneh neneh.","All his sons and daughters rose up to comfort him, but he refused to be comforted. He said, “For I will go down to Sheol to my son in mourning.” His father wept for him.","All of his children came to try to comfort him, but he did not pay attention to what they said. He said, “No, I will still be mourning/crying when I die and go to be with my son.” So Joseph’s father continued to cry because of what had happened to his son."
+sentence,21,lb2en,"""Mada' Arun idi anak-anakneh ratnan dalan baré ngaceku sala' ineh: ""Baré ngaceku sala' kereten pa kiung Tuhan, iring bubpun su luk inan ngeret baré luk sabpen. Ieh ineh baré luk meluun ligan.","“Speak to Aaron and to his sons, saying, ‘This is the law of the sin offering: in the place where the burnt offering is killed, the sin offering shall be killed before Yahweh. It is most holy.",“Tell Aaron and his sons: These are the regulations concerning the offerings that people must bring to me so that I will forgive the people for the sins they have committed:
+sentence,14,lb2en,"Iamo' Allah nepebala neneh, 'O bacé! Malem ini teh ulunmu miak lapen rat namu; idéké luk ngalap amung binaweh luk dinugmu ineh?”","But God said to him, ‘You foolish one, tonight your soul is required of you. The things which you have prepared—whose will they be?’","But God said to him, ‘You foolish man! Tonight you will die! ◄Then all the goods you have saved up for yourself will belong to someone else, not to you!/Do you think that you will benefit from all that you have stored up for yourself?► RHQ’”"
+sentence,22,lb2en,"Ideh luk miak semuet bang Ruma'Ku, ngakem iring bubpunKu, idi nguyut sembayang bang Ruma' Allah!","These are those who will come near to Yahweh’s altar, to minister to Yahweh, to be his servants, and to call the name of Yahweh. To minister to him, and to serve him, to keep his ordinances, and to do the work of Yahweh’s house.",They are the only ones who are permitted to enter my temple. They are the only ones who are permitted to come near my altar to serve me and do what I tell them to do.
+sentence,18,lb2en,"""Idi kudeng aceh lemulun maré inan Tuhan aceh babpat ratnan tana'neh, idi do' raganeh maya' kinula' pimaraneh, ieh ineh limeh ngepulu' gatang pimara, limeh ngepulu' balad pirak.","“‘If he dedicates a field to Yahweh, then your valuation shall be according to the seed needed for it. A homer of barley seed shall be valued at fifty shekels of silver.","‘If someone dedicates to me some of the property that belongs to him and his family, its value will be determined by the number of bushels of seed that will be needed to plant seeds on that land: Its value will be ten pieces of silver for each bushel of seed."
+sentence,33,lb2en,"Idi kebala Tuhan negku, 'Nalan iko, ngaceku Ui sikal ngecuk namu amé' mado kuan lun pupu baken.' “","Then Yahweh said to me, ‘Get up and go to the land that I will show to you.","But the Lord said to me, ‘No, do not stay here! Leave Jerusalem, because I am going to send you (sg) far away from here to non-Jewish people!’”"
+sentence,30,lb2en,"Idi kebala tamanneh, 'O anakku, iko megéi' idi denganku, idi amung-amung babpatku ineh mangun ku babpatmu.","The father said to him, ‘Son, you are always with me, and all that is mine is yours.","But his father said to him, ‘My son, you have always been with me, and all my property that I did not give to your brother has been yours."
+sentence,31,lb2en,"""Do' iko ngecuk nelun Israil nguit amé' namu umau saitun luk meluun do' ku umau lapung, pad lapung ineh miak uen nutud anid alem.","“Command the children of Israel, that they bring to you pure olive oil beaten for the light, to cause the lamps to burn continually.","They must put the lampstand outside of the curtain which is in front of the sacred chest which contains the stone slabs on which I have written my commandments. Aaron must take care of the lamps. After he dies, his descendants must do this work. The lamps are to burn every night, from evening until morning. The Israeli people must obey this regulation throughout all future generations.”"
+sentence,34,lb2en,"Idi kebala Laban ni Yakub ""Na petulu iko ngakem kuanku mo'-mo' sagan tu pana' iko pupuku. Anun luk pianmu ku tabparmu?”","Laban replied, “Jacob, because you are my nephew, I will not allow you to work for me without being paid. But tell me, what do you want me to pay you?”",Laban said to him “◄You should not work for me for nothing just because you are a relative of mine!/Why should you work for me for nothing just because you are a relative of mine?► RHQ Tell me how much you want me to pay you.”
+sentence,27,lb2en,"""O kinanak-kinanakku, luk inul Ibrahim, idi amung-amung pupu baken luk idi ieni luk sembayang nan Allah; kuan tau bala ulun ini pangeh nacing.","“Brothers, children of the family of Abraham, and those who among you fear God, to you is the word of this salvation sent out.","“Fellow Israelis, you who are descendants of Abraham, and you non-Jewish people who also worship God, please listen! It is to all of us that God has sent the message about how he saves people."
+sentence,28,lb2en,"Kebala Tuhan ratnan Yoahas Yosia, luk nengelibal tamanneh mangun ku raca' Yahuda, ""Ieh pangeh nenalan rat ieni idi na miak lemubed teh.",Yahweh said this about Jehoahaz the son of King Josiah: “He has died and will not return to his country MTY.,"Jehoahaz became king after his father, King Josiah, died, but Jehoahaz indeed was captured and taken to Babylonia. And this is what Yahweh says about him: “He also will never return to Judah."
+sentence,29,lb2en,"Idi keburi' lun Beniamin, ""Ideh pangeh nelaya' mepad kudeng luk atun teh!"" Iamo' kebala lun Israil, ""Do' tau buro idi nayan nedeh rat bang bawangdeh pad macing dalan rayeh.”","The children of Benjamin said, “They are struck down before us, as at the first.” But the children of Israel said, “Let’s flee, and draw them away from the city to the highways.”","Then while the men of Gibeah were running out of the city toward them, the other 10,000 Israelis came out from the places where they had been hiding, west of Gibeah. They were men who had come from all parts of Israel. There was a very big battle. But the men of the tribe of Benjamin did not know that they were about to suffer a disastrous defeat."
+sentence,32,lb2en,"Iamo' keburi' Yésus ni Yahya, idi kuan anak sekola'Neh luk baken, ""Aleg mebpeng neneh, ngaceku lemulun luk na sikal metueh rat nemuyuh, ieh ineh lun dengan muyuh.”","But Jesus said to John and the others, “Do not tell him not to do that! If he is not one of us who is trying to expel demons, he is on Satan’s side, and he will soon be helping us to expel demons.”","When it was almost time for God to take Jesus up to heaven, he firmly resolved to go to Jerusalem."
+sentence,37,lb2en,"Kareb Yésus pangeh nesemuet bang ruma' idi anak-anak sekola'Neh nengitun Neneh dengan lulem, keburi'deh, ""Anunké punneh kai ini na miak nala' ada' ineh?”","When he had entered into the house, his disciples asked him privately, “Why couldn’t we cast it out?”","He said to them, “You can expel this kind of evil spirit only by your praying that God will give you the power to do it. There is no other way that you can expel them.”"
+sentence,42,lb2en,"""Do' iko mada' kuan amung lun Israil kudeng ini: Do' muyuh meligan, ngaceku Ui ini Tuhan Allah muyuh luk meligan.","“Speak to all the congregation of the children of Israel, and tell them, ‘You shall be holy; for I, Yahweh your God, am holy.","“Speak to all the people of Israel and tell them this: You must be holy, because I, Yahweh your God, am holy, and I want you to be like me."
+sentence,39,lb2en,"Iamo' Elieser Dodawa rat Marisa ineh neperiteteng ni Yosapat kebalaneh, ""Ngaceku iko pangeh neperurum ni Ahasia, idi Tuhan miak ngusag luk pangeh inau'mu ineh."" Idi amung kapal ineh nekarem, kareb nateh nenalan amé' déi' Tarsis.","But Jehoshaphat refused to go. So the king of Israel, Jehoram, and the king of Edom went to attack the army of the king of Moab.","Eliezer the son of Dodavahu from Mareshah city warned Jehoshaphat. He said, “You have made an alliance with Ahaziah, who is a wicked king. Therefore, Yahweh will destroy the ships that your workers have made.” And the ships were wrecked, and were not able to sail to other countries."
+sentence,35,lb2en,"""Iamo' ngerawé ratnan anakneh, Ieh mano idi ngaté lemulun, idi nganau'","But if he fathers a son who is violent, who sheds blood, and does any one of these things to a brother","But suppose that man has a son who acts violently, who murders people and does any of these other things, even though his father has not done any of them:"
+sentence,43,lb2en,"Bang luk sinierku kareb medacem ineh, idi ui nenier luk kudeng ayu lemulun. Idi Ieh amé'-amé' muneng bang laput, idi Ieh iné' matun Neneh luk mulun ruked-ruked, idi Ieh kinuyut amé' pa kiungNeh.","I saw in the night visions, and behold, there came with the clouds of the sky one like a son of man. He came to the Ancient of Days, and they brought him near before him.","While I continued to see the vision that night, I saw someone who resembled a human being. He was coming closer to me, surrounded by clouds. Then he was taken to God, the one who had been living forever."
