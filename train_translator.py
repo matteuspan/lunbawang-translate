@@ -238,12 +238,16 @@ def _make_datum_tml(user_content, assistant_content, max_tokens):
     )
 
 
-def _translate_one_tml(sampling_client, user_content, params):
+def _translate_one_tml(sampling_client, user_content, params, retries=2):
     """Sample one completion for a thinkingmachines/* model, rendering the
     prompt with the native TML format (matching what Tinker's serving
     endpoint applies server-side) and parsing the response back into
     channel-tagged messages instead of regex-stripping <think> tags (Inkling
-    uses an Analysis/Final channel split, not literal <think> tags)."""
+    uses an Analysis/Final channel split, not literal <think> tags).
+
+    Empty results are retried: a transient network/server hiccup can return
+    a truncated sample without raising an exception, indistinguishable from
+    a genuine empty completion unless retried."""
     from tml_renderers.chat import MessageList, MessageChannel, Text
     from tml_renderers.tinker import token_spans_to_tinker_model_input
 
@@ -252,20 +256,25 @@ def _translate_one_tml(sampling_client, user_content, params):
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user",   "content": user_content},
     ])
-    # Native (Rust) renderer/parser calls are of uncertain thread-safety, so
-    # they're serialized; the slow network .sample() call stays unlocked so
-    # concurrent callers still overlap on the part that actually dominates cost.
-    with _tml_lock:
-        spans, parser = renderer.render_for_completion_with_effort(messages, 0.0)
-    prompt = token_spans_to_tinker_model_input(spans)
-    result = sampling_client.sample(prompt, num_samples=1, sampling_params=params).result()
-    with _tml_lock:
-        parsed = parser.parse_tokens(list(result.sequences[0].tokens))
-    for msg in parsed:
-        if msg.channel_enum == MessageChannel.Analysis:
-            continue
-        if isinstance(msg.content, Text):
-            return msg.content.text.strip()
+
+    for attempt in range(retries + 1):
+        # Native (Rust) renderer/parser calls are of uncertain thread-safety, so
+        # they're serialized; the slow network .sample() call stays unlocked so
+        # concurrent callers still overlap on the part that actually dominates cost.
+        with _tml_lock:
+            spans, parser = renderer.render_for_completion_with_effort(messages, 0.0)
+        prompt = token_spans_to_tinker_model_input(spans)
+        result = sampling_client.sample(prompt, num_samples=1, sampling_params=params).result()
+        with _tml_lock:
+            parsed = parser.parse_tokens(list(result.sequences[0].tokens))
+        for msg in parsed:
+            if msg.channel_enum == MessageChannel.Analysis:
+                continue
+            if isinstance(msg.content, Text):
+                text = msg.content.text.strip()
+                if text or attempt == retries:
+                    return text
+                break  # empty — fall through to retry
     return ""
 
 
@@ -441,7 +450,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         cache_writer.writerow(["eval_set", "idx", "direction", "input", "hyp", "ref"])
         cache_file.flush()
 
-    def _translate_one(src: str, direction: str) -> str:
+    def _translate_one(src: str, direction: str, retries: int = 2) -> str:
         user_content = (
             f"Translate to English:\n{src}" if direction == "lb2en"
             else f"Translate to Lun Bawang:\n{src}"
@@ -456,13 +465,17 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         prompt_tokens = _token_ids(sc_tokenizer.apply_chat_template(
             messages, tokenize=True, add_generation_prompt=True,
         ))
-        result = sc.sample(
-            ModelInput.from_ints(tokens=prompt_tokens),
-            num_samples=1,
-            sampling_params=params,
-        ).result()
-        raw = sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True)
-        return re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+        for attempt in range(retries + 1):
+            result = sc.sample(
+                ModelInput.from_ints(tokens=prompt_tokens),
+                num_samples=1,
+                sampling_params=params,
+            ).result()
+            raw = sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True)
+            text = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+            if text or attempt == retries:
+                return text
+        return ""
 
     def _batch_translate(pairs, direction="lb2en", eval_set="eval"):
         """Return (hypotheses, references) lists. Skips pairs already cached

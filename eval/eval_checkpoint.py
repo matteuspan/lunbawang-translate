@@ -152,7 +152,13 @@ if _uses_tml:
     _messages_base.append({"role": "system", "content": "Thinking effort level: 0"})
 
 
-def translate(text, direction="lb2en"):
+def translate(text, direction="lb2en", retries=2):
+    """A completion with empty content and finish_reason == "stop" is
+    ambiguous: either the model genuinely produced nothing, or a transient
+    network/server hiccup returned a truncated response without raising an
+    exception (observed: this correlated with connection instability that
+    preceded a container restart). Retry a couple of times before accepting
+    empty as the real answer, so eval numbers reflect the model, not noise."""
     hint = "\n(Output only the translation of this word or phrase.)" if len(text.split()) <= 5 else ""
     user_content = (
         f"Translate to English:\n{text}{hint}"
@@ -160,13 +166,16 @@ def translate(text, direction="lb2en"):
         else f"Translate to Lun Bawang:\n{text}{hint}"
     )
     t0 = time.monotonic()
-    r = client.chat.completions.create(
-        model=CHECKPOINT,
-        messages=_messages_base + [{"role": "user", "content": user_content}],
-        max_tokens=256, temperature=0.1, top_p=0.9,
-    )
+    for attempt in range(retries + 1):
+        r = client.chat.completions.create(
+            model=CHECKPOINT,
+            messages=_messages_base + [{"role": "user", "content": user_content}],
+            max_tokens=256, temperature=0.1, top_p=0.9,
+        )
+        raw = r.choices[0].message.content or ""
+        if raw or attempt == retries:
+            break
     call_ms = round((time.monotonic() - t0) * 1000)
-    raw = r.choices[0].message.content or ""
     processed = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
     return raw, processed, call_ms
 
