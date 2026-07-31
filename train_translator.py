@@ -412,7 +412,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
     dict_val_pairs:  list of (lb, eng, source, type_) where type_=="word"
     sent_val_pairs:  list of (lb, eng, source, type_) where type_=="sentence"
 
-    Returns (bible_bleu, dict_exact_pct, sent_bleu)
+    Returns (bible_bleu, dict_exact_pct, sent_bleu, sent_bleu_short, sent_bleu_long)
       None values if a subset is empty or sacrebleu is unavailable.
     """
     try:
@@ -456,7 +456,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
             else f"Translate to Lun Bawang:\n{src}"
         )
         if _uses_tml_renderer(BASE_MODEL):
-            return _translate_one_tml(sc, user_content, params)
+            return _translate_one_tml(sc, user_content, params, retries=retries)
 
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},

@@ -5,8 +5,10 @@ Defaults to the latest checkpoint in tinker_state.json.
 
 For checkpoints from a separate experiment (different base model, own state
 file), pass --state-file so results are labeled and written back correctly
-instead of being bucketed into the default v1/v0 labels:
-  python3.13 eval_checkpoint.py <checkpoint> --state-file tinker_state_inkling.json --label inkling-small
+instead of being bucketed into the default v1/v0 labels — the label defaults
+to the state file's name (e.g. tinker_state_inkling.json -> "inkling"), or
+pass --label to override it:
+  python3.13 eval_checkpoint.py <checkpoint> --state-file tinker_state_inkling.json
 
 Outputs (per run):
   eval_raw/<checkpoint>_<timestamp>.jsonl  — one JSON object per line, flushed
