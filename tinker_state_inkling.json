@@ -19,7 +19,12 @@
     {
       "step": 2000,
       "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-2000",
-      "val_loss": 0.464593
+      "val_loss": 0.464593,
+      "val_bible_bleu": 55.64,
+      "val_dict_exact_pct": 21.2,
+      "val_sent_bleu": 10.66,
+      "val_sent_bleu_short": 10.86,
+      "val_sent_bleu_long": 10.61
     }
   ],
   "steps": 2000,
