@@ -129,7 +129,17 @@
       "val_dict_exact_pct": 19.9,
       "val_sent_bleu": 9.48,
       "val_sent_bleu_short": 9.65,
-      "val_sent_bleu_long": 9.48
+      "val_sent_bleu_long": 9.48,
+      "val_bleu_bible": 58.136,
+      "val_bleu_bible_en2lb": 61.969,
+      "val_exact_dict": 9.7,
+      "val_exact_dict_en2lb": 13.2,
+      "val_bleu_sentence": 23.739,
+      "val_bleu_sent_short": 18.509,
+      "val_bleu_sent_long": 25.346,
+      "val_bleu_sentence_en2lb": 3.123,
+      "val_bleu_sent_short_en2lb": 2.992,
+      "val_bleu_sent_long_en2lb": 3.097
     }
   ],
   "steps": 8000,
