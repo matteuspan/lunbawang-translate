@@ -198,7 +198,7 @@ def translate_batch(pairs, direction, eval_set, src_idx, ref_idx):
         for fut in as_completed(futures):
             i, src, ref, raw, proc, call_ms = fut.result()
             results[i] = (proc, ref)
-            write_row(eval_set, src, raw, proc, ref, call_ms)
+            write_row(eval_set, src, raw, proc, ref, call_ms, idx=i)
             done += 1
             if done % 10 == 0:
                 print(f"  {done}/{len(pairs)}…")
@@ -214,7 +214,7 @@ jsonl_path = RAW_DIR / f"{safe_label}_{ts.replace(':', '')}.jsonl"
 jsonl_file = open(jsonl_path, "w", encoding="utf-8")
 _jsonl_lock = threading.Lock()  # translate_batch writes from multiple threads
 
-def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None):
+def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None, idx=None):
     record = {
         "timestamp":        ts,
         "model":            model_label,
@@ -224,6 +224,11 @@ def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None):
         "processed_output": processed,
         "reference":        reference,
     }
+    if idx is not None:
+        record["idx"] = idx  # position within this eval_set's pairs list — rows land in
+                              # completion order under concurrency, not submission order,
+                              # so this is the only reliable way to correlate the same
+                              # logical example across different checkpoints' JSONL files
     if call_ms is not None:
         record["call_ms"] = call_ms
     with _jsonl_lock:
