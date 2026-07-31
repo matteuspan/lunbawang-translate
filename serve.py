@@ -27,9 +27,11 @@ from pydantic import BaseModel
 
 # ── Config ─────────────────────────────────────────────────────────────────
 
-STATE_FILE      = Path(__file__).parent / "tinker_state.json"
-STATE_FILE_V1   = Path(__file__).parent / "tinker_state_v1.json"
-STATE_FILE_RUN1 = Path(__file__).parent / "tinker_state_run1.json"
+STATE_FILE         = Path(__file__).parent / "tinker_state.json"
+STATE_FILE_V1      = Path(__file__).parent / "tinker_state_v1.json"
+STATE_FILE_RUN1    = Path(__file__).parent / "tinker_state_run1.json"
+STATE_FILE_INKLING = Path(__file__).parent / "tinker_state_inkling.json"
+INKLING_CHECKPOINT_EVERY = 2000  # only expose every Nth Inkling checkpoint in the dropdown
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
 TINKER_BASE = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
@@ -267,7 +269,29 @@ def list_checkpoints():
             label += " (latest)"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
+    # Inkling-Small run — a separate experiment from the v0/v1/v2 Qwen lineage
+    # above, so it's tagged distinctly even though it's also labeled "v2" per
+    # request. Only every Nth checkpoint is exposed (the run saves one every
+    # 500 steps; showing all of them would flood the dropdown).
+    inkling_state = _load(STATE_FILE_INKLING)
+    inkling_ckpts = [
+        ck for ck in inkling_state.get("checkpoints", [])
+        if ck["step"] % INKLING_CHECKPOINT_EVERY == 0
+    ]
+    for i, ck in enumerate(inkling_ckpts):
+        label = f"v2 · Step {ck['step']:,} (Inkling)"
+        if i == len(inkling_ckpts) - 1:
+            label += " (latest)"
+        result.append({"label": label, "path": ck["path"], "step": ck["step"]})
+
     return result
+
+
+def _inkling_checkpoint_paths() -> set[str]:
+    if not STATE_FILE_INKLING.exists():
+        return set()
+    state = json.loads(STATE_FILE_INKLING.read_text())
+    return {ck["path"] for ck in state.get("checkpoints", [])}
 
 
 @app.post("/api/translate")
@@ -300,18 +324,22 @@ def translate(req: TranslateRequest):
         from openai import OpenAI
         client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
 
+        messages_base = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if checkpoint in _inkling_checkpoint_paths():
+            # Matches training: Inkling was fine-tuned on direct answers with
+            # no reasoning trace, so force effort=0 rather than whatever
+            # Inkling's server-side default is.
+            messages_base.append({"role": "system", "content": "Thinking effort level: 0"})
+
         def _call(content: str) -> str:
             r = client.chat.completions.create(
                 model=checkpoint,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user",   "content": content},
-                ],
+                messages=messages_base + [{"role": "user", "content": content}],
                 max_tokens=256,
                 temperature=0.1,
                 top_p=0.9,
             )
-            return strip_think_tags(r.choices[0].message.content)
+            return strip_think_tags(r.choices[0].message.content or "")
 
         # Whole-sentence translation
         translation = clean_translation(_call(user_content), source=text)
