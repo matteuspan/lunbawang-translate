@@ -325,11 +325,12 @@ def translate(req: TranslateRequest):
         client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
 
         messages_base = [{"role": "system", "content": SYSTEM_PROMPT}]
-        if checkpoint in _inkling_checkpoint_paths():
-            # Matches training: Inkling was fine-tuned on direct answers with
-            # no reasoning trace, so force effort=0 rather than whatever
-            # Inkling's server-side default is.
-            messages_base.append({"role": "system", "content": "Thinking effort level: 0"})
+        # reasoning_effort="none" (the effective default when unset) produces
+        # frequent single-token empty completions on short phrases; "low"
+        # fixed this in testing. A "Thinking effort level: N" system message
+        # was tried first but turned out to be inert noise over this REST
+        # endpoint — reasoning_effort is the real control.
+        completion_kwargs = {"reasoning_effort": "low"} if checkpoint in _inkling_checkpoint_paths() else {}
 
         def _call(content: str) -> str:
             r = client.chat.completions.create(
@@ -338,6 +339,7 @@ def translate(req: TranslateRequest):
                 max_tokens=256,
                 temperature=0.1,
                 top_p=0.9,
+                **completion_kwargs,
             )
             return strip_think_tags(r.choices[0].message.content or "")
 
