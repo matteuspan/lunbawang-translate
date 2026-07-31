@@ -3,6 +3,13 @@ Quick BLEU/exact-match eval for a single checkpoint.
 Usage: python3.13 eval_checkpoint.py [checkpoint_path]
 Defaults to the latest checkpoint in tinker_state.json.
 
+For checkpoints from a separate experiment (different base model, own state
+file), pass --state-file so results are labeled and written back correctly
+instead of being bucketed into the default v1/v0 labels — the label defaults
+to the state file's name (e.g. tinker_state_inkling.json -> "inkling"), or
+pass --label to override it:
+  python3.13 eval_checkpoint.py <checkpoint> --state-file tinker_state_inkling.json
+
 Outputs (per run):
   eval_raw/<checkpoint>_<timestamp>.jsonl  — one JSON object per line, flushed
                                              after each row (crash-safe)
@@ -10,10 +17,13 @@ Outputs (per run):
 
 Run merge_evals.py to combine all JSONL files into eval_outputs.csv.
 """
-import os, csv, json, re, random, sys
+import os, csv, json, re, random, sys, argparse, time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from openai import OpenAI
+
+MAX_WORKERS = 10  # concurrent translation calls — sequential was the dominant eval cost
 
 ROOT_DIR     = Path(__file__).parent.parent
 STATE_FILE   = ROOT_DIR / "tinker_state.json"
@@ -38,8 +48,34 @@ RUN1_FILE  = ROOT_DIR / "tinker_state_run1.json"
 state      = json.loads(STATE_FILE.read_text())
 run1_state = json.loads(RUN1_FILE.read_text()) if RUN1_FILE.exists() else {"model_id": "", "checkpoints": []}
 
-if len(sys.argv) > 1:
-    CHECKPOINT = sys.argv[1]
+_arg_parser = argparse.ArgumentParser(add_help=False)
+_arg_parser.add_argument("checkpoint", nargs="?", default=None)
+_arg_parser.add_argument("--state-file", type=str, default=None,
+                          help="Explicit state file for a separate experiment "
+                               "(e.g. tinker_state_inkling.json) — results are "
+                               "labeled and written back here instead of v0/v1")
+_arg_parser.add_argument("--label", type=str, default=None,
+                          help="Override the run label used in output filenames/CSVs")
+_arg_parser.add_argument("--base-model", type=str, default=None,
+                          help="Base model the checkpoint was fine-tuned from. For "
+                               "thinkingmachines/* (Inkling family), adds a "
+                               "'Thinking effort level: 0' system message matching "
+                               "how the checkpoint was trained — direct answers, no "
+                               "reasoning trace — which also avoids slow/rambling "
+                               "generations during eval.")
+cli_args = _arg_parser.parse_args()
+
+if cli_args.state_file:
+    target_state_file = Path(cli_args.state_file)
+    if not target_state_file.is_absolute():
+        target_state_file = ROOT_DIR / target_state_file
+    ext_state = json.loads(target_state_file.read_text())
+    CHECKPOINT = cli_args.checkpoint or ext_state["checkpoints"][-1]["path"]
+    step = next((c["step"] for c in ext_state["checkpoints"] if c["path"] == CHECKPOINT), None)
+    run  = cli_args.label or target_state_file.stem.removeprefix("tinker_state_") or "custom"
+    STATE_FILE = target_state_file   # so the write-back block below updates the right file
+elif cli_args.checkpoint:
+    CHECKPOINT = cli_args.checkpoint
     step = next((c["step"] for c in state["checkpoints"] if c["path"] == CHECKPOINT), None)
     run  = "v1"
     if step is None:
@@ -110,31 +146,73 @@ print(f"  Bible val: {len(bible_val)} | Dict val: {len(dict_val)} | Sent val: {l
 # ── Translate helper ──────────────────────────────────────────────────────────
 client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
 
-def translate(text, direction="lb2en"):
+_uses_tml = bool(cli_args.base_model) and cli_args.base_model.split(":")[0].startswith(
+    ("thinkingmachines/", "TML/")
+)
+_messages_base = [{"role": "system", "content": SYSTEM_PROMPT}]
+if _uses_tml:
+    _messages_base.append({"role": "system", "content": "Thinking effort level: 0"})
+
+
+def translate(text, direction="lb2en", retries=2):
+    """A completion with empty content and finish_reason == "stop" is
+    ambiguous: either the model genuinely produced nothing, or a transient
+    network/server hiccup returned a truncated response without raising an
+    exception (observed: this correlated with connection instability that
+    preceded a container restart). Retry a couple of times before accepting
+    empty as the real answer, so eval numbers reflect the model, not noise."""
     hint = "\n(Output only the translation of this word or phrase.)" if len(text.split()) <= 5 else ""
     user_content = (
         f"Translate to English:\n{text}{hint}"
         if direction == "lb2en"
         else f"Translate to Lun Bawang:\n{text}{hint}"
     )
-    import time
     t0 = time.monotonic()
-    r = client.chat.completions.create(
-        model=CHECKPOINT,
-        messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":user_content}],
-        max_tokens=256, temperature=0.1, top_p=0.9,
-    )
+    for attempt in range(retries + 1):
+        r = client.chat.completions.create(
+            model=CHECKPOINT,
+            messages=_messages_base + [{"role": "user", "content": user_content}],
+            max_tokens=256, temperature=0.1, top_p=0.9,
+        )
+        raw = r.choices[0].message.content or ""
+        if raw or attempt == retries:
+            break
     call_ms = round((time.monotonic() - t0) * 1000)
-    raw = r.choices[0].message.content or ""
     processed = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
     return raw, processed, call_ms
 
+
+def translate_batch(pairs, direction, eval_set, src_idx, ref_idx):
+    """Translate a list of pairs concurrently (order-preserving), writing each
+    row to the JSONL as it completes. Returns (hyps, refs)."""
+    results = [None] * len(pairs)
+
+    def _do(i, pair):
+        src, ref = pair[src_idx], pair[ref_idx]
+        raw, proc, call_ms = translate(src, direction)
+        return i, src, ref, raw, proc, call_ms
+
+    done = 0
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        futures = [ex.submit(_do, i, pair) for i, pair in enumerate(pairs)]
+        for fut in as_completed(futures):
+            i, src, ref, raw, proc, call_ms = fut.result()
+            results[i] = (proc, ref)
+            write_row(eval_set, src, raw, proc, ref, call_ms)
+            done += 1
+            if done % 10 == 0:
+                print(f"  {done}/{len(pairs)}…")
+
+    return [r[0] for r in results], [r[1] for r in results]
+
 # ── Per-run JSONL output ──────────────────────────────────────────────────────
+import threading
 ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 safe_label = re.sub(r"[^A-Za-z0-9_\-]", "_", model_label)
 RAW_DIR.mkdir(exist_ok=True)
 jsonl_path = RAW_DIR / f"{safe_label}_{ts.replace(':', '')}.jsonl"
 jsonl_file = open(jsonl_path, "w", encoding="utf-8")
+_jsonl_lock = threading.Lock()  # translate_batch writes from multiple threads
 
 def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None):
     record = {
@@ -148,8 +226,9 @@ def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None):
     }
     if call_ms is not None:
         record["call_ms"] = call_ms
-    jsonl_file.write(json.dumps(record) + "\n")
-    jsonl_file.flush()  # land on disk immediately — crash-safe
+    with _jsonl_lock:
+        jsonl_file.write(json.dumps(record) + "\n")
+        jsonl_file.flush()  # land on disk immediately — crash-safe
 
 import sacrebleu as sb
 
@@ -157,34 +236,19 @@ import sacrebleu as sb
 rng = random.Random(42)
 sample = rng.sample(bible_val, min(50, len(bible_val)))
 print(f"Bible BLEU (50 examples, lb→en)…")
-hyps, refs = [], []
-for i, (lb, eng, *_) in enumerate(sample, 1):
-    raw, proc, call_ms = translate(lb, "lb2en")
-    hyps.append(proc); refs.append(eng)
-    write_row("bible", lb, raw, proc, eng, call_ms)
-    if i % 10 == 0: print(f"  {i}/50…")
+hyps, refs = translate_batch(sample, "lb2en", "bible", src_idx=0, ref_idx=1)
 bible_bleu = sb.corpus_bleu(hyps, [refs]).score
 print(f"  → {bible_bleu:.2f}\n")
 
 # ── Bible BLEU (en→lb) ────────────────────────────────────────────────────────
 print(f"Bible BLEU (50 examples, en→lb)…")
-hyps_el, refs_el = [], []
-for i, (lb, eng, *_) in enumerate(sample, 1):
-    raw, proc, call_ms = translate(eng, "en2lb")
-    hyps_el.append(proc); refs_el.append(lb)
-    write_row("bible_en2lb", eng, raw, proc, lb, call_ms)
-    if i % 10 == 0: print(f"  {i}/50…")
+hyps_el, refs_el = translate_batch(sample, "en2lb", "bible_en2lb", src_idx=1, ref_idx=0)
 bible_bleu_el = sb.corpus_bleu(hyps_el, [refs_el]).score
 print(f"  → {bible_bleu_el:.2f}\n")
 
 # ── Dict exact match (lb→en) ──────────────────────────────────────────────────
 print(f"Dict exact match ({len(dict_val)} examples, lb→en)…")
-d_hyps, d_refs = [], []
-for i, (lb, eng, *_) in enumerate(dict_val, 1):
-    raw, proc, call_ms = translate(lb, "lb2en")
-    d_hyps.append(proc); d_refs.append(eng)
-    write_row("dict", lb, raw, proc, eng, call_ms)
-    if i % 10 == 0: print(f"  {i}/{len(dict_val)}…")
+d_hyps, d_refs = translate_batch(dict_val, "lb2en", "dict", src_idx=0, ref_idx=1)
 correct  = sum(h.lower().strip()==r.lower().strip() for h,r in zip(d_hyps, d_refs))
 dict_pct = correct / len(d_refs) * 100
 print(f"  → {dict_pct:.1f}% ({correct}/{len(d_refs)})\n")
@@ -196,12 +260,7 @@ for lb, hyp, ref in zip([r[0] for r in dict_val], d_hyps, d_refs):
 
 # ── Dict exact match (en→lb) ──────────────────────────────────────────────────
 print(f"\nDict exact match ({len(dict_val)} examples, en→lb)…")
-d_hyps_el, d_refs_el = [], []
-for i, (lb, eng, *_) in enumerate(dict_val, 1):
-    raw, proc, call_ms = translate(eng, "en2lb")
-    d_hyps_el.append(proc); d_refs_el.append(lb)
-    write_row("dict_en2lb", eng, raw, proc, lb, call_ms)
-    if i % 10 == 0: print(f"  {i}/{len(dict_val)}…")
+d_hyps_el, d_refs_el = translate_batch(dict_val, "en2lb", "dict_en2lb", src_idx=1, ref_idx=0)
 correct_el  = sum(h.lower().strip()==r.lower().strip() for h,r in zip(d_hyps_el, d_refs_el))
 dict_pct_el = correct_el / len(d_refs_el) * 100
 print(f"  → {dict_pct_el:.1f}% ({correct_el}/{len(d_refs_el)})\n")
@@ -213,12 +272,7 @@ for lb, hyp, ref in zip([r[0] for r in dict_val], d_hyps_el, d_refs_el):
 
 # ── Sentence BLEU (lb→en) ─────────────────────────────────────────────────────
 print(f"\nSentence BLEU ({len(sent_val)} examples, lb→en)…")
-s_hyps, s_refs = [], []
-for i, (lb, eng, *_) in enumerate(sent_val, 1):
-    raw, proc, call_ms = translate(lb, "lb2en")
-    s_hyps.append(proc); s_refs.append(eng)
-    write_row("sentence", lb, raw, proc, eng, call_ms)
-    if i % 10 == 0: print(f"  {i}/{len(sent_val)}…")
+s_hyps, s_refs = translate_batch(sent_val, "lb2en", "sentence", src_idx=0, ref_idx=1)
 sent_bleu = sb.corpus_bleu(s_hyps, [s_refs]).score
 print(f"  → {sent_bleu:.2f} (combined)\n")
 
@@ -235,12 +289,7 @@ for (lb,*_), hyp, ref in zip(sent_val, s_hyps, s_refs):
 
 # ── Sentence BLEU (en→lb) ─────────────────────────────────────────────────────
 print(f"Sentence BLEU ({len(sent_val)} examples, en→lb)…")
-s_hyps_el, s_refs_el = [], []
-for i, (lb, eng, *_) in enumerate(sent_val, 1):
-    raw, proc, call_ms = translate(eng, "en2lb")
-    s_hyps_el.append(proc); s_refs_el.append(lb)
-    write_row("sentence_en2lb", eng, raw, proc, lb, call_ms)
-    if i % 10 == 0: print(f"  {i}/{len(sent_val)}…")
+s_hyps_el, s_refs_el = translate_batch(sent_val, "en2lb", "sentence_en2lb", src_idx=1, ref_idx=0)
 sent_bleu_el = sb.corpus_bleu(s_hyps_el, [s_refs_el]).score
 print(f"  → {sent_bleu_el:.2f} (combined)\n")
 

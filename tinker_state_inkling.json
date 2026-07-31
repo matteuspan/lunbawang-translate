@@ -1,0 +1,92 @@
+{
+  "model_id": "2a256b13-a031-5353-8b3f-000cd93de118:train:0",
+  "checkpoints": [
+    {
+      "step": 500,
+      "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-500",
+      "val_loss": 1.263722
+    },
+    {
+      "step": 1000,
+      "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-1000",
+      "val_loss": 0.810086
+    },
+    {
+      "step": 1500,
+      "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-1500",
+      "val_loss": 0.583727
+    },
+    {
+      "step": 2000,
+      "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-2000",
+      "val_loss": 0.464593,
+      "val_bible_bleu": 55.64,
+      "val_dict_exact_pct": 21.2,
+      "val_sent_bleu": 10.66,
+      "val_sent_bleu_short": 10.86,
+      "val_sent_bleu_long": 10.61,
+      "val_bleu_bible": 48.677,
+      "val_bleu_bible_en2lb": 27.734,
+      "val_exact_dict": 17.4,
+      "val_exact_dict_en2lb": 12.5,
+      "val_bleu_sentence": 20.362,
+      "val_bleu_sent_short": 14.701,
+      "val_bleu_sent_long": 21.999,
+      "val_bleu_sentence_en2lb": 6.921,
+      "val_bleu_sent_short_en2lb": 2.536,
+      "val_bleu_sent_long_en2lb": 7.504
+    },
+    {
+      "step": 2500,
+      "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-2500",
+      "val_loss": 0.458505
+    },
+    {
+      "step": 3000,
+      "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-3000",
+      "val_loss": 0.345315
+    },
+    {
+      "step": 3500,
+      "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-3500",
+      "val_loss": 0.278952
+    },
+    {
+      "step": 4000,
+      "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-4000",
+      "val_loss": 0.224143,
+      "val_bible_bleu": 58.14,
+      "val_dict_exact_pct": 17.8,
+      "val_sent_bleu": 11.41,
+      "val_sent_bleu_short": 0.0,
+      "val_sent_bleu_long": 11.42,
+      "val_bleu_bible": 52.252,
+      "val_bleu_bible_en2lb": 45.429,
+      "val_exact_dict": 18.1,
+      "val_exact_dict_en2lb": 14.6,
+      "val_bleu_sentence": 16.642,
+      "val_bleu_sent_short": 8.918,
+      "val_bleu_sent_long": 22.734,
+      "val_bleu_sentence_en2lb": 7.982,
+      "val_bleu_sent_short_en2lb": 3.924,
+      "val_bleu_sent_long_en2lb": 8.755
+    },
+    {
+      "step": 4500,
+      "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-4500",
+      "val_loss": 0.189856
+    },
+    {
+      "step": 5000,
+      "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-5000",
+      "val_loss": 0.199463
+    },
+    {
+      "step": 5500,
+      "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-5500",
+      "val_loss": 0.153405
+    }
+  ],
+  "steps": 5500,
+  "training_state_path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/weights/checkpoint-5500"
+}

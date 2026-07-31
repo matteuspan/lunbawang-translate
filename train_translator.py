@@ -24,6 +24,12 @@ Requires:
   TINKER_API_KEY env var
   parallel_corpus.csv  (from build_parallel_corpus.py)
   aux_corpus.csv       (from build_aux_corpus.py — optional but recommended)
+
+  For --base-model thinkingmachines/* (Inkling family) only: `pip install
+  tml-renderers torch`. These models use a native TML chat format that's
+  incompatible with the generic HF chat template — tml-renderers renders
+  training/inference prompts the same way Tinker's serving endpoint does
+  server-side. Not required for Qwen/other HF-tokenizer models.
 """
 
 import os
@@ -32,6 +38,7 @@ import csv
 import json
 import random
 import argparse
+import threading
 import numpy as np
 from pathlib import Path
 
@@ -55,6 +62,11 @@ VAL_BLEU_EVERY   = 2000     # additionally compute BLEU + exact-match every N st
 AUX_REPEAT       = 5        # repeat aux training datums N× relative to Bible datums
 VAL_LOSS_SAMPLES = 200      # number of Bible val datums for val_loss
 VAL_BLEU_BIBLE   = 50       # max Bible val pairs sampled for BLEU (lb→en only)
+VAL_BLEU_SENT    = 100      # max sentence val pairs sampled for BLEU — sent_val_pairs
+                             # has grown to 1000+ (mostly T4T conversational data that
+                             # postdates the v1 Qwen run) so evaluating all of it is both
+                             # slow and not a like-for-like comparison population
+VAL_BLEU_WORKERS = 10       # concurrent sampling calls — sequential was the dominant cost
 
 STATE_FILE      = Path(__file__).parent / "tinker_state.json"
 CORPUS_FILE     = Path(__file__).parent / "corpus" / "parallel_corpus.csv"
@@ -169,6 +181,115 @@ def aux_train_val_split(corpus, val_fraction=0.2, seed=42):
 
 # ── Tokenisation + Datum construction ────────────────────────────────────────
 
+def _uses_tml_renderer(model_name: str) -> bool:
+    """thinkingmachines/* models (Inkling family) use a native TML chat format
+    (<|message_system|>, <|content_text|>, ... — see tml_renderers) that is
+    completely different from the generic HF chat template. Tinker's serving
+    endpoint renders with TML server-side, so training must match it exactly
+    or the fine-tuned model won't respond through that endpoint at all."""
+    return model_name.split(":")[0].startswith(("thinkingmachines/", "TML/"))
+
+
+_tml_renderer = None
+_tml_lock = threading.Lock()  # guards the renderer singleton + its (uncertain
+                               # thread-safety) native calls; the network .sample()
+                               # call itself stays outside the lock for concurrency
+
+def _get_tml_renderer():
+    global _tml_renderer
+    with _tml_lock:
+        if _tml_renderer is None:
+            from tml_renderers.v0 import Renderer
+            from tml_renderers.tokenizers import o200k_base_chat
+            _tml_renderer = Renderer(o200k_base_chat())
+        return _tml_renderer
+
+
+def _make_datum_tml(user_content, assistant_content, max_tokens):
+    from tml_renderers.chat import MessageList
+    from tml_renderers.tinker import training_example_to_tinker_model_input_and_weights
+
+    renderer = _get_tml_renderer()
+    messages = MessageList.from_oss_messages([
+        {"role": "system",    "content": SYSTEM_PROMPT},
+        {"role": "user",      "content": user_content},
+        {"role": "assistant", "content": assistant_content},
+    ])
+    examples = renderer.render_for_sft(messages)
+    if not examples:
+        return None
+
+    model_input, weights_unshifted = training_example_to_tinker_model_input_and_weights(examples[-1])
+    full_tokens = [t for chunk in model_input.chunks for t in chunk.tokens]
+
+    if len(full_tokens) > max_tokens or len(full_tokens) != len(weights_unshifted):
+        return None
+
+    # Same next-token shift as the HF path: weights_unshifted[i] says whether
+    # predicting token[i] counts toward loss, so after shifting, the weight
+    # for target_tokens[i] (= full_tokens[i+1]) is weights_unshifted[i+1].
+    input_tokens  = full_tokens[:-1]
+    target_tokens = full_tokens[1:]
+    weights       = weights_unshifted[1:]
+
+    return Datum(
+        model_input=ModelInput.from_ints(tokens=input_tokens),
+        loss_fn_inputs=dict(weights=weights, target_tokens=target_tokens),
+    )
+
+
+def _translate_one_tml(sampling_client, user_content, params, retries=2):
+    """Sample one completion for a thinkingmachines/* model, rendering the
+    prompt with the native TML format (matching what Tinker's serving
+    endpoint applies server-side) and parsing the response back into
+    channel-tagged messages instead of regex-stripping <think> tags (Inkling
+    uses an Analysis/Final channel split, not literal <think> tags).
+
+    Empty results are retried: a transient network/server hiccup can return
+    a truncated sample without raising an exception, indistinguishable from
+    a genuine empty completion unless retried."""
+    from tml_renderers.chat import MessageList, MessageChannel, Text
+    from tml_renderers.tinker import token_spans_to_tinker_model_input
+
+    renderer = _get_tml_renderer()
+    messages = MessageList.from_oss_messages([
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user",   "content": user_content},
+    ])
+
+    for attempt in range(retries + 1):
+        # Native (Rust) renderer/parser calls are of uncertain thread-safety, so
+        # they're serialized; the slow network .sample() call stays unlocked so
+        # concurrent callers still overlap on the part that actually dominates cost.
+        with _tml_lock:
+            spans, parser = renderer.render_for_completion_with_effort(messages, 0.0)
+        prompt = token_spans_to_tinker_model_input(spans)
+        result = sampling_client.sample(prompt, num_samples=1, sampling_params=params).result()
+        with _tml_lock:
+            parsed = parser.parse_tokens(list(result.sequences[0].tokens))
+        for msg in parsed:
+            if msg.channel_enum == MessageChannel.Analysis:
+                continue
+            if isinstance(msg.content, Text):
+                text = msg.content.text.strip()
+                if text or attempt == retries:
+                    return text
+                break  # empty — fall through to retry
+    return ""
+
+
+def get_tokenizer(client, model_name):
+    """Tinker's built-in get_tokenizer() needs the private `tml_tokenizers`
+    package for thinkingmachines/* models. Fall back to loading the HF
+    tokenizer directly — Inkling's tokenizer files are public, and its
+    apply_chat_template output shape is already handled by _token_ids()."""
+    try:
+        return client.get_tokenizer()
+    except ModuleNotFoundError:
+        from transformers import AutoTokenizer
+        return AutoTokenizer.from_pretrained(model_name.split(":")[0])
+
+
 def _token_ids(result):
     """apply_chat_template may return a list or a BatchEncoding."""
     if isinstance(result, list):
@@ -197,6 +318,9 @@ def make_datum(tokenizer, source_text, target_text, direction="lb2en", max_token
     else:
         user_content = f"Translate to Lun Bawang:\n{source_text}"
         assistant_content = target_text
+
+    if _uses_tml_renderer(BASE_MODEL):
+        return _make_datum_tml(user_content, assistant_content, max_tokens)
 
     messages = [
         {"role": "system",    "content": SYSTEM_PROMPT},
@@ -288,7 +412,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
     dict_val_pairs:  list of (lb, eng, source, type_) where type_=="word"
     sent_val_pairs:  list of (lb, eng, source, type_) where type_=="sentence"
 
-    Returns (bible_bleu, dict_exact_pct, sent_bleu)
+    Returns (bible_bleu, dict_exact_pct, sent_bleu, sent_bleu_short, sent_bleu_long)
       None values if a subset is empty or sacrebleu is unavailable.
     """
     try:
@@ -299,14 +423,41 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
 
     print("  Computing val BLEU (creating sampling client)…")
     sc = service.create_sampling_client(checkpoint_path)
-    sc_tokenizer = sc.get_tokenizer()
+    sc_tokenizer = get_tokenizer(sc, BASE_MODEL)
     params = SamplingParams(max_tokens=128, temperature=0.1, top_p=0.9)
 
-    def _translate_one(src: str, direction: str) -> str:
+    # ── Crash-safe resume cache ──
+    # A container/process restart mid-eval used to lose every translation done
+    # so far, forcing a full re-run. Cache each (eval_set, idx) result to CSV
+    # as it's produced, flushed immediately, and skip anything already cached.
+    cache_dir = Path(__file__).parent / "eval" / "val_bleu_cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    ck_slug = re.sub(r"[^A-Za-z0-9_\-]", "_", checkpoint_path)
+    cache_path = cache_dir / f"{ck_slug}.csv"
+
+    cached: dict[tuple[str, int], str] = {}
+    if cache_path.exists():
+        with open(cache_path, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                cached[(row["eval_set"], int(row["idx"]))] = row["hyp"]
+        if cached:
+            print(f"  Resuming from cache: {len(cached)} translations already done → {cache_path.name}")
+
+    cache_is_new = not cache_path.exists()
+    cache_file = open(cache_path, "a", newline="", encoding="utf-8")
+    cache_writer = csv.writer(cache_file)
+    if cache_is_new:
+        cache_writer.writerow(["eval_set", "idx", "direction", "input", "hyp", "ref"])
+        cache_file.flush()
+
+    def _translate_one(src: str, direction: str, retries: int = 2) -> str:
         user_content = (
             f"Translate to English:\n{src}" if direction == "lb2en"
             else f"Translate to Lun Bawang:\n{src}"
         )
+        if _uses_tml_renderer(BASE_MODEL):
+            return _translate_one_tml(sc, user_content, params, retries=retries)
+
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user",   "content": user_content},
@@ -314,27 +465,56 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         prompt_tokens = _token_ids(sc_tokenizer.apply_chat_template(
             messages, tokenize=True, add_generation_prompt=True,
         ))
-        result = sc.sample(
-            ModelInput.from_ints(tokens=prompt_tokens),
-            num_samples=1,
-            sampling_params=params,
-        ).result()
-        raw = sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True)
-        return re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+        for attempt in range(retries + 1):
+            result = sc.sample(
+                ModelInput.from_ints(tokens=prompt_tokens),
+                num_samples=1,
+                sampling_params=params,
+            ).result()
+            raw = sc_tokenizer.decode(result.sequences[0].tokens, skip_special_tokens=True)
+            text = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+            if text or attempt == retries:
+                return text
+        return ""
 
-    def _batch_translate(pairs, direction="lb2en"):
-        """Return (hypotheses, references) lists."""
+    def _batch_translate(pairs, direction="lb2en", eval_set="eval"):
+        """Return (hypotheses, references) lists. Skips pairs already cached
+        from a prior (crashed) run of this same checkpoint's eval. Translates
+        concurrently — sequential calls were the dominant cost of this eval."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         src_idx = 0 if direction == "lb2en" else 1
         ref_idx = 1 if direction == "lb2en" else 0
-        hyps, refs = [], []
-        for pair in pairs:
+
+        hyps = [None] * len(pairs)
+        refs = [None] * len(pairs)
+        to_fetch = []
+        for idx, pair in enumerate(pairs):
+            src, ref = pair[src_idx], pair[ref_idx]
+            refs[idx] = ref
+            key = (eval_set, idx)
+            if key in cached:
+                hyps[idx] = cached[key]
+            else:
+                to_fetch.append((idx, src))
+
+        def _do(idx, src):
             try:
-                hyp = _translate_one(pair[src_idx], direction)
+                return idx, src, _translate_one(src, direction)
             except Exception as e:
                 print(f"  [warn] translate failed: {e}")
-                hyp = ""
-            hyps.append(hyp)
-            refs.append(pair[ref_idx])
+                return idx, src, ""
+
+        if to_fetch:
+            with ThreadPoolExecutor(max_workers=VAL_BLEU_WORKERS) as ex:
+                futures = [ex.submit(_do, idx, src) for idx, src in to_fetch]
+                for fut in as_completed(futures):
+                    idx, src, hyp = fut.result()
+                    hyps[idx] = hyp
+                    cached[(eval_set, idx)] = hyp
+                    cache_writer.writerow([eval_set, idx, direction, src, hyp, refs[idx]])
+                    cache_file.flush()
+
         return hyps, refs
 
     # ── Bible val BLEU (lb→en, up to VAL_BLEU_BIBLE examples) ──
@@ -343,7 +523,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         rng = random.Random(42)
         sample = rng.sample(bible_val_pairs, min(VAL_BLEU_BIBLE, len(bible_val_pairs)))
         print(f"  Translating {len(sample)} Bible val examples (lb→en)…")
-        hyps, refs = _batch_translate(sample, "lb2en")
+        hyps, refs = _batch_translate(sample, "lb2en", "bible")
         bible_bleu = sb.corpus_bleu(hyps, [refs]).score
         print(f"  Bible val BLEU: {bible_bleu:.2f}")
 
@@ -351,7 +531,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
     dict_exact_pct = None
     if dict_val_pairs:
         print(f"  Translating {len(dict_val_pairs)} dictionary val examples (lb→en)…")
-        hyps, refs = _batch_translate(dict_val_pairs, "lb2en")
+        hyps, refs = _batch_translate(dict_val_pairs, "lb2en", "dict")
         n_correct = sum(
             h.lower().strip() == r.lower().strip()
             for h, r in zip(hyps, refs)
@@ -359,11 +539,13 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         dict_exact_pct = n_correct / len(dict_val_pairs) * 100
         print(f"  Dict val exact match: {dict_exact_pct:.1f}% ({n_correct}/{len(dict_val_pairs)})")
 
-    # ── Sentence val BLEU (lb→en) ──
+    # ── Sentence val BLEU (lb→en, up to VAL_BLEU_SENT examples) ──
     sent_bleu = sent_bleu_short = sent_bleu_long = None
     if sent_val_pairs:
-        print(f"  Translating {len(sent_val_pairs)} sentence val examples (lb→en)…")
-        hyps, refs = _batch_translate(sent_val_pairs, "lb2en")
+        rng_sent = random.Random(42)
+        sent_sample = rng_sent.sample(sent_val_pairs, min(VAL_BLEU_SENT, len(sent_val_pairs)))
+        print(f"  Translating {len(sent_sample)} sentence val examples (lb→en)…")
+        hyps, refs = _batch_translate(sent_sample, "lb2en", "sentence")
         sent_bleu = sb.corpus_bleu(hyps, [refs]).score
         short_pairs = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) <= 10]
         long_pairs  = [(h, r) for h, r in zip(hyps, refs) if len(r.split()) >  10]
@@ -371,6 +553,7 @@ def compute_val_bleu(service, checkpoint_path, tokenizer,
         sent_bleu_long  = sb.corpus_bleu([p[0] for p in long_pairs],  [[p[1] for p in long_pairs]]).score  if long_pairs  else 0.0
         print(f"  Sentence val BLEU: {sent_bleu:.2f}  (short ≤10: {sent_bleu_short:.2f} | long >10: {sent_bleu_long:.2f})")
 
+    cache_file.close()
     return bible_bleu, dict_exact_pct, sent_bleu, sent_bleu_short, sent_bleu_long
 
 
@@ -409,12 +592,14 @@ def load_state():
 
 # ── Training ──────────────────────────────────────────────────────────────────
 
-def train(new_run: bool = False):
+def train(new_run: bool = False, max_steps: int | None = None):
     print(f"Model:      {BASE_MODEL}")
     print(f"LoRA rank:  {LORA_RANK}")
     print(f"Batch size: {BATCH_SIZE}")
     print(f"Epochs:     {EPOCHS}")
     print(f"Direction:  bidirectional (LB↔EN)")
+    if max_steps:
+        print(f"Max steps:  {max_steps} (stops early for step-matched comparison)")
     print()
 
     # ── Load corpora ──
@@ -515,7 +700,7 @@ def train(new_run: bool = False):
         print(f"  Experiment ID: {info.model_id}")
 
     print("\nFetching tokenizer…")
-    tokenizer = tc.get_tokenizer()
+    tokenizer = get_tokenizer(tc, BASE_MODEL)
     print(f"  Vocab size: {tokenizer.vocab_size}")
 
     # ── Tokenise training data ──
@@ -591,7 +776,7 @@ def train(new_run: bool = False):
                 f"| epoch {epoch+1} batch {step+1}/{len(batches)}"
             )
 
-            if global_step % SAVE_EVERY == 0:
+            if global_step % SAVE_EVERY == 0 or global_step == max_steps:
                 # ── Save sampler weights (for inference) ──
                 print(f"  → Saving checkpoint at step {global_step}…")
                 result = tc.save_weights_for_sampler(f"checkpoint-{global_step}").result()
@@ -639,13 +824,24 @@ def train(new_run: bool = False):
                     api_key = os.environ.get("TINKER_API_KEY", "")
                     if eval_script.exists() and api_key:
                         env = {**os.environ, "TINKER_API_KEY": api_key, "PYTHONUNBUFFERED": "1"}
+                        eval_cmd = [sys.executable, str(eval_script), ckpt, "--base-model", BASE_MODEL]
+                        if STATE_FILE.name != "tinker_state.json":
+                            # Separate experiment (e.g. alternate base model) — keep its
+                            # results out of the default v0/v1 buckets and state file.
+                            label = STATE_FILE.stem.removeprefix("tinker_state_")
+                            eval_cmd += ["--state-file", str(STATE_FILE), "--label", label]
                         subprocess.Popen(
-                            [sys.executable, str(eval_script), ckpt],
+                            eval_cmd,
                             env=env,
                             stdout=open(Path(__file__).parent / f"eval_run_step{global_step}.log", "w"),
                             stderr=subprocess.STDOUT,
                         )
                         print(f"    Full bidirectional eval launched → eval_run_step{global_step}.log")
+
+            if max_steps and global_step >= max_steps:
+                print(f"\n✓ Reached max_steps={max_steps} — stopping early for step-matched comparison.")
+                print(f"  Final checkpoint: {state['checkpoints'][-1]['path']}")
+                return
 
         # ── End-of-epoch checkpoint ──
         print(f"\nEpoch {epoch+1} done — saving checkpoint…")
@@ -687,13 +883,18 @@ def translate(text: str, direction: str = "lb2en", checkpoint_path: str = None):
 
     service = ServiceClient()
     sc = service.create_sampling_client(checkpoint_path)
-    tokenizer = sc.get_tokenizer()
 
     if direction == "lb2en":
         user_content = f"Translate to English:\n{text}"
     else:
         user_content = f"Translate to Lun Bawang:\n{text}"
 
+    params = SamplingParams(max_tokens=256, temperature=0.1, top_p=0.9)
+
+    if _uses_tml_renderer(BASE_MODEL):
+        return _translate_one_tml(sc, user_content, params)
+
+    tokenizer = get_tokenizer(sc, BASE_MODEL)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user",   "content": user_content},
@@ -703,8 +904,6 @@ def translate(text: str, direction: str = "lb2en", checkpoint_path: str = None):
     ))
 
     prompt = ModelInput.from_ints(tokens=prompt_tokens)
-    params = SamplingParams(max_tokens=256, temperature=0.1, top_p=0.9)
-
     result = sc.sample(prompt, num_samples=1, sampling_params=params).result()
     output_tokens = result.sequences[0].tokens
     return tokenizer.decode(output_tokens, skip_special_tokens=True).strip()
@@ -744,7 +943,7 @@ def interactive_translate(direction="lb2en"):
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Lun Bawang ↔ English translator (Tinker/Qwen3-8B)")
+    parser = argparse.ArgumentParser(description="Lun Bawang ↔ English translator (Tinker)")
     parser.add_argument("--train",     action="store_true", help="Run fine-tuning")
     parser.add_argument("--new-run",   action="store_true", help="Start a fresh experiment (ignores existing checkpoints)")
     parser.add_argument("--translate", action="store_true", help="Interactive translation")
@@ -752,10 +951,26 @@ if __name__ == "__main__":
                         help="Translation direction (default: lb2en)")
     parser.add_argument("--text",      type=str, help="Single text to translate")
     parser.add_argument("--checkpoint", type=str, help="Specific checkpoint path")
+    parser.add_argument("--base-model", type=str, default=BASE_MODEL,
+                        help=f"Tinker base model to fine-tune (default: {BASE_MODEL})")
+    parser.add_argument("--state-file", type=str, default=None,
+                        help="Override tinker_state.json path — use a separate file per "
+                             "base model (e.g. tinker_state_inkling.json) so parallel "
+                             "experiments don't clobber each other's checkpoints")
+    parser.add_argument("--lora-rank", type=int, default=LORA_RANK,
+                        help=f"LoRA rank (default: {LORA_RANK})")
+    parser.add_argument("--max-steps", type=int, default=None,
+                        help="Stop after this many global steps (e.g. to match another "
+                             "run's step count for a fair comparison)")
     args = parser.parse_args()
 
+    BASE_MODEL = args.base_model
+    LORA_RANK  = args.lora_rank
+    if args.state_file:
+        STATE_FILE = Path(args.state_file)
+
     if args.train:
-        train(new_run=args.new_run)
+        train(new_run=args.new_run, max_steps=args.max_steps)
     elif args.translate:
         if args.text:
             result = translate(args.text, args.direction, args.checkpoint)
