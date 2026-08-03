@@ -175,13 +175,18 @@
        grid track doesn't always grow to fit, and content silently renders
        with zero height. Flex doesn't have this problem. Desktop switches to
        grid below for the 3-column pane/divider/pane layout, which isn't
-       exposed to the same dynamic-single-column-growth case. */
+       exposed to the same dynamic-single-column-growth case.
+       No overflow:hidden here (deliberately) — every direct child (.pane)
+       already has its own padding keeping content off the rounded corners,
+       so clipping isn't needed for that, and it's cheap insurance against
+       any remaining Safari staleness in recomputing a flex/grid item's
+       size for dynamically-added content: if a size does go stale, the
+       content stays visible-but-imperfect instead of silently disappearing. */
     display:flex;
     flex-direction:column;
     background: var(--surface);
     border:1px solid var(--line);
     border-radius: var(--r-lg);
-    overflow:hidden;
   }
   .pane{ padding:18px 18px 12px; min-width:0; }
   .pane + .pane{ border-top:1px solid var(--line); }
@@ -796,6 +801,10 @@
         notice.classList.remove('show');
         hideFeedback();
         feedback.classList.add('show');
+        void feedback.offsetHeight; // force a synchronous layout recalc — cheap
+                                     // insurance against engines that don't
+                                     // reliably relayout a flex/grid item's
+                                     // size for content shown after the fact
 
         if (data.clause_translation) {
           clauseBlock.classList.add('show');
@@ -803,6 +812,7 @@
           clauseChips.innerHTML = data.clauses
             .map(c => `<span class="clause-chip">${c}</span>`)
             .join('');
+          void clauseBlock.offsetHeight;
         } else {
           clearClauses();
         }
