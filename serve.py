@@ -178,6 +178,14 @@ def _all_checkpoints() -> list[dict]:
 
 
 def get_latest_checkpoint() -> str | None:
+    """Inkling-Small · checkpoint-11500 is the production default (see README
+    for the comparison against the archived Qwen3-8B v1 run) — it wins or
+    ties on 5/6 held-out metrics. Falls back to the Qwen v1/v0 chain only if
+    the Inkling state file is unavailable."""
+    if STATE_FILE_INKLING.exists():
+        inkling_ckpts = json.loads(STATE_FILE_INKLING.read_text()).get("checkpoints", [])
+        if inkling_ckpts:
+            return inkling_ckpts[-1]["path"]
     ckpts = _all_checkpoints()
     return ckpts[-1]["path"] if ckpts else None
 
@@ -253,36 +261,37 @@ def list_checkpoints():
             label += f" · Epoch {ck['epoch']}"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
-    for i, ck in enumerate(v1_ckpts):
+    for ck in v1_ckpts:
         label = ck.get("label") or f"v1 · Step {ck['step']:,}"
         if "epoch" in ck and not ck.get("label"):
             label += f" · Epoch {ck['epoch']}"
-        if i == len(v1_ckpts) - 1 and not main_ckpts:
-            label += " (latest)"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
-    for i, ck in enumerate(main_ckpts):
+    for ck in main_ckpts:
         label = ck.get("label") or f"v2 · Step {ck['step']:,}"
         if "epoch" in ck and not ck.get("label"):
             label += f" · Epoch {ck['epoch']}"
-        if i == len(main_ckpts) - 1:
-            label += " (latest)"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
-    # Inkling-Small run — a separate experiment from the v0/v1/v2 Qwen lineage
-    # above, so it's tagged distinctly even though it's also labeled "v2" per
-    # request. Only every Nth checkpoint is exposed (the run saves one every
-    # 500 steps; showing all of them would flood the dropdown).
+    # Inkling-Small run — now the production default (see README). Only
+    # every Nth checkpoint is exposed (the run saves one every 500 steps;
+    # showing all of them would flood the dropdown), plus the final
+    # checkpoint-11500 explicitly since it may not land on that boundary.
     inkling_state = _load(STATE_FILE_INKLING)
-    inkling_ckpts = [
-        ck for ck in inkling_state.get("checkpoints", [])
-        if ck["step"] % INKLING_CHECKPOINT_EVERY == 0
-    ]
-    for i, ck in enumerate(inkling_ckpts):
-        label = f"v2 · Step {ck['step']:,} (Inkling)"
-        if i == len(inkling_ckpts) - 1:
-            label += " (latest)"
+    inkling_all = inkling_state.get("checkpoints", [])
+    inkling_ckpts = [ck for ck in inkling_all if ck["step"] % INKLING_CHECKPOINT_EVERY == 0]
+    if inkling_all and inkling_all[-1] not in inkling_ckpts:
+        inkling_ckpts.append(inkling_all[-1])
+    for ck in inkling_ckpts:
+        label = f"Inkling · Step {ck['step']:,}"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
+
+    # Mark whichever entry is the actual serving default (see
+    # get_latest_checkpoint) rather than assuming it's the last bucket.
+    default_checkpoint = get_latest_checkpoint()
+    for entry in result:
+        if entry["path"] == default_checkpoint:
+            entry["label"] += " (default)"
 
     return result
 
@@ -325,23 +334,34 @@ def translate(req: TranslateRequest):
         client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
 
         messages_base = [{"role": "system", "content": SYSTEM_PROMPT}]
-        # reasoning_effort="none" (the effective default when unset) produces
-        # frequent single-token empty completions on short phrases; "low"
-        # fixed this in testing. A "Thinking effort level: N" system message
-        # was tried first but turned out to be inert noise over this REST
-        # endpoint — reasoning_effort is the real control.
-        completion_kwargs = {"reasoning_effort": "low"} if checkpoint in _inkling_checkpoint_paths() else {}
+        is_inkling = checkpoint in _inkling_checkpoint_paths()
 
-        def _call(content: str) -> str:
+        def _completion(content: str, effort: str | None) -> str:
+            kwargs = {"reasoning_effort": effort} if effort else {}
             r = client.chat.completions.create(
                 model=checkpoint,
                 messages=messages_base + [{"role": "user", "content": content}],
                 max_tokens=256,
                 temperature=0.1,
                 top_p=0.9,
-                **completion_kwargs,
+                **kwargs,
             )
             return strip_think_tags(r.choices[0].message.content or "")
+
+        def _call(content: str) -> str:
+            # reasoning_effort="none" (the effective default when unset)
+            # produces frequent single-token empty completions on short
+            # phrases; "low" cuts this to ~4% (measured in eval). A
+            # "Thinking effort level: N" system message was tried first but
+            # turned out to be inert noise over this REST endpoint —
+            # reasoning_effort is the real control. On the rare empty result
+            # at "low", one retry at "medium" resolves most of the rest while
+            # keeping the common case fast — only Inkling checkpoints set
+            # reasoning_effort, so this never triggers for Qwen.
+            text = _completion(content, "low" if is_inkling else None)
+            if not text and is_inkling:
+                text = _completion(content, "medium")
+            return text
 
         # Whole-sentence translation
         translation = clean_translation(_call(user_content), source=text)
