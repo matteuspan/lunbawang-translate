@@ -197,3 +197,497 @@ Dict exact match (144 examples, en→lb)…
   120/144…
   130/144…
   140/144…
+  → 18.8% (27/144)
+
+Dict samples (en→lb):
+  ✗ 'lengen' → 'ticu' (ref: 'lengen')
+  ✗ 'lai' → 'deléi' (ref: 'lai')
+  ✗ 'meratu' → '' (ref: 'meratu')
+  ✗ 'aco teluh' → 'Acep aco' (ref: 'aco teluh')
+  ✗ 'taman tinan' → 'taman-tinan' (ref: 'taman tinan')
+  ✗ 'terawe' → 'terawé' (ref: 'terawe')
+  ✗ 'nimun' → 'remuat' (ref: 'nimun')
+  ✗ 'napeh' → 'muci' (ref: 'napeh')
+  ✗ 'nayud' → 'pebala' (ref: 'nayud')
+  ✓ 'nanem' → 'nanem' (ref: 'nanem')
+  ✗ 'necing' → 'macing/mecing' (ref: 'necing')
+  ✗ 'surud' → 'tudo' (ref: 'surud')
+  ✓ 'bulan pulu' → 'bulan pulu' (ref: 'bulan pulu')
+  ✗ 'takep rudap' → 'takep' (ref: 'takep rudap')
+  ✗ 'gagap' → 'megegker' (ref: 'gagap')
+  ✓ 'mawa' → 'mawa' (ref: 'mawa')
+  ✓ 'aco dueh' → 'Aco dueh' (ref: 'aco dueh')
+  ✗ 'Ro lawe' → 'tuped do’' (ref: 'Ro lawe')
+  ✗ 'sut' → 'rayeh' (ref: 'sut')
+  ✗ 'napeh atun' → 'ngait segageh' (ref: 'napeh atun')
+  ✗ 'pian' → 'piian' (ref: 'pian')
+  ✗ 'non' → 'anun' (ref: 'non')
+  ✓ 'mo' → 'Mo' (ref: 'mo')
+  ✗ 'aceh' → 'sebuleng' (ref: 'aceh')
+  ✗ 'kira-kira' → 'macing' (ref: 'kira-kira')
+  ✓ 'ngaceku' → 'ngaceku' (ref: 'ngaceku')
+  ✓ 'bibir' → 'bibir' (ref: 'bibir')
+  ✗ 'udeng-udeng' → '' (ref: 'udeng-udeng')
+  ✗ 'najar' → 'mada' (ref: 'najar')
+  ✓ 'muneng' → 'muneng' (ref: 'muneng')
+  ✗ 'necan' → 'Neka' (ref: 'necan')
+  ✗ 'upis' → 'ruma’ kuan lun rayeh' (ref: 'upis')
+  ✗ 'anid aco' → '' (ref: 'anid aco')
+  ✗ 'neh' → 'dat' (ref: 'neh')
+  ✗ 'range yang' → 'neremuat' (ref: 'range yang')
+  ✗ 'tunge' → 'tunge/ianih' (ref: 'tunge')
+  ✗ 'lemanguy' → 'uput' (ref: 'lemanguy')
+  ✗ 'kiyung' → 'matu' (ref: 'kiyung')
+  ✗ 'meran' → 'lapung' (ref: 'meran')
+  ✓ 'mesiri' → 'mesiri' (ref: 'mesiri')
+  ✗ 'do pekak' → '' (ref: 'do pekak')
+  ✓ 'ninger' → 'ninger' (ref: 'ninger')
+  ✗ 'mesusa niat' → 'dat niat' (ref: 'mesusa niat')
+  ✗ 'nered' → 'mengered' (ref: 'nered')
+  ✗ 'limeh' → 'lima' (ref: 'limeh')
+  ✗ 'lawid' → 'Ikan' (ref: 'lawid')
+  ✗ 'lati' → 'laya' (ref: 'lati')
+  ✗ 'liwa' → 'iwa’' (ref: 'liwa')
+  ✓ 'bang' → 'bang' (ref: 'bang')
+  ✗ 'tepun cur' → 'tinan tin' (ref: 'tepun cur')
+  ✗ 'megai' → 'ruked-ruked' (ref: 'megai')
+  ✗ 'bata' langit' → 'mitem' (ref: 'bata' langit')
+  ✗ 'ayat' → 'bala' (ref: 'ayat')
+  ✗ 'fa' → 'abpa' (ref: 'fa')
+  ✗ 'todo' → 'tudo' (ref: 'todo')
+  ✗ 'pingit' → 'tang' (ref: 'pingit')
+  ✗ 'mekatu' → 'do’' (ref: 'mekatu')
+  ✗ 'sayur' → 'luk kenen ratnan tana’' (ref: 'sayur')
+  ✗ 'lubed' → 'lemubed' (ref: 'lubed')
+  ✗ 'madu' → 'madu’' (ref: 'madu')
+  ✓ 'umak' → 'umak' (ref: 'umak')
+  ✗ 'nehrninger' → 'nio' (ref: 'nehrninger')
+  ✗ 'nanak' → 'nacing' (ref: 'nanak')
+  ✗ 'mucih' → 'macing malem' (ref: 'mucih')
+  ✗ 'metutun' → 'metadem' (ref: 'metutun')
+  ✗ 'bua' ticu' → 'bua’ ticu’' (ref: 'bua' ticu')
+  ✓ 'kuman' → 'Kuman' (ref: 'kuman')
+  ✗ 'pudut' → 'ruma’' (ref: 'pudut')
+  ✗ 'mait' → 'met' (ref: 'mait')
+  ✗ 'nerung' → 'nutun' (ref: 'nerung')
+  ✗ 'meno' → 'Ngaro' (ref: 'meno')
+  ✗ 'nalap' → 'alap' (ref: 'nalap')
+  ✗ 'fa' → 'pura’' (ref: 'fa')
+  ✓ 'pad' → 'pad' (ref: 'pad')
+  ✗ 'ba ulai' → 'mecat' (ref: 'ba ulai')
+  ✗ 'merita' → 'medita’' (ref: 'merita')
+  ✗ 'bawang rayeh' → 'bawang' (ref: 'bawang rayeh')
+  ✗ 'rat yapeh' → 'rat' (ref: 'rat yapeh')
+  ✗ 'luk sulad' → 'luk kekiped' (ref: 'luk sulad')
+  ✗ 'ding rumah' → 'lun bang tetek ruma’' (ref: 'ding rumah')
+  ✗ 'dat' → 'dat taga' (ref: 'dat')
+  ✗ 'apo' → 'tanga' (ref: 'apo')
+  ✗ 'peped/' → 'kekiped' (ref: 'peped/')
+  ✗ 'bulu mateh' → 'bua’ mateh' (ref: 'bulu mateh')
+  ✗ 'Ame’ kiteh' → 'Tau amé’' (ref: 'Ame’ kiteh')
+  ✗ 'sigapung' → 'sipu' (ref: 'sigapung')
+  ✓ 'ngirup' → 'ngirup' (ref: 'ngirup')
+  ✗ 'lawid' → 'Ikan' (ref: 'lawid')
+  ✗ 'lisun' → 'bua’ ticu’' (ref: 'lisun')
+  ✗ 'peburi' → 'Mala' (ref: 'peburi')
+  ✓ 'kareb' → 'kareb' (ref: 'kareb')
+  ✗ 'bata langit' → 'mitem' (ref: 'bata langit')
+  ✗ 'bata don' → 'bata' uduh' (ref: 'bata don')
+  ✗ 'sesuut' → 'pawa’' (ref: 'sesuut')
+  ✗ 'irang' → 'kapal' (ref: 'irang')
+  ✗ 'boastful' → 'proud' (ref: 'boastful')
+  ✗ 'mada’' → 'mada' (ref: 'mada’')
+  ✓ 'dat taga' → 'dat taga' (ref: 'dat taga')
+  ✗ 'sigageh' → 'meruked' (ref: 'sigageh')
+  ✗ 'ide’' → 'ide' (ref: 'ide’')
+  ✓ 'met uluh' → 'met uluh' (ref: 'met uluh')
+  ✗ 'luk kanen/nuba’' → 'luk kenen' (ref: 'luk kanen/nuba’')
+  ✗ 'met kated' → 'met iung' (ref: 'met kated')
+  ✓ 'ara' → 'ara' (ref: 'ara')
+  ✗ 'batu rayeh' → 'batuh' (ref: 'batu rayeh')
+  ✗ 'alung' → 'ruwan' (ref: 'alung')
+  ✗ 'langen' → 'ticu' (ref: 'langen')
+  ✓ 'lipen' → 'lipen' (ref: 'lipen')
+  ✗ 'maya’ negku' → 'baya’ negku' (ref: 'maya’ negku')
+  ✗ 'dei' → 'tunge' (ref: 'dei')
+  ✗ 'mudur/tuped/umak' → 'umak' (ref: 'mudur/tuped/umak')
+  ✓ 'uluh' → 'uluh' (ref: 'uluh')
+  ✗ 'masang' → 'Ngalap' (ref: 'masang')
+  ✗ 'rengeb' → 'abpung' (ref: 'rengeb')
+  ✗ 'bua’ kukud' → 'bua' kukud' (ref: 'bua’ kukud')
+  ✗ 'sapeh' → 'luk' (ref: 'sapeh')
+  ✗ 'Iko mesido’' → '' (ref: 'Iko mesido’')
+  ✓ 'suit' → 'suit' (ref: 'suit')
+  ✗ 'talau' → 'Amék' (ref: 'talau')
+  ✗ 'mepad' → 'Na misu’' (ref: 'mepad')
+  ✗ 'mula’' → '' (ref: 'mula’')
+  ✓ 'batek' → 'batek' (ref: 'batek')
+  ✗ 'ngitek' → 'natek' (ref: 'ngitek')
+  ✗ 'ame dei' → 'amé' (ref: 'ame dei')
+  ✗ 'becuk' → 'kuyad' (ref: 'becuk')
+  ✓ 'kuman' → 'Kuman' (ref: 'kuman')
+  ✗ 'awang' → 'mawang niat' (ref: 'awang')
+  ✗ 'tebubpun' → 'sembayang' (ref: 'tebubpun')
+  ✗ 'dapar' → 'kukud' (ref: 'dapar')
+  ✗ 'abpuk' → 'fuk' (ref: 'abpuk')
+  ✓ 'kated' → 'kated' (ref: 'kated')
+  ✗ 'puet' → 'ticu' (ref: 'puet')
+  ✗ 'sapi' → 'sapi’' (ref: 'sapi')
+  ✗ 'pelengit' → 'Peribud' (ref: 'pelengit')
+  ✗ 'laga' → 'galin' (ref: 'laga')
+  ✗ 'Pekatu' → 'perurum' (ref: 'Pekatu')
+  ✓ 'Tuda’' → 'Tuda’' (ref: 'Tuda’')
+  ✗ 'nguab' → 'mebor' (ref: 'nguab')
+  ✗ 'Dane' → 'ideh' (ref: 'Dane')
+  ✗ 'usu' → 'tue' (ref: 'usu')
+  ✓ 'mengered' → 'mengered' (ref: 'mengered')
+  ✗ 'gio' → 'mureg' (ref: 'gio')
+  ✗ 'buro' → 'upun' (ref: 'buro')
+  ✗ 'denganak' → 'kinanak' (ref: 'denganak')
+
+Sentence BLEU (40 examples, lb→en)…
+  10/40…
+  20/40…
+  30/40…
+  40/40…
+  → 24.57 (combined)
+
+  Short (ref ≤10 words): 31 examples → 21.73
+  Long  (ref >10 words): 9  examples → 24.37
+
+Sentence samples (lb→en):
+  LB:  lawe siri siri
+  Got: many kinds
+  Ref: straight ahead
+
+  LB:  ba rayeh uni
+  Got: noisy
+  Ref: loud sound
+
+  LB:  kinanak lai rayeh
+  Got: older brother
+  Ref: older brother
+
+  LB:  mado rat tunge
+  Got: far from here
+  Ref: far from here
+
+  LB:  le miud pa kabing
+  Got: turn left
+  Ref: turn left
+
+  LB:  Do’ tau ame’ kuman
+  Got: Let's go eat
+  Ref: Better we go to eat
+
+  LB:  Na iko ni mileh peburi
+  Got: You are not good at speaking
+  Ref: You don’t know how to speak
+
+  LB:  Ieh nekuman nuba’ dih
+  Got: He ate the food
+  Ref: He ate the food
+
+  LB:  Ah, mula’ teh decur libut tau kelem
+  Got: Oh, there are many women around us who are beautiful
+  Ref: Ah! there are plenty of girls around
+
+  LB:  Nuba’ ineh kanen
+  Got: The food is being eaten
+  Ref: The food is to be eaten
+
+  LB:  Ide’ ideh neh?
+  Got: Who are they?
+  Ref: who are they?
+
+  LB:  Ide ngadan mu?
+  Got: What is your name?
+  Ref: What is your name?
+
+  LB:  anun ruen mu?
+  Got: what are you doing?
+  Ref: What are you doing?
+
+  LB:  Ngadan ku Balang
+  Got: Tiger
+  Ref: My name is Balang
+
+  LB:  Iko pelaba mebeneh niat
+  Got: You are very kind
+  Ref: You are too humble
+
+  LB:  Ui ara kuman
+  Got: I do not want to eat
+  Ref: I don’t want to eat
+
+  LB:  “Edui na’, maté lé’! Edui na’ maté lé’!” ki Buayeh lek.
+  Got: “Oh, no! I will die! Oh, no! I will die!” said Crocodile.
+  Ref: “Oh, I’m surely dead! Oh, I’m surely dead!” said Crocodile.
+
+  LB:  ieca’ Buayeh inih,” ki Pelanuk namid-namid keted iBuayeh. Siren peh lek kedih em, na meto-meto meh lek rimud kabing, rimud biring iBuayeh ineh.
+  Got: “Father Crocodile,” said Mouse-deer, while he massaged Crocodile’s back. “Look, he doesn’t have any boils on his thigh, on his thigh.
+  Ref: kicking Crocodile’s back. Crocodile’s unceasing, crooked, lopsided smile widened.
+
+  LB:  Awang-awang lek niat iBuayeh ninger ni Tuk Pelanuk nawar neneh eca’ dih. “Oo, eca’ Pelanuk, uih inih melau. Sikel kuman selipa tipan iSapi’ inih, iemo’ ieh na sikel meré. Na patut buri’ neh. Ieh sikel bisara’ atun,” ki Buayeh.
+  Got: As Crocodile listened to Mouse-deer’s calls, he replied, “Oh, brother, I am very hungry. I want to eat one side of Cow’s thigh, but he won’t let me. He is being unreasonable. He wants to have a trial first,” said Crocodile.
+  Ref: Crocodile was overjoyed to hear Mouse-deer call him “brother.” “Oh, brother Mouse-deer, I’m hungry. I want to eat one side of Cow’s thigh, but he’s not willing to give it to me. He says it’s not fair. He wants to hold a hearing first,” said Crocodile.
+
+  LB:  “Bura’ peh ali inih?” ki Tuk Pelanuk. Lapen iTuk Pelanuk peh lek sigup nidih em, uten neh peh ieh em, telika rebpun ngepub terutung bang lubang dih meh lek ineh. Serebpu’ peh em, riek-riek meh ieh ku rebpun sigup nidih. Kian, ba peh lek ut nidih lek, meriek peh ieh em, but-but meh lek etut neh.
+  Got: “Let’s carry brother Crocodile,” said Mouse-deer. So Mouse-deer lifted Crocodile, and as he carried him, the blood flowed out from Crocodile’s wound. He carried him, and the blood flowed out from Crocodile’s wound.
+  Ref: “Why is it so quiet here?” Mouse-deer wondered. He took his cigarette and smoked it, the smoke resembling that from smoking a porcupine in a hole. Occasionally, he would cough from the smoke. Who knows, perhaps he smoked so much that he coughed and farted.
+
+  LB:  “Bah, iko nemala ina, iko nenulong ni eca’ Buayeh. Tau sikel keli’ ku metu keh bala muh atau na,” ki Tuk Pelanuk. Ria’-ria’ meh lek dawa’ pung luk nepemung nan patar liang dai’ puneng Padian ineh.
+  Got: “Bah, you said before, you helped Crocodile. We want to know whether what you said is true or not,” said Mouse-deer. The other animals who had gathered on the riverbank at the Brunei headwaters cheered.
+  Ref: “Come on, you said just now that you helped brother Crocodile. We want to know whether your words are actually true or not,” said Mousedeer. A commotion broke out among the animals gathered on the plain at the Brunei headwaters.
+
+  LB:  “Enun teh inan bisara’ eca’ Buayeh? Em iko peh eca’, melau peh nai em, ngudeh kuman selipa alang-alang, kudeh, na mabud muh dueh-dueh pekop tipan iSapi’? Na peh petap,
+  Got: “Are Crocodile’s court proceedings still continuing? If you are still going to court, why did you eat the side of the river, why didn’t you eat all of Cow’s thigh?
+  Ref: “What case is there to try, brother Crocodile? You, brother, if you’re hungry, why eat only one side? What, can’t you finish the whole of Cow’s thigh? If that’s not enough, eat Cow’s
+
+  LB:  “Bah, na peh muyuh pung beken setuju, na peh iko setuju Sapi’, ilung neh iko mebalih, atau iko sikel ngigu’ ni eca’ Buayeh. Oo, na miek kudeng ineh. Jadi’, kudeng iko mebalih, miek ieca’ Buayeh kuman tipan muh. Beken mo’ selipa tipan muh, iemo’ pekop tipan muh idi kuman emung burur muh,” ki Tuk Pelanuk.
+  Got: “Ba, don’t you all animals agree, don’t you agree, Cow, that means you are lying, or you are just trying to insult Crocodile. Oh, don’t be like that. So, if you are lying, Crocodile can eat your thigh. Only your thigh, but if he grabs your thigh and eats your whole body,” said Mouse-deer.
+  Ref: “Well, then, if all you animals don’t agree, and if you don’t agree, Cow, it means that you’re a liar, or you want to embarrass brother Crocodile. Oh, that cannot be allowed. So, if you’re lying, brother Crocodile can eat your thigh. Not only one side of your thigh, but both sides of your thigh, and eat your entire body,” said Mousedeer.
+
+  LB:  “Iapeh batang rayeh luk inau’ muh ngiding ret iketed iBuayeh dih?” ki Tuk Pelanuk ni Sapi’.
+  Got: “Where is the log that you carried on your back when you helped Crocodile?” said Mouse-deer to Cow.
+  Ref: “Where is that large log that you lifted off Crocodile’s back?” said Mouse-deer to Cow.
+
+  LB:  “Ninger muyuh wa’ pung,” ki Tuk Pelanuk teh. “Patad peh tau ret ienih, na tau dat adat. Na tau dat akal kudeng iBusir Kiung ineh. Pun dih peh em, nenguit negkuh pekeca’ ieh. Nenguit negkuh pedinganak. Iuk-iuk peh em, musam neh ieh. Sikel neh ieh kuman negkuh. Do’ luk kudeng inih? Inih peh em, tinulong iSapi’ ieh, tawan iSapi’, edui, sikel kuman selipa tipan iSapi’ neh ieh. Muned luk kudeng ineh keli’ muyuh?” ki Tuk Pelanuk lek.
+  Got: “Listen to me, you animals,” said Mouse-deer. “Let’s part ways, so that we don’t fight. Let’s not be like Crocodile. He carried me on his back at first. He carried me on his back and treated me like his younger brother. But as time went on, he got bored. He wanted to eat me. Is that right? Then he enlisted the help of Cow, Crocodile’s friend, who wanted to eat one side of Cow’s thigh. Do you know who that is?” said Mouse-deer.
+  Ref: “Hear ye, all animals,” said Mouse-deer. “Let us disperse from here; we are not so vile. We are not foolish like that Abscessed Face. First, he took me as a friend. He took me as a brother. But after a while, he got bored. He tried to eat me. Is this good? As for this, Cow helped him, poor Cow, and, oh, dear, he tried to eat a side of Cow’s thigh. Is that right, do you think?” said Mouse-deer.
+
+  LB:  “Oo, Pelanuk, na kai setuju iko ngenau’ ni Sapi’ kudeng ineh,” kedawa’ Temecur, kedawa’ Kelio, kedawa’ Payo, kedawa’ Baka, kedawa’ Kerubau.
+  Got: “Oh, Mousedeer, we don’t agree that you can do that to Cow,” said Crocodile, Lizard, Squirrel, Mouse, and Buffalo.
+  Ref: “Oh, Mouse-deer, we don’t agree with your doing that to Cow,” said the Rhinoceros, the Oxen, the Deer, the Wild Boar, and the Buffalo.
+
+  LB:  Kai kemuh eme' dai'
+  Got: Come with me to the river.
+  Ref: go over there
+
+  LB:  Sapeh diko anak?
+  Got: Which one is your child?
+  Ref: which one is your child?
+
+  LB:  Seruked  inih peh em kuman bua’ mo’  kai
+  Got: from now on we will eat only fruit
+  Ref: all this time, we have just been eating fruit
+
+  LB:  Tudo iapeh imo?
+  Got: Where did you sleep?
+  Ref: Where do you live?
+
+  LB:  Sidih peh kuan anak inih em, eme heh ng-alap neneh
+  Got: who belongs to this child, come and take him
+  Ref: whoever owns this child, let her come and take him
+
+  LB:  Ebpa kegkuh bua’ datu’ dih em, lé-lé teh ieh in-ebpeh nan kukud iDawat
+  Got: As the water wears away stones, and floods wash away the soil, so you destroy the hope of man.
+  Ref: when I dropped the durian, it almost fell on Dawat's foot
+
+  LB:  Pelaba anged pirit nan late' kai din
+  Got: the breeze is blowing on our back
+  Ref: there are so many sparrows at our rice field
+
+  LB:  Tec-i’ nan tana’  ineh babeh midih
+  Got: put the heavy box on the ground
+  Ref: leave your luggage on the ground
+
+  LB:  Na ku idi pade bang depo nine
+  Got: there is no rice in the kitchen
+  Ref: That is why there is no rice in his granary
+
+  LB:  Lawé kai inih peh em nge-kiped inih
+  Got: this trip we are going to kiped
+  Ref: this trip of ours, it is the last one
+
+  LB:  Ken-uh nuba' inih!
+  Got: Bring that rice!
+  Ref: Eat this rice
+
+  LB:  Em-é’ iapeh iko?
+  Got: Where are you going?
+  Ref: Where are you going?
+
+  LB:  Ecing kegkuh ina em, te-k-ukab neh tanga’ ineh
+  Got: when I opened it, there was a man standing in the middle of the room
+  Ref: as I arrived just now, the door was already open
+
+  LB:  Do’ teh medueh p-aweh  kereb terawé mineh na ne-kisu’
+  Got: You and I should get along, if only for the sake of our love
+  Ref: you'd better get married now before your mind has changed
+
+Sentence BLEU (40 examples, en→lb)…
+  10/40…
+  20/40…
+  30/40…
+  40/40…
+  → 9.85 (combined)
+
+  Short (ref ≤10 words): 29 examples → 3.75
+  Long  (ref >10 words): 11  examples → 10.74
+
+Sentence samples (en→lb):
+  EN:  straight ahead
+  Got: me tecu
+  Ref: lawe siri siri
+
+  EN:  loud sound
+  Got: unineh rayeh
+  Ref: ba rayeh uni
+
+  EN:  older brother
+  Got: kinanak adi’ deléi
+  Ref: kinanak lai rayeh
+
+  EN:  far from here
+  Got: mado
+  Ref: mado rat tunge
+
+  EN:  turn left
+  Got: li mutuh
+  Ref: le miud pa kabing
+
+  EN:  Better we go to eat
+  Got: Aco sineh kai amé’ kuman
+  Ref: Do’ tau ame’ kuman
+
+  EN:  You don’t know how to speak
+  Got: Iko na kali’ peburi
+  Ref: Na iko ni mileh peburi
+
+  EN:  He ate the food
+  Got: Ieh nekuman nuba’ ineh
+  Ref: Ieh nekuman nuba’ dih
+
+  EN:  Ah! there are plenty of girls around
+  Got: Peh, inan mula’ decur peh
+  Ref: Ah, mula’ teh decur libut tau kelem
+
+  EN:  The food is to be eaten
+  Got: Iten baken na miak kenen
+  Ref: Nuba’ ineh kanen
+
+  EN:  who are they?
+  Got: Idé-idé ineh?
+  Ref: Ide’ ideh neh?
+
+  EN:  What is your name?
+  Got: Ide ngadan?
+  Ref: Ide ngadan mu?
+
+  EN:  What are you doing?
+  Got: Nganau’ anun iko?
+  Ref: anun ruen mu?
+
+  EN:  My name is Balang
+  Got: Ngadanku Balang
+  Ref: Ngadan ku Balang
+
+  EN:  You are too humble
+  Got: Iko pelaba iuk-iuk rangen
+  Ref: Iko pelaba mebeneh niat
+
+  EN:  I don’t want to eat
+  Got: Na ui pian kuman
+  Ref: Ui ara kuman
+
+  EN:  “Oh, I’m surely dead! Oh, I’m surely dead!” said Crocodile.
+  Got: “O, ui maté, ui maté,” ki Buayeh.
+  Ref: “Edui na’, maté lé’! Edui na’ maté lé’!” ki Buayeh lek.
+
+  EN:  kicking Crocodile’s back. Crocodile’s unceasing, crooked, lopsided smile widened.
+  Got: kebalaneh, “Lun pebunu’ ineh na miak ngelaya’ namu.”
+  Ref: ieca’ Buayeh inih,” ki Pelanuk namid-namid keted iBuayeh. Siren peh lek kedih em, na meto-meto meh lek rimud kabing, rimud biring iBuayeh ineh.
+
+  EN:  Crocodile was overjoyed to hear Mouse-deer call him “brother.” “Oh, brother Mouse-deer, I’m hungry. I want to eat one side of Cow’s thigh, but he’s not willing to give it to me. He says it’s not fair. He wants to hold a hearing first,” said Crocodile.
+  Got: Ideh mawang niat ninger iTuk Pelanuk neten neneh kinanak. “Kinanak iTuk Pelanuk, ui merur. Ui pian kuman selipa tipan iSapi’ ineh. Iamo’ ieh na sikal maré. Ngaceku ieh pebala na luk idi, ieh sikal mutut besara’,” ki Buayeh.
+  Ref: Awang-awang lek niat iBuayeh ninger ni Tuk Pelanuk nawar neneh eca’ dih. “Oo, eca’ Pelanuk, uih inih melau. Sikel kuman selipa tipan iSapi’ inih, iemo’ ieh na sikel meré. Na patut buri’ neh. Ieh sikel bisara’ atun,” ki Buayeh.
+
+  EN:  “Why is it so quiet here?” Mouse-deer wondered. He took his cigarette and smoked it, the smoke resembling that from smoking a porcupine in a hole. Occasionally, he would cough from the smoke. Who knows, perhaps he smoked so much that he coughed and farted.
+  Got: “Ngudeh em, na uni,” ki Tuk Pelanuk. Pangeh ineh ieh nengalap luk inanneh umau’ ineh, idi ieh nengirup ineh. Idi rabpun ineh mepad kudeng rabpun luk iseb lun luk ngaté amung-amung pung luk inan lun ngaté. Idi lek ieh peh peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh-peh
+  Ref: “Bura’ peh ali inih?” ki Tuk Pelanuk. Lapen iTuk Pelanuk peh lek sigup nidih em, uten neh peh ieh em, telika rebpun ngepub terutung bang lubang dih meh lek ineh. Serebpu’ peh em, riek-riek meh ieh ku rebpun sigup nidih. Kian, ba peh lek ut nidih lek, meriek peh ieh em, but-but meh lek etut neh.
+
+  EN:  “Come on, you said just now that you helped brother Crocodile. We want to know whether your words are actually true or not,” said Mousedeer. A commotion broke out among the animals gathered on the plain at the Brunei headwaters.
+  Got: “Kudeng ineh ke kudeng apeh. Iko pangeh nepebala, iko pangeh nengedengan iBuayeh. Kai pian kali' matu bala ineh,” ki Tuk Pelanuk. Idi inan dureng-dureng arang pung-pung luk nepamung nan talang su luk ali-ali muneng ku Abpa’ Padian.
+  Ref: “Bah, iko nemala ina, iko nenulong ni eca’ Buayeh. Tau sikel keli’ ku metu keh bala muh atau na,” ki Tuk Pelanuk. Ria’-ria’ meh lek dawa’ pung luk nepemung nan patar liang dai’ puneng Padian ineh.
+
+  EN:  “What case is there to try, brother Crocodile? You, brother, if you’re hungry, why eat only one side? What, can’t you finish the whole of Cow’s thigh? If that’s not enough, eat Cow’s
+  Got: 
+  Ref: “Enun teh inan bisara’ eca’ Buayeh? Em iko peh eca’, melau peh nai em, ngudeh kuman selipa alang-alang, kudeh, na mabud muh dueh-dueh pekop tipan iSapi’? Na peh petap,
+
+  EN:  “Well, then, if all you animals don’t agree, and if you don’t agree, Cow, it means that you’re a liar, or you want to embarrass brother Crocodile. Oh, that cannot be allowed. So, if you’re lying, brother Crocodile can eat your thigh. Not only one side of your thigh, but both sides of your thigh, and eat your entire body,” said Mousedeer.
+  Got: “Kudeng ineh, kudeng na muyuh amung-amung perurum, idi iko na perurum teh, Sapi’, na miak na iko mebalih, kian iko sikal ngigu’ ni Buayeh. Na tu-tu iko miak na kuman uang tipan kenen iBuayeh. Na selipa mo’, iamo’ selipa teh, idi amung bururmu pana’ kenen iBuayeh,” ki Tuk Pelanuk.
+  Ref: “Bah, na peh muyuh pung beken setuju, na peh iko setuju Sapi’, ilung neh iko mebalih, atau iko sikel ngigu’ ni eca’ Buayeh. Oo, na miek kudeng ineh. Jadi’, kudeng iko mebalih, miek ieca’ Buayeh kuman tipan muh. Beken mo’ selipa tipan muh, iemo’ pekop tipan muh idi kuman emung burur muh,” ki Tuk Pelanuk.
+
+  EN:  “Where is that large log that you lifted off Crocodile’s back?” said Mouse-deer to Cow.
+  Got: “Yapeh kayuh rayeh ineh, luk linendeh ineh nan keted iBuayeh?” ki Tuk Pelanuk ni Sapi’.*
+  Ref: “Iapeh batang rayeh luk inau’ muh ngiding ret iketed iBuayeh dih?” ki Tuk Pelanuk ni Sapi’.
+
+  EN:  “Hear ye, all animals,” said Mouse-deer. “Let us disperse from here; we are not so vile. We are not foolish like that Abscessed Face. First, he took me as a friend. He took me as a brother. But after a while, he got bored. He tried to eat me. Is this good? As for this, Cow helped him, poor Cow, and, oh, dear, he tried to eat a side of Cow’s thigh. Is that right, do you think?” said Mouse-deer.
+  Got: “Ninger, amung-amung pung,” ki Tuk Pelanuk. “Buro rat ieni, tau na inan dat. Na tau mebacé mepad kudeng iBungalé. Pun-pun ieh ngedita’ negku, idi ieh ngedita’ negku ku kinanak. Pangeh ineh ieh melibo. Ieh sikal kuman negku. Baken ieh do’! Idi iSapi’ pana’ nengedengan neneh, iSapi’ luk inigu’ ineh, idi ieh sikal kuman pekop tipan iSapi’ ineh. Baken ieh do’! Baken ieh petulu!” ki Tuk Pelanuk.
+  Ref: “Ninger muyuh wa’ pung,” ki Tuk Pelanuk teh. “Patad peh tau ret ienih, na tau dat adat. Na tau dat akal kudeng iBusir Kiung ineh. Pun dih peh em, nenguit negkuh pekeca’ ieh. Nenguit negkuh pedinganak. Iuk-iuk peh em, musam neh ieh. Sikel neh ieh kuman negkuh. Do’ luk kudeng inih? Inih peh em, tinulong iSapi’ ieh, tawan iSapi’, edui, sikel kuman selipa tipan iSapi’ neh ieh. Muned luk kudeng ineh keli’ muyuh?” ki Tuk Pelanuk lek.
+
+  EN:  “Oh, Mouse-deer, we don’t agree with your doing that to Cow,” said the Rhinoceros, the Oxen, the Deer, the Wild Boar, and the Buffalo.
+  Got: “Oo, keladai, kai na sikal metueh ratnan iko ngedereh ni Sapi’,” ki Tuku, iSapi’, iPayo, iBuro, idi iKerubau.
+  Ref: “Oo, Pelanuk, na kai setuju iko ngenau’ ni Sapi’ kudeng ineh,” kedawa’ Temecur, kedawa’ Kelio, kedawa’ Payo, kedawa’ Baka, kedawa’ Kerubau.
+
+  EN:  go over there
+  Got: Amé’ déi’
+  Ref: Kai kemuh eme' dai'
+
+  EN:  which one is your child?
+  Got: Sapeh luk anakmu?
+  Ref: Sapeh diko anak?
+
+  EN:  all this time, we have just been eating fruit
+  Got: Nekini kai anid-anid kuman bua’
+  Ref: Seruked  inih peh em kuman bua’ mo’  kai
+
+  EN:  Where do you live?
+  Got: Iapeh iko tudo?
+  Ref: Tudo iapeh imo?
+
+  EN:  whoever owns this child, let her come and take him
+  Got: Idé luk kuan anak ini, do' ieh amé' ngalap neneh
+  Ref: Sidih peh kuan anak inih em, eme heh ng-alap neneh
+
+  EN:  when I dropped the durian, it almost fell on Dawat's foot
+  Got: Kareb ui nengereteng durian ineh, ieh petacu neluka’ nan kukud Dawat
+  Ref: Ebpa kegkuh bua’ datu’ dih em, lé-lé teh ieh in-ebpeh nan kukud iDawat
+
+  EN:  there are so many sparrows at our rice field
+  Got: Pelaba ula’ sikuen luun lati’ piasau na
+  Ref: Pelaba anged pirit nan late' kai din
+
+  EN:  leave your luggage on the ground
+  Got: Tec-i’ bang arang udi teh
+  Ref: Tec-i’ nan tana’  ineh babeh midih
+
+  EN:  That is why there is no rice in his granary
+  Got: Na ieh ineh ngeranih, ngaceku ineh na akan bang leponeh
+  Ref: Na ku idi pade bang depo nine
+
+  EN:  this trip of ours, it is the last one
+  Got: Lapen tau lawé tau ini luk kekiped
+  Ref: Lawé kai inih peh em nge-kiped inih
+
+  EN:  Eat this rice
+  Got: Kan-a’ nuba’ ineh
+  Ref: Ken-uh nuba' inih!
+
+  EN:  Where are you going?
+  Got: Me' yapeh iko?
+  Ref: Em-é’ iapeh iko?
+
+  EN:  as I arrived just now, the door was already open
+  Got: Kareb ui nacing idi tanga’ ineh pangeh mukab
+  Ref: Ecing kegkuh ina em, te-k-ukab neh tanga’ ineh
+
+  EN:  you'd better get married now before your mind has changed
+  Got: Do’ iko ngaweh kareb nateh iko nginuud
+  Ref: Do’ teh medueh p-aweh  kereb terawé mineh na ne-kisu’
+
+Saved to tinker_state_inkling.json
+
+Raw JSONL → /home/user/lunbawang-translate/eval/eval_raw/inkling_checkpoint-11500_2026-08-03T072318Z.jsonl
+eval_outputs.csv updated → 6935 rows across 20 run(s) | 6 generation(s)
