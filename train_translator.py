@@ -262,7 +262,10 @@ def _translate_one_tml(sampling_client, user_content, params, retries=2):
         # they're serialized; the slow network .sample() call stays unlocked so
         # concurrent callers still overlap on the part that actually dominates cost.
         with _tml_lock:
-            spans, parser = renderer.render_for_completion_with_effort(messages, 0.0)
+            # effort=0.0 caused frequent single-token empty completions on
+            # short phrases in testing (checkpoint-8000, 15/15 reproduced);
+            # 0.6 was clean (0/15) on the same native-SDK path.
+            spans, parser = renderer.render_for_completion_with_effort(messages, 0.6)
         prompt = token_spans_to_tinker_model_input(spans)
         result = sampling_client.sample(prompt, num_samples=1, sampling_params=params).result()
         with _tml_lock:

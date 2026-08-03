@@ -2,7 +2,7 @@
 
 **Live demo:** https://translate.lunbawang.com/
 
-A bidirectional **Lun Bawang ↔ English** machine translator, built by fine-tuning Qwen3-8B on the first parallel corpus ever assembled for the language. The web interface is deployed on Render and runs against a fine-tuned model served via the [Tinker](https://thinkingmachines.ai/tinker/) API.
+A bidirectional **Lun Bawang ↔ English** machine translator, built by fine-tuning language models on the first parallel corpus ever assembled for the language. The web interface is deployed on Render and runs against a fine-tuned model served via the [Tinker](https://thinkingmachines.ai/tinker/) API. The production default is **Inkling-Small · Step 11,500** — see [Inkling-Small Experiment](#inkling-small-experiment) for the full comparison against the original Qwen3-8B run.
 
 ---
 
@@ -22,12 +22,12 @@ FastAPI server (serve.py)
   │  OpenAI-compatible REST call
   ▼
 Tinker inference API
-  └─ Qwen3-8B + LoRA fine-tune (v1·checkpoint-11500, best BLEU)
+  └─ Inkling-Small + LoRA fine-tune (checkpoint-11500, production default)
 ```
 
 1. The user types Lun Bawang or English text in the browser.
 2. The server auto-detects the source language from a vocabulary heuristic, then calls the Tinker API with a chat-format prompt.
-3. The model generates a translation; `<think>…</think>` reasoning blocks (from Qwen3's chain-of-thought mode) are stripped before the response is returned.
+3. The model generates a translation; `<think>…</think>` reasoning blocks (from Qwen3's chain-of-thought mode) are stripped before the response is returned. For Inkling checkpoints, `reasoning_effort="low"` is passed on every call — see [Inkling-Small Experiment](#inkling-small-experiment) for why, and why a single retry at `"medium"` is issued if the first call comes back empty.
 4. Optionally, English input can be split into clauses and each clause translated independently, giving a secondary clause-by-clause translation alongside the whole-sentence result.
 
 ### Language auto-detection
@@ -92,7 +92,7 @@ Used for non-commercial research purposes.
 
 [Tinker](https://thinkingmachines.ai/tinker/) is a hosted fine-tuning and inference service. It provides a Python SDK (`tinker`) and an OpenAI-compatible REST API for serving.
 
-**Base model:** `Qwen/Qwen3-8B`
+**Base model:** `Qwen/Qwen3-8B` (archived v0/v1 runs) or `thinkingmachines/Inkling-Small` (current production default — see [Inkling-Small Experiment](#inkling-small-experiment)), selected with `--base-model`
 **Adaptation:** LoRA, rank 16
 **Optimiser:** Adam, lr 5e-5
 **Batch size:** 8
@@ -122,9 +122,14 @@ Only the assistant tokens contribute to the loss (weights = 0 on prompt, 1 on co
 
 ```bash
 python3.13 train_translator.py --train
+# Alternate base model / separate experiment, e.g. Inkling-Small:
+python3.13 train_translator.py --train \
+  --base-model thinkingmachines/Inkling-Small \
+  --state-file tinker_state_inkling.json \
+  --max-steps 11500   # match an existing run's step count for direct comparison
 ```
 
-The script resumes automatically from the last checkpoint if `tinker_state.json` exists. Progress is logged to stdout and checkpoint metadata is saved back to `tinker_state.json` after every 500 steps.
+The script resumes automatically from the last checkpoint if the target state file exists. Progress is logged to stdout and checkpoint metadata is saved back to the state file after every 500 steps. `--base-model thinkingmachines/*` requires `pip install tml-renderers torch` (see [Inkling-Small Experiment](#inkling-small-experiment) — these models use a native TML chat format, not the generic HF chat template).
 
 ### Interactive CLI translation
 
@@ -211,7 +216,64 @@ All scores on the v1 val set (50 Bible, 144 dict, 40 sentence examples including
 | Sent BLEU LB→EN | 5.99 (13.8 / 2.6) | **22.07 (20.3 / 22.2)** |
 | Sent BLEU EN→LB | 1.24 (1.4 / 1.4) | **9.51 (4.2 / 10.3)** |
 
-**v1 · Step 11,500 is the current default checkpoint.** It achieves the best Bible BLEU in both directions and best dictionary exact-match, and EN→LB is substantially improved across the board compared to v0. The sentence BLEU gap is particularly stark: v0 scores 5.99 LB→EN and 1.24 EN→LB on the v1 val set; v1 scores 22.07 and 9.51.
+**v1 · Step 11,500 was the best checkpoint of the Qwen3-8B runs** (superseded as the production default by Inkling-Small — see below). It achieves the best Bible BLEU in both directions and best dictionary exact-match among v0/v1, and EN→LB is substantially improved across the board compared to v0. The sentence BLEU gap is particularly stark: v0 scores 5.99 LB→EN and 1.24 EN→LB on the v1 val set; v1 scores 22.07 and 9.51.
+
+---
+
+## Inkling-Small Experiment
+
+[Inkling-Small](https://thinkingmachines.ai/) is Thinking Machines' small reasoning model, available on Tinker at a lower per-token cost than Qwen3-8B. It was fine-tuned on the exact same corpus, LoRA config (rank 16, lr 5e-5, batch size 8), and step count (11,500) as the archived v1 Qwen run, for a direct step-matched comparison.
+
+### Training format differences
+
+Inkling uses a native TML chat format (`tml_renderers`) rather than a generic HF chat template — `<|message_system|>`, `<|content_text|>`, `<|end_message|>`, etc. — which Tinker's serving endpoint expects server-side. Training and inference prompts must be rendered through `tml_renderers.Renderer` rather than `tokenizer.apply_chat_template()`, or the fine-tuned model produces empty output through the real serving API even though in-loop training-time eval looks fine (the two use different tokenization paths). `train_translator.py` and `eval/eval_checkpoint.py` both auto-detect `thinkingmachines/*` base models and switch rendering paths accordingly.
+
+### Results by checkpoint
+
+Same bidirectional eval as the v1 table above (50 Bible, 144 dictionary, 40 sentence examples).
+
+| Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
+|------|----------|------------|------------|-----------|-----------|-----------|-----------|
+| 2,000 | 0.465 | 48.68 | 27.73 | 17.4% | 12.5% | 20.36 | 6.92 |
+| 4,000 | 0.224 | 52.25 | 45.43 | 18.1% | 14.6% | 16.64 | 7.98 |
+| 6,000 | 0.125 | 45.88 | 54.96 | 18.8% | 22.2% | 19.51 | 11.92 |
+| 8,000 | 0.089 | 58.14 | 61.97 | 9.7% | 13.2% | 23.74 | 3.12 |
+| 10,000 | 0.051 | 66.46 | 67.00 | 16.0% | 12.5% | 18.87 | 5.75 |
+| **11,500** | **0.044** | **59.11** | **71.59** | **17.4%** | **18.8%** | **24.57** | **9.85** |
+
+### Final comparison: Inkling-Small vs. Qwen3-8B v1 (step 11,500)
+
+| Metric | Inkling-Small | Qwen v1 | Winner |
+|--------|---------------|---------|--------|
+| Bible BLEU LB→EN | 59.11 | 58.82 | ~tied |
+| Bible BLEU EN→LB | **71.59** | 56.48 | Inkling (+15.1) |
+| Dict exact LB→EN | 17.4% | **24.3%** | Qwen (+6.9pp) |
+| Dict exact EN→LB | **18.8%** | 15.3% | Inkling (+3.5pp) |
+| Sent BLEU LB→EN | **24.57** | 22.07 | Inkling (+2.5) |
+| Sent BLEU EN→LB | **9.85** | 9.51 | ~tied |
+
+Inkling-Small wins or ties on 5 of 6 metrics, with a decisive and consistent edge on Bible EN→LB throughout the run. Qwen retains a real advantage on dictionary LB→EN exact-match. **Inkling-Small · Step 11,500 is the new production default** (see [Deployment](#deployment-render)).
+
+### The empty-output issue
+
+Partway through this run, a serving-time failure mode surfaced: certain short inputs — mostly single common words or short idioms ("eat", "drink", "yes", "straight ahead", "turn left") — occasionally came back as a single end-of-message token with **zero generated content**, rather than a wrong-but-present translation. This section documents the investigation because it's a real, checkpoint-intrinsic quirk of Inkling that anyone else fine-tuning it should watch for.
+
+**Root cause.** Inkling supports a `reasoning_effort` control (`none` / `low` / `medium` / `high` / …) that governs how much internal deliberation it does before answering. Training (`render_for_sft()`) never includes any effort signal, so *any* effort value used at inference time is somewhat out-of-distribution — but `reasoning_effort="none"` (the default when unset) was measured to reproduce a **100% empty-completion rate** on a curated set of known-hard short phrases. We initially tried to control this via a `"Thinking effort level: N"` system-message string (mirroring the native SDK's completion renderer) — this turned out to be **inert noise** over the OpenAI-compatible REST endpoint (varying its value from 0 to 0.99 gave inconsistent, non-monotonic empty rates, 12–18/27). The actual fix was the OpenAI client's real `reasoning_effort` parameter, passed outside the message list. It reliably beats `"none"`, but by how much varies a lot by checkpoint — on the same curated hard-phrase probe, `"low"` measured ~19% empty on an earlier checkpoint but 95% on checkpoint-10,000 (`"medium"`/`"high"` capped that particular checkpoint's worst case at 35%). The per-checkpoint table below, measured on the full held-out eval rather than a curated worst-case set, is the more representative number.
+
+**Empty-output rate over the course of training** (measured directly from the full eval JSONL at each checkpoint, `reasoning_effort="low"` used from step 10,000 onward — earlier checkpoints used the inert text-message workaround, effectively `"none"`):
+
+| Step | Overall | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
+|------|---------|------------|------------|------------|------------|
+| 2,000 | 0% | 0% | 0% | 0% | 0% |
+| 4,000 | 13% | 5% | 34% | 0% | 12% |
+| 6,000 | 1% | 3% | 0% | 0% | 2% |
+| 8,000 | 30% | 41% | 50% | 0% | 25% |
+| 10,000 | 15% | 13% | 31% | 0% | 15% |
+| **11,500** | **4%** | **8%** | **4%** | **0%** | **2%** |
+
+For comparison, **Qwen v1 has a 0% empty rate on the identical eval set at every checkpoint** — this is an Inkling-specific quirk, not a general artifact of fine-tuning on this corpus. It's also concentrated almost entirely in EN→LB and dictionary-style short inputs; Bible verses and LB→EN sentences never produced an empty result at any checkpoint measured.
+
+**Mitigation shipped to production** (`serve.py`): every Inkling call uses `reasoning_effort="low"` by default (fast, and correct the overwhelming majority of the time). If a call comes back empty, the server automatically retries once at `reasoning_effort="medium"` before returning to the user — `"medium"`/`"high"` measured meaningfully lower failure rates than `"low"` on the hardest cases in testing. This escalation only ever triggers for Inkling checkpoints and only on the rare empty result, so it doesn't add latency to the common case. In manual testing against the ten hardest known-empty phrases from the final checkpoint's eval data, this brought the empty rate to 0/10.
 
 ### BLEU context
 
@@ -324,9 +386,9 @@ The app is deployed on [Render](https://render.com) as a web service. On startup
 python3.13 serve.py
 ```
 
-`TINKER_API_KEY` is set as a Render environment variable. The committed `tinker_state.json` tells the server which checkpoints exist and where to find them on Tinker's infrastructure — no model weights are stored in the repo.
+`TINKER_API_KEY` is set as a Render environment variable. The committed state files (`tinker_state.json`, `tinker_state_v1.json`, `tinker_state_inkling.json`, …) tell the server which checkpoints exist and where to find them on Tinker's infrastructure — no model weights are stored in the repo.
 
-The checkpoint dropdown in the UI lets you compare any saved checkpoint across both runs. v1 · Step 11,500 is pre-selected as the default because it achieves the best overall BLEU across both translation directions.
+The checkpoint dropdown in the UI lets you compare any saved checkpoint across every run. **Inkling · Step 11,500 is pre-selected as the default** — see [Inkling-Small Experiment](#inkling-small-experiment) for why.
 
 ---
 
@@ -337,6 +399,8 @@ raretranslator/
 ├── serve.py                  # FastAPI web server + translation API
 ├── train_translator.py       # Fine-tuning + evaluation script
 ├── tinker_state.json         # Checkpoint metadata for the current run
+├── tinker_state_v1.json      # Archived Qwen3-8B v1 run (comparison baseline)
+├── tinker_state_inkling.json # Inkling-Small run — production default (see README)
 ├── feedback_corpus.csv       # Generated by eval/review_feedback.py; loaded by training
 ├── requirements.txt
 ├── static/
@@ -375,6 +439,7 @@ raretranslator/
 - **Small vocabulary:** The combined corpus covers only a fraction of Lun Bawang vocabulary. Uncommon words are often hallucinated or approximated.
 - **En→LB is harder:** The model was evaluated primarily in the LB→EN direction. English→Lun Bawang output is harder to verify without a native speaker.
 - **No morphological analysis:** Lun Bawang has productive affixation (nasal prefixes, infixes, reduplication). The model learns these patterns implicitly from examples rather than through explicit linguistic structure.
+- **Occasional empty output (Inkling default):** ~4% of short/single-word translations came back empty in the final checkpoint's held-out eval, mitigated in production by an automatic retry at higher reasoning effort (see [Inkling-Small Experiment](#inkling-small-experiment)). Not fully eliminated — a repeat translation attempt on the same input usually succeeds if you hit it.
 
 ---
 
@@ -386,4 +451,5 @@ raretranslator/
 - Phrasebook data: longsemadoh.wordpress.com
 - Narrative parallel text: Mortensen, M. (2021). *The Kemaloh Lun Bawang Language of Borneo*. PhD dissertation, University of Hawai'i at Mānoa. Used for non-commercial research purposes.
 - Fine-tuning infrastructure: [Tinker](https://thinkingmachines.ai/tinker/) by Thinking Machines
-- Base model: [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) by Alibaba Cloud
+- Production base model: Inkling-Small by Thinking Machines
+- Archived base model (v0/v1): [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) by Alibaba Cloud

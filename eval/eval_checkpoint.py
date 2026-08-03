@@ -58,11 +58,12 @@ _arg_parser.add_argument("--label", type=str, default=None,
                           help="Override the run label used in output filenames/CSVs")
 _arg_parser.add_argument("--base-model", type=str, default=None,
                           help="Base model the checkpoint was fine-tuned from. For "
-                               "thinkingmachines/* (Inkling family), adds a "
-                               "'Thinking effort level: 0' system message matching "
-                               "how the checkpoint was trained — direct answers, no "
-                               "reasoning trace — which also avoids slow/rambling "
-                               "generations during eval.")
+                               "thinkingmachines/* (Inkling family), passes "
+                               "reasoning_effort='low' on every completion call — "
+                               "reasoning_effort='none' (the effective default when "
+                               "unset) causes frequent single-token empty completions "
+                               "on short phrases; 'low' fixed this in testing while "
+                               "staying fast.")
 cli_args = _arg_parser.parse_args()
 
 if cli_args.state_file:
@@ -150,8 +151,12 @@ _uses_tml = bool(cli_args.base_model) and cli_args.base_model.split(":")[0].star
     ("thinkingmachines/", "TML/")
 )
 _messages_base = [{"role": "system", "content": SYSTEM_PROMPT}]
-if _uses_tml:
-    _messages_base.append({"role": "system", "content": "Thinking effort level: 0"})
+# reasoning_effort="none" (the effective default when unset) reproduced a 100%
+# empty-completion rate on short phrases in testing; "low" fixed it (~19%
+# residual). A "Thinking effort level: N" system message was tried first but
+# turned out to be inert noise over this REST endpoint — reasoning_effort is
+# the real control.
+_completion_kwargs = {"reasoning_effort": "low"} if _uses_tml else {}
 
 
 def translate(text, direction="lb2en", retries=2):
@@ -173,6 +178,7 @@ def translate(text, direction="lb2en", retries=2):
             model=CHECKPOINT,
             messages=_messages_base + [{"role": "user", "content": user_content}],
             max_tokens=256, temperature=0.1, top_p=0.9,
+            **_completion_kwargs,
         )
         raw = r.choices[0].message.content or ""
         if raw or attempt == retries:
@@ -198,7 +204,7 @@ def translate_batch(pairs, direction, eval_set, src_idx, ref_idx):
         for fut in as_completed(futures):
             i, src, ref, raw, proc, call_ms = fut.result()
             results[i] = (proc, ref)
-            write_row(eval_set, src, raw, proc, ref, call_ms)
+            write_row(eval_set, src, raw, proc, ref, call_ms, idx=i)
             done += 1
             if done % 10 == 0:
                 print(f"  {done}/{len(pairs)}…")
@@ -214,7 +220,7 @@ jsonl_path = RAW_DIR / f"{safe_label}_{ts.replace(':', '')}.jsonl"
 jsonl_file = open(jsonl_path, "w", encoding="utf-8")
 _jsonl_lock = threading.Lock()  # translate_batch writes from multiple threads
 
-def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None):
+def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None, idx=None):
     record = {
         "timestamp":        ts,
         "model":            model_label,
@@ -224,6 +230,11 @@ def write_row(eval_set, input_lb, raw, processed, reference, call_ms=None):
         "processed_output": processed,
         "reference":        reference,
     }
+    if idx is not None:
+        record["idx"] = idx  # position within this eval_set's pairs list — rows land in
+                              # completion order under concurrency, not submission order,
+                              # so this is the only reliable way to correlate the same
+                              # logical example across different checkpoints' JSONL files
     if call_ms is not None:
         record["call_ms"] = call_ms
     with _jsonl_lock:
