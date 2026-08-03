@@ -7,3 +7,188 @@ Bible BLEU (50 examples, lb→en)…
   10/50…
   20/50…
   30/50…
+  40/50…
+  50/50…
+  → 66.46
+
+Bible BLEU (50 examples, en→lb)…
+  10/50…
+  20/50…
+  30/50…
+  40/50…
+  50/50…
+  → 67.00
+
+Dict exact match (144 examples, lb→en)…
+  10/144…
+  20/144…
+  30/144…
+  40/144…
+  50/144…
+  60/144…
+  70/144…
+  80/144…
+  90/144…
+  100/144…
+  110/144…
+  120/144…
+  130/144…
+  140/144…
+  → 16.0% (23/144)
+
+Dict samples (lb→en):
+  ✗ 'lengen' → 'shoulder' (ref: 'arms')
+  ✗ 'lai' → 'year' (ref: 'male')
+  ✗ 'meratu' → '' (ref: 'one hundred')
+  ✓ 'aco teluh' → 'Wednesday' (ref: 'Wednesday')
+  ✓ 'taman tinan' → 'parents' (ref: 'parents')
+  ✗ 'terawe' → 'egg' (ref: 'opinion, think')
+  ✗ 'nimun' → 'lemon' (ref: 'start')
+  ✗ 'napeh' → 'husband' (ref: 'later')
+  ✗ 'nayud' → 'write' (ref: 'writing')
+  ✗ 'nanem' → '' (ref: 'bury')
+  ✓ 'necing' → 'arrive' (ref: 'arrive')
+  ✗ 'surud' → '' (ref: 'hill')
+  ✓ 'bulan pulu' → 'October' (ref: 'October')
+  ✗ 'takep rudap' → 'bed' (ref: 'bedroom')
+  ✗ 'gagap' → 'startled' (ref: 'shocked')
+  ✗ 'mawa' → '' (ref: 'love')
+  ✗ 'aco dueh' → 'Monday' (ref: 'Tuesday')
+  ✗ 'Ro lawe' → 'good evening' (ref: 'good bye')
+  ✗ 'sut' → 'one, a, an' (ref: 'small')
+  ✗ 'napeh atun' → 'husband' (ref: 'wait a minute')
+  ✗ 'pian' → 'want' (ref: 'need, want, like')
+  ✗ 'non' → 'none' (ref: 'what')
+  ✗ 'mo' → 'more' (ref: 'yes')
+  ✗ 'aceh' → 'one' (ref: 'one, 1')
+  ✗ 'kira-kira' → 'approximately' (ref: 'roughly, approximately')
+  ✓ 'ngaceku' → 'because' (ref: 'because')
+  ✗ 'bibir' → '' (ref: 'lips')
+  ✗ 'udeng-udeng' → 'slowly' (ref: 'usually')
+  ✗ 'najar' → 'study' (ref: 'teaching')
+  ✗ 'muneng' → '' (ref: 'close, near')
+  ✗ 'necan' → 'leave' (ref: '(to leave something behind)')
+  ✓ 'upis' → 'office' (ref: 'office')
+  ✗ 'anid aco' → '' (ref: 'every day')
+  ✓ 'neh' → 'that' (ref: 'that')
+  ✗ 'range yang' → 'that one' (ref: 'out, outside')
+  ✗ 'tunge' → 'egg' (ref: 'here')
+  ✗ 'lemanguy' → 'citrus' (ref: 'to swim')
+  ✗ 'kiyung' → '' (ref: 'face')
+  ✗ 'meran' → 'to laugh' (ref: 'lite')
+  ✗ 'mesiri' → '' (ref: 'straight (ahead)')
+  ✗ 'do pekak' → 'tomorrow' (ref: 'good morning')
+  ✗ 'ninger' → 'hear' (ref: 'listening')
+  ✓ 'mesusa niat' → 'sad' (ref: 'sad')
+  ✗ 'nered' → 'nest' (ref: 'old')
+  ✗ 'limeh' → 'you' (ref: 'five, 5')
+  ✗ 'lawid' → 'bird' (ref: 'fish')
+  ✗ 'lati' → 'farm' (ref: 'rice paddy')
+  ✗ 'liwa' → 'snake gord' (ref: 'nine, 9')
+  ✗ 'bang' → 'in, at, inside, within' (ref: 'in')
+  ✗ 'tepun cur' → 'grandfather' (ref: 'grandmother')
+  ✗ 'megai' → 'red' (ref: 'always')
+  ✗ 'bata' langit' → 'rainbow' (ref: 'blue')
+  ✗ 'ayat' → 'verse' (ref: 'words')
+  ✗ 'fa' → '' (ref: 'water')
+  ✗ 'todo' → 'again' (ref: 'sit')
+  ✗ 'pingit' → 'climbing' (ref: 'cheek')
+  ✗ 'mekatu' → '' (ref: 'good')
+  ✓ 'sayur' → 'vegetable' (ref: 'vegetable')
+  ✗ 'lubed' → 'tired' (ref: 'return (from somewhere)')
+  ✗ 'madu' → 'honey' (ref: 'forehead')
+  ✗ 'umak' → 'to come (moving towards the speaker)' (ref: 'come up')
+  ✗ 'nehrninger' → 'hear' (ref: 'listen')
+  ✗ 'nanak' → 'child' (ref: 'born')
+  ✗ 'mucih' → 'few' (ref: 'late')
+  ✗ 'metutun' → 'question' (ref: 'shallow')
+  ✗ 'bua' ticu' → 'finger' (ref: 'fingers')
+  ✗ 'kuman' → '' (ref: 'eat')
+  ✗ 'pudut' → 'erect' (ref: 'building')
+  ✓ 'mait' → 'sick' (ref: 'sick')
+  ✗ 'nerung' → 'congested' (ref: 'put')
+  ✗ 'meno' → 'cold' (ref: 'steal')
+  ✗ 'nalap' → 'to take' (ref: '1) accept; 2) take')
+  ✗ 'fa' → 'baré' (ref: '1) drink; 2) river')
+  ✗ 'pad' → 'father' (ref: 'the same')
+  ✗ 'ba ulai' → 'slowly' (ref: 'late')
+  ✗ 'merita' → 'to laugh' (ref: 'tall')
+  ✗ 'bawang rayeh' → 'city' (ref: 'town')
+  ✗ 'rat yapeh' → 'where from?' (ref: 'from')
+  ✗ 'luk sulad' → 'co-grandparents' (ref: 'last (the last one)')
+  ✗ 'ding rumah' → 'house' (ref: 'family')
+  ✗ 'dat' → 'bad' (ref: 'ugly')
+  ✗ 'apo' → 'uncle' (ref: 'roof')
+  ✗ 'peped/' → 'close to each other' (ref: 'end')
+  ✓ 'bulu mateh' → 'eyebrow' (ref: 'eyebrow')
+  ✗ 'Ame’ kiteh' → 'let's go' (ref: 'we go')
+  ✓ 'sigapung' → 'hide' (ref: 'hide')
+  ✗ 'ngirup' → '' (ref: 'drink')
+  ✗ 'lawid' → 'bird' (ref: 'fish')
+  ✗ 'lisun' → 'mischievous' (ref: 'finger nail')
+  ✗ 'peburi' → 'to speak, to talk' (ref: 'Speak')
+  ✓ 'kareb' → 'when' (ref: 'when')
+  ✗ 'bata langit' → 'sky' (ref: 'blue')
+  ✗ 'bata don' → 'red' (ref: 'green')
+  ✗ 'sesuut' → '' (ref: 'a few')
+  ✗ 'irang' → 'selfish' (ref: 'sloop')
+  ✗ 'boastful' → 'sido' (ref: 'mesido’')
+  ✗ 'mada’' → 'to tell' (ref: 'tell')
+  ✓ 'dat taga' → 'ugly' (ref: 'ugly')
+  ✗ 'sigageh' → 'sometimes' (ref: 'temporary')
+  ✗ 'ide’' → 'around' (ref: 'who')
+  ✗ 'met uluh' → 'head' (ref: 'headache')
+  ✗ 'luk kanen/nuba’' → 'rice' (ref: 'food')
+  ✗ 'met kated' → 'bite one another' (ref: 'backache')
+  ✗ 'ara' → 'dislike, don't want, refuse' (ref: 'don’t want')
+  ✗ 'batu rayeh' → 'a stone, a rock' (ref: 'rock')
+  ✗ 'alung' → 'nose' (ref: 'valley')
+  ✗ 'langen' → 'closeness' (ref: 'arm')
+  ✗ 'lipen' → '' (ref: 'tooth')
+  ✓ 'maya’ negku' → 'follow me' (ref: 'follow me')
+  ✓ 'dei' → 'there' (ref: 'there')
+  ✗ 'mudur/tuped/umak' → 'stand' (ref: 'arise')
+  ✗ 'uluh' → '' (ref: 'head')
+  ✗ 'masang' → 'to put on clothes' (ref: 'fixing, switch on')
+  ✗ 'rengeb' → 'rainny' (ref: 'cliff')
+  ✗ 'bua’ kukud' → 'toes' (ref: 'toe')
+  ✓ 'sapeh' → 'which' (ref: 'which')
+  ✗ 'Iko mesido’' → 'you are sad' (ref: 'you are very proud')
+  ✓ 'suit' → 'bird' (ref: 'bird')
+  ✗ 'talau' → 'egg' (ref: 'barking deer')
+  ✗ 'mepad' → 'similar' (ref: 'unchange')
+  ✓ 'mula’' → 'many' (ref: 'many')
+  ✓ 'batek' → 'stomach' (ref: 'stomach')
+  ✗ 'ngitek' → 'close (eg close the door)' (ref: 'shut(door)')
+  ✗ 'ame dei' → 'come here' (ref: 'go(there)')
+  ✗ 'becuk' → 'monkey' (ref: 'short tail monkey')
+  ✗ 'kuman' → '' (ref: 'Eat')
+  ✗ 'awang' → 'husband' (ref: 'joy')
+  ✗ 'tebubpun' → 'gather together' (ref: 'worship service')
+  ✗ 'dapar' → 'kitchen' (ref: 'foot')
+  ✓ 'abpuk' → 'hair' (ref: 'hair')
+  ✓ 'kated' → 'back' (ref: 'back')
+  ✗ 'puet' → '' (ref: 'buttock')
+  ✗ 'sapi' → '' (ref: 'cow')
+  ✗ 'pelengit' → 'door' (ref: 'sit close to one another')
+  ✗ 'laga' → 'chicken' (ref: 'pillow, cushion')
+  ✗ 'Pekatu' → 'solid' (ref: 'join together')
+  ✗ 'Tuda’' → 'how much?' (ref: 'how many/much?')
+  ✗ 'nguab' → 'add' (ref: 'yawn')
+  ✗ 'Dane' → 'Dane' (ref: 'those')
+  ✗ 'usu' → 'deer' (ref: 'chase')
+  ✗ 'mengered' → 'red' (ref: 'old')
+  ✗ 'gio' → 'cooking' (ref: 'move the body')
+  ✗ 'buro' → 'to go out' (ref: 'flee')
+  ✓ 'denganak' → 'siblings' (ref: 'siblings')
+
+Dict exact match (144 examples, en→lb)…
+  10/144…
+  20/144…
+  30/144…
+  40/144…
+  50/144…
+  60/144…
+  70/144…
+  80/144…
+  90/144…
