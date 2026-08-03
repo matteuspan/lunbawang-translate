@@ -358,10 +358,10 @@ def translate(req: TranslateRequest):
             # at "low", one retry at "medium" resolves most of the rest while
             # keeping the common case fast — only Inkling checkpoints set
             # reasoning_effort, so this never triggers for Qwen.
-            text = _completion(content, "low" if is_inkling else None)
-            if not text and is_inkling:
-                text = _completion(content, "medium")
-            return text
+            out = _completion(content, "low" if is_inkling else None)
+            if not out and is_inkling:
+                out = _completion(content, "medium")
+            return out
 
         # Whole-sentence translation
         translation = clean_translation(_call(user_content), source=text)

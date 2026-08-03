@@ -216,7 +216,7 @@ All scores on the v1 val set (50 Bible, 144 dict, 40 sentence examples including
 | Sent BLEU LB→EN | 5.99 (13.8 / 2.6) | **22.07 (20.3 / 22.2)** |
 | Sent BLEU EN→LB | 1.24 (1.4 / 1.4) | **9.51 (4.2 / 10.3)** |
 
-**v1 · Step 11,500 is the current default checkpoint.** It achieves the best Bible BLEU in both directions and best dictionary exact-match, and EN→LB is substantially improved across the board compared to v0. The sentence BLEU gap is particularly stark: v0 scores 5.99 LB→EN and 1.24 EN→LB on the v1 val set; v1 scores 22.07 and 9.51.
+**v1 · Step 11,500 was the best checkpoint of the Qwen3-8B runs** (superseded as the production default by Inkling-Small — see below). It achieves the best Bible BLEU in both directions and best dictionary exact-match among v0/v1, and EN→LB is substantially improved across the board compared to v0. The sentence BLEU gap is particularly stark: v0 scores 5.99 LB→EN and 1.24 EN→LB on the v1 val set; v1 scores 22.07 and 9.51.
 
 ---
 
@@ -244,7 +244,7 @@ Same bidirectional eval as the v1 table above (50 Bible, 144 dictionary, 40 sent
 ### Final comparison: Inkling-Small vs. Qwen3-8B v1 (step 11,500)
 
 | Metric | Inkling-Small | Qwen v1 | Winner |
-|--------|--------------:|--------:|--------|
+|--------|---------------|---------|--------|
 | Bible BLEU LB→EN | 59.11 | 58.82 | ~tied |
 | Bible BLEU EN→LB | **71.59** | 56.48 | Inkling (+15.1) |
 | Dict exact LB→EN | 17.4% | **24.3%** | Qwen (+6.9pp) |
@@ -258,12 +258,12 @@ Inkling-Small wins or ties on 5 of 6 metrics, with a decisive and consistent edg
 
 Partway through this run, a serving-time failure mode surfaced: certain short inputs — mostly single common words or short idioms ("eat", "drink", "yes", "straight ahead", "turn left") — occasionally came back as a single end-of-message token with **zero generated content**, rather than a wrong-but-present translation. This section documents the investigation because it's a real, checkpoint-intrinsic quirk of Inkling that anyone else fine-tuning it should watch for.
 
-**Root cause.** Inkling supports a `reasoning_effort` control (`none` / `low` / `medium` / `high` / …) that governs how much internal deliberation it does before answering. Training (`render_for_sft()`) never includes any effort signal, so *any* effort value used at inference time is somewhat out-of-distribution — but `reasoning_effort="none"` (the default when unset) was measured to reproduce a **100% empty-completion rate** on a curated set of known-hard short phrases. We initially tried to control this via a `"Thinking effort level: N"` system-message string (mirroring the native SDK's completion renderer) — this turned out to be **inert noise** over the OpenAI-compatible REST endpoint (varying its value from 0 to 0.99 gave inconsistent, non-monotonic empty rates, 12–18/27). The actual fix was the OpenAI client's real `reasoning_effort` parameter, passed outside the message list — `"low"` cut empty completions from 100% (at `"none"`) down to roughly 19% on the hardest known cases in isolated testing.
+**Root cause.** Inkling supports a `reasoning_effort` control (`none` / `low` / `medium` / `high` / …) that governs how much internal deliberation it does before answering. Training (`render_for_sft()`) never includes any effort signal, so *any* effort value used at inference time is somewhat out-of-distribution — but `reasoning_effort="none"` (the default when unset) was measured to reproduce a **100% empty-completion rate** on a curated set of known-hard short phrases. We initially tried to control this via a `"Thinking effort level: N"` system-message string (mirroring the native SDK's completion renderer) — this turned out to be **inert noise** over the OpenAI-compatible REST endpoint (varying its value from 0 to 0.99 gave inconsistent, non-monotonic empty rates, 12–18/27). The actual fix was the OpenAI client's real `reasoning_effort` parameter, passed outside the message list. It reliably beats `"none"`, but by how much varies a lot by checkpoint — on the same curated hard-phrase probe, `"low"` measured ~19% empty on an earlier checkpoint but 95% on checkpoint-10,000 (`"medium"`/`"high"` capped that particular checkpoint's worst case at 35%). The per-checkpoint table below, measured on the full held-out eval rather than a curated worst-case set, is the more representative number.
 
 **Empty-output rate over the course of training** (measured directly from the full eval JSONL at each checkpoint, `reasoning_effort="low"` used from step 10,000 onward — earlier checkpoints used the inert text-message workaround, effectively `"none"`):
 
 | Step | Overall | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
-|------|--------:|-----------:|-----------:|-----------:|-----------:|
+|------|---------|------------|------------|------------|------------|
 | 2,000 | 0% | 0% | 0% | 0% | 0% |
 | 4,000 | 13% | 5% | 34% | 0% | 12% |
 | 6,000 | 1% | 3% | 0% | 0% | 2% |
