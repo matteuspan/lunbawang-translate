@@ -349,3 +349,345 @@ Sentence BLEU (40 examples, lb→en)…
   10/40…
   20/40…
   30/40…
+  40/40…
+  → 18.87 (combined)
+
+  Short (ref ≤10 words): 31 examples → 21.87
+  Long  (ref >10 words): 9  examples → 18.04
+
+Sentence samples (lb→en):
+  LB:  lawe siri siri
+  Got: striped
+  Ref: straight ahead
+
+  LB:  ba rayeh uni
+  Got: loud
+  Ref: loud sound
+
+  LB:  kinanak lai rayeh
+  Got: older brother
+  Ref: older brother
+
+  LB:  mado rat tunge
+  Got: far from here
+  Ref: far from here
+
+  LB:  le miud pa kabing
+  Got: turn left
+  Ref: turn left
+
+  LB:  Do’ tau ame’ kuman
+  Got: let’s go eat
+  Ref: Better we go to eat
+
+  LB:  Na iko ni mileh peburi
+  Got: you don’t know how to speak
+  Ref: You don’t know how to speak
+
+  LB:  Ieh nekuman nuba’ dih
+  Got: He ate the rice
+  Ref: He ate the food
+
+  LB:  Ah, mula’ teh decur libut tau kelem
+  Got: Ah, there are many more women around us who swim
+  Ref: Ah! there are plenty of girls around
+
+  LB:  Nuba’ ineh kanen
+  Got: the rice is cooked
+  Ref: The food is to be eaten
+
+  LB:  Ide’ ideh neh?
+  Got: who are they?
+  Ref: who are they?
+
+  LB:  Ide ngadan mu?
+  Got: What is your name?
+  Ref: What is your name?
+
+  LB:  anun ruen mu?
+  Got: what are you doing?
+  Ref: What are you doing?
+
+  LB:  Ngadan ku Balang
+  Got: Tiger
+  Ref: My name is Balang
+
+  LB:  Iko pelaba mebeneh niat
+  Got: You are very kind
+  Ref: You are too humble
+
+  LB:  Ui ara kuman
+  Got: I don’t want to eat
+  Ref: I don’t want to eat
+
+  LB:  “Edui na’, maté lé’! Edui na’ maté lé’!” ki Buayeh lek.
+  Got: “Oh, no! I’ll die! Oh, no! I’ll die!” said Crocodile.
+  Ref: “Oh, I’m surely dead! Oh, I’m surely dead!” said Crocodile.
+
+  LB:  ieca’ Buayeh inih,” ki Pelanuk namid-namid keted iBuayeh. Siren peh lek kedih em, na meto-meto meh lek rimud kabing, rimud biring iBuayeh ineh.
+  Got: “Brother Crocodile,” said Mouse-deer, while he was massaging Crocodile’s back. His eyes were tightly closed, and his breathing was very irregular.
+  Ref: kicking Crocodile’s back. Crocodile’s unceasing, crooked, lopsided smile widened.
+
+  LB:  Awang-awang lek niat iBuayeh ninger ni Tuk Pelanuk nawar neneh eca’ dih. “Oo, eca’ Pelanuk, uih inih melau. Sikel kuman selipa tipan iSapi’ inih, iemo’ ieh na sikel meré. Na patut buri’ neh. Ieh sikel bisara’ atun,” ki Buayeh.
+  Got: Crocodile was delighted to hear Mouse-deer call him older brother. “Oh, brother Pelanuk, I’m hungry. I want to eat one side of Cow’s thigh, but he won’t let me. He won’t allow it. He wants to have a trial first,” said Crocodile.
+  Ref: Crocodile was overjoyed to hear Mouse-deer call him “brother.” “Oh, brother Mouse-deer, I’m hungry. I want to eat one side of Cow’s thigh, but he’s not willing to give it to me. He says it’s not fair. He wants to hold a hearing first,” said Crocodile.
+
+  LB:  “Bura’ peh ali inih?” ki Tuk Pelanuk. Lapen iTuk Pelanuk peh lek sigup nidih em, uten neh peh ieh em, telika rebpun ngepub terutung bang lubang dih meh lek ineh. Serebpu’ peh em, riek-riek meh ieh ku rebpun sigup nidih. Kian, ba peh lek ut nidih lek, meriek peh ieh em, but-but meh lek etut neh.
+  Got: “What is this smell?” said Mouse-deer. Mouse-deer took the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of the smell of
+  Ref: “Why is it so quiet here?” Mouse-deer wondered. He took his cigarette and smoked it, the smoke resembling that from smoking a porcupine in a hole. Occasionally, he would cough from the smoke. Who knows, perhaps he smoked so much that he coughed and farted.
+
+  LB:  “Bah, iko nemala ina, iko nenulong ni eca’ Buayeh. Tau sikel keli’ ku metu keh bala muh atau na,” ki Tuk Pelanuk. Ria’-ria’ meh lek dawa’ pung luk nepemung nan patar liang dai’ puneng Padian ineh.
+  Got: “Well, you told a lie. You deceived brother Crocodile. We will find out if what you said is true or not,” said Mouse-deer. The animals who had gathered on the riverbank at Padian Lake laughed.
+  Ref: “Come on, you said just now that you helped brother Crocodile. We want to know whether your words are actually true or not,” said Mousedeer. A commotion broke out among the animals gathered on the plain at the Brunei headwaters.
+
+  LB:  “Enun teh inan bisara’ eca’ Buayeh? Em iko peh eca’, melau peh nai em, ngudeh kuman selipa alang-alang, kudeh, na mabud muh dueh-dueh pekop tipan iSapi’? Na peh petap,
+  Got: “Is there any more dispute between Crocodile and Cow? Crocodile, you are the one who are in the wrong, why do you eat only one side of Cow’s thigh? Isn’t it enough that you have eaten both sides of Cow’s thigh?
+  Ref: “What case is there to try, brother Crocodile? You, brother, if you’re hungry, why eat only one side? What, can’t you finish the whole of Cow’s thigh? If that’s not enough, eat Cow’s
+
+  LB:  “Bah, na peh muyuh pung beken setuju, na peh iko setuju Sapi’, ilung neh iko mebalih, atau iko sikel ngigu’ ni eca’ Buayeh. Oo, na miek kudeng ineh. Jadi’, kudeng iko mebalih, miek ieca’ Buayeh kuman tipan muh. Beken mo’ selipa tipan muh, iemo’ pekop tipan muh idi kuman emung burur muh,” ki Tuk Pelanuk.
+  Got: “Well, if you animals don’t agree, and if Cow doesn’t agree, that means you are lying, or you are trying to insult Crocodile Brother. Oh, I can’t do that. So, if you are lying, Crocodile Brother can eat your thigh. He can eat one side of your thigh, but he can eat your whole body,” said Mouse-deer.
+  Ref: “Well, then, if all you animals don’t agree, and if you don’t agree, Cow, it means that you’re a liar, or you want to embarrass brother Crocodile. Oh, that cannot be allowed. So, if you’re lying, brother Crocodile can eat your thigh. Not only one side of your thigh, but both sides of your thigh, and eat your entire body,” said Mousedeer.
+
+  LB:  “Iapeh batang rayeh luk inau’ muh ngiding ret iketed iBuayeh dih?” ki Tuk Pelanuk ni Sapi’.
+  Got: “Where is the large log that you said you carried on your back, Cow?” said Mouse-deer.
+  Ref: “Where is that large log that you lifted off Crocodile’s back?” said Mouse-deer to Cow.
+
+  LB:  “Ninger muyuh wa’ pung,” ki Tuk Pelanuk teh. “Patad peh tau ret ienih, na tau dat adat. Na tau dat akal kudeng iBusir Kiung ineh. Pun dih peh em, nenguit negkuh pekeca’ ieh. Nenguit negkuh pedinganak. Iuk-iuk peh em, musam neh ieh. Sikel neh ieh kuman negkuh. Do’ luk kudeng inih? Inih peh em, tinulong iSapi’ ieh, tawan iSapi’, edui, sikel kuman selipa tipan iSapi’ neh ieh. Muned luk kudeng ineh keli’ muyuh?” ki Tuk Pelanuk lek.
+  Got: “Listen, animals,” said Mouse-deer. “Let’s divide the buffalo, so that we won’t quarrel. We won’t be unreasonable like Crocodile. Before this, he carried me on his back. He carried me on his brother’s back. Then, after a while, he wanted to eat me. Is that right? Then Cow helped me, brother Cow, and Crocodile wanted to eat half of brother Cow’s thigh. Do you think that is right?” said Mouse-deer.
+  Ref: “Hear ye, all animals,” said Mouse-deer. “Let us disperse from here; we are not so vile. We are not foolish like that Abscessed Face. First, he took me as a friend. He took me as a brother. But after a while, he got bored. He tried to eat me. Is this good? As for this, Cow helped him, poor Cow, and, oh, dear, he tried to eat a side of Cow’s thigh. Is that right, do you think?” said Mouse-deer.
+
+  LB:  “Oo, Pelanuk, na kai setuju iko ngenau’ ni Sapi’ kudeng ineh,” kedawa’ Temecur, kedawa’ Kelio, kedawa’ Payo, kedawa’ Baka, kedawa’ Kerubau.
+  Got: “Oh, Mouse-deer, we don’t agree that you can do that to Cow,” said Mouse-deer, said Mouse-deer, said Mouse-deer, said Mouse-deer, said Mouse-deer.
+  Ref: “Oh, Mouse-deer, we don’t agree with your doing that to Cow,” said the Rhinoceros, the Oxen, the Deer, the Wild Boar, and the Buffalo.
+
+  LB:  Kai kemuh eme' dai'
+  Got: that I might go with you
+  Ref: go over there
+
+  LB:  Sapeh diko anak?
+  Got: Which one is your child?
+  Ref: which one is your child?
+
+  LB:  Seruked  inih peh em kuman bua’ mo’  kai
+  Got: from now on we will eat only fruit
+  Ref: all this time, we have just been eating fruit
+
+  LB:  Tudo iapeh imo?
+  Got: Which one do you want?
+  Ref: Where do you live?
+
+  LB:  Sidih peh kuan anak inih em, eme heh ng-alap neneh
+  Got: who called the child
+  Ref: whoever owns this child, let her come and take him
+
+  LB:  Ebpa kegkuh bua’ datu’ dih em, lé-lé teh ieh in-ebpeh nan kukud iDawat
+  Got: when my foot slipped, your loving kindness, Yahweh, held me up.
+  Ref: when I dropped the durian, it almost fell on Dawat's foot
+
+  LB:  Pelaba anged pirit nan late' kai din
+  Got: the wind is blowing very strongly outside
+  Ref: there are so many sparrows at our rice field
+
+  LB:  Tec-i’ nan tana’  ineh babeh midih
+  Got: put the burden on the ground
+  Ref: leave your luggage on the ground
+
+  LB:  Na ku idi pade bang depo nine
+  Got: I don't have rice in the pot
+  Ref: That is why there is no rice in his granary
+
+  LB:  Lawé kai inih peh em nge-kiped inih
+  Got: as we walk, the road will get longer
+  Ref: this trip of ours, it is the last one
+
+  LB:  Ken-uh nuba' inih!
+  Got: get this pumpkin
+  Ref: Eat this rice
+
+  LB:  Em-é’ iapeh iko?
+  Got: where did you go?
+  Ref: Where are you going?
+
+  LB:  Ecing kegkuh ina em, te-k-ukab neh tanga’ ineh
+  Got: the door creaked as it opened
+  Ref: as I arrived just now, the door was already open
+
+  LB:  Do’ teh medueh p-aweh  kereb terawé mineh na ne-kisu’
+  Got: and you must love me forever, as long as I exist
+  Ref: you'd better get married now before your mind has changed
+
+Sentence BLEU (40 examples, en→lb)…
+  10/40…
+  20/40…
+  30/40…
+  40/40…
+  → 5.75 (combined)
+
+  Short (ref ≤10 words): 29 examples → 3.19
+  Long  (ref >10 words): 11  examples → 5.99
+
+Sentence samples (en→lb):
+  EN:  straight ahead
+  Got: 
+  Ref: lawe siri siri
+
+  EN:  loud sound
+  Got: 
+  Ref: ba rayeh uni
+
+  EN:  older brother
+  Got: kinanak lai
+  Ref: kinanak lai rayeh
+
+  EN:  far from here
+  Got: 
+  Ref: mado rat tunge
+
+  EN:  turn left
+  Got: 
+  Ref: le miud pa kabing
+
+  EN:  Better we go to eat
+  Got: Peh kai kuman
+  Ref: Do’ tau ame’ kuman
+
+  EN:  You don’t know how to speak
+  Got: Na iko kali’ peburi
+  Ref: Na iko ni mileh peburi
+
+  EN:  He ate the food
+  Got: Ieh nekuman nuba’ ineh
+  Ref: Ieh nekuman nuba’ dih
+
+  EN:  Ah! there are plenty of girls around
+  Got: Adui, inan mula’ decur bang bawang ini
+  Ref: Ah, mula’ teh decur libut tau kelem
+
+  EN:  The food is to be eaten
+  Got: Kuman nuba’ ineh
+  Ref: Nuba’ ineh kanen
+
+  EN:  who are they?
+  Got: Idéké ideh?
+  Ref: Ide’ ideh neh?
+
+  EN:  What is your name?
+  Got: ide ngadanmu?
+  Ref: Ide ngadan mu?
+
+  EN:  What are you doing?
+  Got: non ruan ko
+  Ref: anun ruen mu?
+
+  EN:  My name is Balang
+  Got: ngadanku ieh ineh balang
+  Ref: Ngadan ku Balang
+
+  EN:  You are too humble
+  Got: iko pelaba beneh niat
+  Ref: Iko pelaba mebeneh niat
+
+  EN:  I don’t want to eat
+  Got: na ui pian kuman
+  Ref: Ui ara kuman
+
+  EN:  “Oh, I’m surely dead! Oh, I’m surely dead!” said Crocodile.
+  Got: “O, ui maté, ui maté,” keneh.
+  Ref: “Edui na’, maté lé’! Edui na’ maté lé’!” ki Buayeh lek.
+
+  EN:  kicking Crocodile’s back. Crocodile’s unceasing, crooked, lopsided smile widened.
+  Got: kikepneh iBuayeh. Idi abpung Buayeh ineh meluun rayeh.
+  Ref: ieca’ Buayeh inih,” ki Pelanuk namid-namid keted iBuayeh. Siren peh lek kedih em, na meto-meto meh lek rimud kabing, rimud biring iBuayeh ineh.
+
+  EN:  Crocodile was overjoyed to hear Mouse-deer call him “brother.” “Oh, brother Mouse-deer, I’m hungry. I want to eat one side of Cow’s thigh, but he’s not willing to give it to me. He says it’s not fair. He wants to hold a hearing first,” said Crocodile.
+  Got: “Iko kinanakku, kinanakku,” ki Buayeh. “Kinanku, ui melau. Ui pian kuman sebuleng tipan iSapi’ ineh. Iamo’ na ieh maré. Ngaceku na ieh mesiri. Ngaceku ieh pian nguit negku besara’,” ki Buayeh.
+  Ref: Awang-awang lek niat iBuayeh ninger ni Tuk Pelanuk nawar neneh eca’ dih. “Oo, eca’ Pelanuk, uih inih melau. Sikel kuman selipa tipan iSapi’ inih, iemo’ ieh na sikel meré. Na patut buri’ neh. Ieh sikel bisara’ atun,” ki Buayeh.
+
+  EN:  “Why is it so quiet here?” Mouse-deer wondered. He took his cigarette and smoked it, the smoke resembling that from smoking a porcupine in a hole. Occasionally, he would cough from the smoke. Who knows, perhaps he smoked so much that he coughed and farted.
+  Got: "Ngudeh iuk-iuk lek mula’ uni?” Keburi’ Tuk Pelanuk. Ieh nengirup luk inanneh. Rupenneh rabpun ineh mepad kudeng rabpun luk inau’ iBuayeh bang lubang baken. Ieh neh sigio neh. Ieh neh sii’ neh. Ieh neh breh neh.
+  Ref: “Bura’ peh ali inih?” ki Tuk Pelanuk. Lapen iTuk Pelanuk peh lek sigup nidih em, uten neh peh ieh em, telika rebpun ngepub terutung bang lubang dih meh lek ineh. Serebpu’ peh em, riek-riek meh ieh ku rebpun sigup nidih. Kian, ba peh lek ut nidih lek, meriek peh ieh em, but-but meh lek etut neh.
+
+  EN:  “Come on, you said just now that you helped brother Crocodile. We want to know whether your words are actually true or not,” said Mousedeer. A commotion broke out among the animals gathered on the plain at the Brunei headwaters.
+  Got: “Kudeng pieh kudeng ineh, kudeng luk bilamu atun, iko nengedengan ni Buayeh. Kai pian kali' matu bala inih,” ki Tuk Pelanuk. Idi amung-amung pung luk nepamung nan surud ineh pelaba rau’ ria’.
+  Ref: “Bah, iko nemala ina, iko nenulong ni eca’ Buayeh. Tau sikel keli’ ku metu keh bala muh atau na,” ki Tuk Pelanuk. Ria’-ria’ meh lek dawa’ pung luk nepemung nan patar liang dai’ puneng Padian ineh.
+
+  EN:  “What case is there to try, brother Crocodile? You, brother, if you’re hungry, why eat only one side? What, can’t you finish the whole of Cow’s thigh? If that’s not enough, eat Cow’s
+  Got: 
+  Ref: “Enun teh inan bisara’ eca’ Buayeh? Em iko peh eca’, melau peh nai em, ngudeh kuman selipa alang-alang, kudeh, na mabud muh dueh-dueh pekop tipan iSapi’? Na peh petap,
+
+  EN:  “Well, then, if all you animals don’t agree, and if you don’t agree, Cow, it means that you’re a liar, or you want to embarrass brother Crocodile. Oh, that cannot be allowed. So, if you’re lying, brother Crocodile can eat your thigh. Not only one side of your thigh, but both sides of your thigh, and eat your entire body,” said Mousedeer.
+  Got: “Kudeng apehké, iko em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em, em,
+  Ref: “Bah, na peh muyuh pung beken setuju, na peh iko setuju Sapi’, ilung neh iko mebalih, atau iko sikel ngigu’ ni eca’ Buayeh. Oo, na miek kudeng ineh. Jadi’, kudeng iko mebalih, miek ieca’ Buayeh kuman tipan muh. Beken mo’ selipa tipan muh, iemo’ pekop tipan muh idi kuman emung burur muh,” ki Tuk Pelanuk.
+
+  EN:  “Where is that large log that you lifted off Crocodile’s back?” said Mouse-deer to Cow.
+  Got: “Kudeng apeh kayuh rayeh ineh luk inau’mu ngelubid luun keted ieca' Buayeh?” keburi' iTuk Pelanuk ni Sapi’.
+  Ref: “Iapeh batang rayeh luk inau’ muh ngiding ret iketed iBuayeh dih?” ki Tuk Pelanuk ni Sapi’.
+
+  EN:  “Hear ye, all animals,” said Mouse-deer. “Let us disperse from here; we are not so vile. We are not foolish like that Abscessed Face. First, he took me as a friend. He took me as a brother. But after a while, he got bored. He tried to eat me. Is this good? As for this, Cow helped him, poor Cow, and, oh, dear, he tried to eat a side of Cow’s thigh. Is that right, do you think?” said Mouse-deer.
+  Got: “Ninger muyuh, amung-amung pung,” ki Tuk Pelanuk. “Do’ tau patad rat ieni. Tau na miak uen ngelica’ kudeng ineh. Tau na mebacé kudeng iSiri Muka. Pun-pun ieh nengalap negku ku rurumneh, kinanakku pana’, idi muci ratnan ineh ieh melaya’ niat. Ieh nenutun kuman negku. Petuluké ineh? Idi iSapi’ pana’ nengedengan neneh, pelaba ula’ niat Sapi’ ineh, idi ieh nenutun kuman pekop Sapi’ ineh. Petuluké ineh?” ki Tuk Pelanuk.
+  Ref: “Ninger muyuh wa’ pung,” ki Tuk Pelanuk teh. “Patad peh tau ret ienih, na tau dat adat. Na tau dat akal kudeng iBusir Kiung ineh. Pun dih peh em, nenguit negkuh pekeca’ ieh. Nenguit negkuh pedinganak. Iuk-iuk peh em, musam neh ieh. Sikel neh ieh kuman negkuh. Do’ luk kudeng inih? Inih peh em, tinulong iSapi’ ieh, tawan iSapi’, edui, sikel kuman selipa tipan iSapi’ neh ieh. Muned luk kudeng ineh keli’ muyuh?” ki Tuk Pelanuk lek.
+
+  EN:  “Oh, Mouse-deer, we don’t agree with your doing that to Cow,” said the Rhinoceros, the Oxen, the Deer, the Wild Boar, and the Buffalo.
+  Got: “O, Tuk Pelanuk, kai amung na pian ku ineh,” keneh ni Tuk Pelanuk, ieh ineh iTapir, iSapi’, iPayo, iBuru, idi iKerubau.
+  Ref: “Oo, Pelanuk, na kai setuju iko ngenau’ ni Sapi’ kudeng ineh,” kedawa’ Temecur, kedawa’ Kelio, kedawa’ Payo, kedawa’ Baka, kedawa’ Kerubau.
+
+  EN:  go over there
+  Got: 
+  Ref: Kai kemuh eme' dai'
+
+  EN:  which one is your child?
+  Got: Idéké anak ineh?
+  Ref: Sapeh diko anak?
+
+  EN:  all this time, we have just been eating fruit
+  Got: kai na nekuman anun-anun atun
+  Ref: Seruked  inih peh em kuman bua’ mo’  kai
+
+  EN:  Where do you live?
+  Got: Iapeh ruma’mu?
+  Ref: Tudo iapeh imo?
+
+  EN:  whoever owns this child, let her come and take him
+  Got: Kudeng inan ratnan decur luk kuan anak ini, do' ieh amé' ngalap neneh.
+  Ref: Sidih peh kuan anak inih em, eme heh ng-alap neneh
+
+  EN:  when I dropped the durian, it almost fell on Dawat's foot
+  Got: Kai’ pelaba lélé ngurat kukud Daudat kareb ui nengerareng bua’ duri’ ineh
+  Ref: Ebpa kegkuh bua’ datu’ dih em, lé-lé teh ieh in-ebpeh nan kukud iDawat
+
+  EN:  there are so many sparrows at our rice field
+  Got: mulun teh siskep luun lati’ padé kai
+  Ref: Pelaba anged pirit nan late' kai din
+
+  EN:  leave your luggage on the ground
+  Got: Tebureg lagau’ luun tana’
+  Ref: Tec-i’ nan tana’  ineh babeh midih
+
+  EN:  That is why there is no rice in his granary
+  Got: Na ieh inan padé muli’ ngaceku ieh na nengisak
+  Ref: Na ku idi pade bang depo nine
+
+  EN:  this trip of ours, it is the last one
+  Got: lawé tau ini lawé tau luk kekiped
+  Ref: Lawé kai inih peh em nge-kiped inih
+
+  EN:  Eat this rice
+  Got: Kan-a’ nuba’ inih
+  Ref: Ken-uh nuba' inih!
+
+  EN:  Where are you going?
+  Got: Ame yapeh iko?
+  Ref: Em-é’ iapeh iko?
+
+  EN:  as I arrived just now, the door was already open
+  Got: Kareb ui nacing tanga' ineh pangeh mukab
+  Ref: Ecing kegkuh ina em, te-k-ukab neh tanga’ ineh
+
+  EN:  you'd better get married now before your mind has changed
+  Got: meluun do’ iko ngaweh kareb nateh iko musam
+  Ref: Do’ teh medueh p-aweh  kereb terawé mineh na ne-kisu’
+
+Saved to tinker_state_inkling.json
+
+Raw JSONL → /home/user/lunbawang-translate/eval/eval_raw/inkling_checkpoint-10000_2026-08-03T052800Z.jsonl
+eval_outputs.csv updated → 6467 rows across 19 run(s) | 6 generation(s)
