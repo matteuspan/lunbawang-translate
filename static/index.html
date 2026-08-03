@@ -106,7 +106,10 @@
     padding: 18px 0 20px;
   }
   .mark{ width:38px; height:38px; flex:0 0 auto; display:block; border-radius:11px; }
-  .wordmark{ display:flex; flex-direction:column; line-height:1; }
+  .wordmark{
+    display:flex; flex-direction:column; line-height:1;
+    margin:0; font-size:16px; font-weight:400; /* neutralise the browser's default h1 sizing — children below set their own */
+  }
   .wordmark b{
     font-weight:800;
     font-size:19px;
@@ -377,6 +380,32 @@
   }
   .alsoknown b{ color:var(--kiln); font-weight:600; }
 
+  /* ---------- phrase glossary ----------
+     Real static text (pulled from the training corpus, not the live model)
+     so search engines have something concrete to index — the translator
+     itself only produces content after a user types, which crawlers can't
+     see. Doubles as a quick reference. */
+  .phrases{ margin-top:40px; max-width:56ch; }
+  .phrases h2{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--clay); font-weight:600; margin:0 0 14px;
+  }
+  .phrase-list{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 24px;
+  }
+  .phrase{ display:flex; flex-direction:column; gap:1px; }
+  .phrase dt{
+    font-family:var(--text); font-size:16px; color:var(--kiln); font-weight:500;
+  }
+  .phrase dd{
+    margin:0; font-size:12.5px; color:var(--clay);
+  }
+  @media (max-width:480px){
+    .phrase-list{ grid-template-columns: 1fr; }
+  }
+
   .colophon{
     margin-top:34px; display:flex; align-items:center; gap:10px;
     font-size:12.5px; color:var(--clay);
@@ -446,10 +475,10 @@
         <circle cx="32" cy="32" r="9" fill="#E5A21D"/>
       </g>
     </svg>
-    <div class="wordmark">
+    <h1 class="wordmark">
       <b>Lun Bawang</b>
       <span>Translate</span>
-    </div>
+    </h1>
   </header>
 
   <div class="langbar">
@@ -539,6 +568,24 @@
     <p>Lun Bawang is spoken by roughly 50,000–80,000 people across the highlands of Borneo — Sarawak, Kalimantan and Brunei. This translator is free, and runs on a model fine-tuned on the first parallel corpus ever assembled for the language.</p>
     <p>Translate in either direction, look up single words, and send a correction when the model gets something wrong. Corrections go back into the corpus.</p>
     <p class="alsoknown">Also known as <b>Lun Dayeh</b> or <b>Lundayeh</b> — this works equally as a Lundayeh translator, a Lundayeh dictionary, and for Lundayeh to English translation.</p>
+  </section>
+
+  <section class="phrases">
+    <h2>Common Lun Bawang phrases</h2>
+    <dl class="phrase-list">
+      <div class="phrase"><dt>Do pekak</dt><dd>Good morning</dd></div>
+      <div class="phrase"><dt>Ro meco</dt><dd>Good evening</dd></div>
+      <div class="phrase"><dt>Ro lawe</dt><dd>Goodbye</dd></div>
+      <div class="phrase"><dt>Mo</dt><dd>Yes</dd></div>
+      <div class="phrase"><dt>Nam</dt><dd>No</dd></div>
+      <div class="phrase"><dt>Anun bala?</dt><dd>How are you?</dd></div>
+      <div class="phrase"><dt>Ui mawa nemu</dt><dd>I love you</dd></div>
+      <div class="phrase"><dt>Tinam</dt><dd>Mother</dd></div>
+      <div class="phrase"><dt>Tamam</dt><dd>Father</dd></div>
+      <div class="phrase"><dt>Rurum</dt><dd>Friend</dd></div>
+      <div class="phrase"><dt>Aceh, dueh, teluh</dt><dd>One, two, three</dd></div>
+      <div class="phrase"><dt>Kuman</dt><dd>Eat</dd></div>
+    </dl>
   </section>
 
   <div class="colophon">
