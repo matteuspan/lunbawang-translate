@@ -725,9 +725,11 @@
         opt.textContent = ck.label;
         checkpointSelect.appendChild(opt);
       });
-      // Default to v1 step 11500 (best checkpoint); fall back to latest
+      // Default to whichever checkpoint the backend marks as "(default)"
+      // (see serve.py's get_latest_checkpoint/list_checkpoints); fall back
+      // to latest if none is marked.
       const paths = checkpoints.map(c => c.path);
-      const preferred = checkpoints.find(c => c.step === 11500 && c.label?.startsWith('v1'));
+      const preferred = checkpoints.find(c => c.label?.includes('(default)'));
       const defaultPath = preferred?.path ?? checkpoints.at(-1)?.path ?? '';
       checkpointSelect.value = paths.includes(prev) ? prev : defaultPath;
       checkpointWrap.classList.toggle('show', checkpoints.length > 0);
