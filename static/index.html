@@ -169,8 +169,15 @@
 
   /* ---------- panes ---------- */
   .deck{
-    display:grid;
-    grid-template-columns: 1fr;
+    /* flex, not grid, on mobile: Safari has long-standing bugs recomputing
+       CSS Grid row geometry when a descendant's display toggles dynamically
+       via JS (e.g. the feedback row appearing after a translation) — the
+       grid track doesn't always grow to fit, and content silently renders
+       with zero height. Flex doesn't have this problem. Desktop switches to
+       grid below for the 3-column pane/divider/pane layout, which isn't
+       exposed to the same dynamic-single-column-growth case. */
+    display:flex;
+    flex-direction:column;
     background: var(--surface);
     border:1px solid var(--line);
     border-radius: var(--r-lg);
@@ -439,7 +446,7 @@
     .mark{ width:44px; height:44px; }
     .wordmark b{ font-size:22px; }
 
-    .deck{ grid-template-columns: 1fr 1px 1fr; }
+    .deck{ display:grid; grid-template-columns: 1fr 1px 1fr; }
     .pane{ padding:24px 26px 16px; }
     .pane + .pane{ border-top:0; }
     textarea, .out{ min-height: 210px; font-size:20px; }
