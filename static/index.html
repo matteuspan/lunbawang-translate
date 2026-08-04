@@ -256,28 +256,32 @@
   }
   .clause-out{ font-family:var(--text); font-size:17px; line-height:1.5; color:var(--kiln); }
 
-  /* ---------- feedback ---------- */
-  /* Lowest-risk construction available, after three in-place fixes all
-     failed on mobile Safari:
-       1. it lives OUTSIDE .deck (see markup) — a plain block in normal
-          document flow, not a descendant of the card's flex/grid layout,
-       2. its box is ALWAYS laid out — never display:none, so it is never
-          inserted into or removed from the layout tree at runtime,
-       3. the only thing that changes on toggle is opacity + pointer-events
-          — pure paint and hit-testing, which cannot affect layout at all
-          in any engine, by spec.
-     There is no layout recalculation involved in showing this element, so
-     there is nothing left for a layout bug to get wrong. */
-  .feedback{
+  /* ---------- translation verdict (thumbs / correction) ----------
+     NOTE ON NAMING — do not rename these back to "feedback".
+     This widget was invisible on mobile Safari for four rounds of layout
+     fixes. Measuring the gap in a device screenshot showed the box was
+     getting display:none, which nothing in this stylesheet does. The
+     cause is external: iOS content blockers ship cosmetic filter rules
+     that hide elements classed/id'd "feedback" (survey and rating
+     widgets are a standard blocker target). That explains every symptom
+     — fine on desktop Safari, dead on mobile, survives private browsing,
+     and totally immune to CSS/layout changes.
+     Hence the neutral, project-specific names below.
+
+     The layout is also kept deliberately dull for the same reason it was
+     before: this block sits OUTSIDE .deck in normal document flow, its
+     box is always laid out (never display:none), and revealing it only
+     changes opacity + pointer-events — pure paint, never layout. */
+  .tl-verdict{
     margin:14px 0 6px;
     padding:0 4px;
     opacity:0;
     pointer-events:none;
     transition:opacity .18s;
   }
-  .feedback.show{ opacity:1; pointer-events:auto; }
-  .feedback-row{ display:flex; align-items:center; gap:10px; }
-  .feedback-row span{ font-size:12.5px; color:var(--clay); }
+  .tl-verdict.show{ opacity:1; pointer-events:auto; }
+  .tl-verdict-row{ display:flex; align-items:center; gap:10px; }
+  .tl-verdict-row span{ font-size:12.5px; color:var(--clay); }
   .thumb{
     border:1px solid var(--line); background:transparent; border-radius:var(--r-sm);
     padding:4px 9px; font-size:14px; cursor:pointer; line-height:1;
@@ -478,6 +482,10 @@
     .pane + .pane{ border-top:0; }
     textarea, .out{ min-height: 210px; font-size:20px; }
 
+    /* sit under the translation (right) column, text-aligned with it, so
+       it reads as belonging to the output rather than the input */
+    .tl-verdict{ padding-left:calc(50% + 26px); }
+
     /* the strand runs vertically between the panes on wide screens */
     .strand{
       height:auto; width:1px;
@@ -563,13 +571,11 @@
   </div>
 
   <!-- Deliberately OUTSIDE .deck: a plain block in normal document flow,
-       not a descendant of the card's flex/grid layout. Three attempts at
-       fixing this in place (grid->flex, overflow, display->visibility) all
-       failed on mobile Safari specifically while working everywhere else,
-       so the card's own mobile layout context is the common factor. Normal
-       flow is the most boring, most universally-correct layout there is. -->
-  <div class="feedback" id="feedback">
-    <div class="feedback-row">
+       not a descendant of the card's flex/grid layout.
+       Class/id names are intentionally NOT "feedback" — see the stylesheet
+       comment; that name was being hidden by iOS content blockers. -->
+  <div class="tl-verdict" id="tlVerdict">
+    <div class="tl-verdict-row">
       <span>Was this helpful?</span>
       <button class="thumb" id="thumbUp" title="Good translation">👍</button>
       <button class="thumb" id="thumbDown" title="Suggest a fix">👎 Suggest a fix</button>
@@ -656,7 +662,7 @@
   const clauseBlock    = document.getElementById('clauseBlock');
   const clauseChips    = document.getElementById('clauseChips');
   const clauseOut      = document.getElementById('clauseOut');
-  const feedback       = document.getElementById('feedback');
+  const feedback       = document.getElementById('tlVerdict'); // see stylesheet note on naming
   const thumbUp        = document.getElementById('thumbUp');
   const thumbDown      = document.getElementById('thumbDown');
   const correction     = document.getElementById('correction');
