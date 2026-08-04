@@ -238,6 +238,11 @@
     padding:6px 10px; border-radius:var(--r-sm);
     display:inline-flex; align-items:center; gap:6px;
   }
+  /* the [hidden] attribute and .ghost's own display:inline-flex are equal
+     specificity — .ghost wins as the later author rule, so hidden buttons
+     (Copy, Clear) were rendering visible the whole time. This selector
+     just needs to be more specific than plain .ghost. */
+  .ghost[hidden]{ display:none; }
   .ghost:hover{ background:var(--bone); color:var(--kiln); }
 
   /* ---------- clause-by-clause breakdown ---------- */
@@ -252,8 +257,15 @@
   .clause-out{ font-family:var(--text); font-size:17px; line-height:1.5; color:var(--kiln); }
 
   /* ---------- feedback ---------- */
-  .feedback{ display:none; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
-  .feedback.show{ display:block; }
+  /* visibility, not display: this box's *layout* box exists from the very
+     first paint, whether or not a translation has happened yet — toggling
+     only paint/hit-testing, never insertion into the layout tree. Safari
+     has documented bugs (tried & failed to work around twice) recomputing
+     an ancestor's size when a *display:none-to-block* child shows up
+     dynamically; an element that's always present, just invisible, never
+     takes that code path at all, regardless of the exact mechanism. */
+  .feedback{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line); visibility:hidden; }
+  .feedback.show{ visibility:visible; }
   .feedback-row{ display:flex; align-items:center; gap:10px; }
   .feedback-row span{ font-size:12.5px; color:var(--clay); }
   .thumb{
@@ -801,10 +813,6 @@
         notice.classList.remove('show');
         hideFeedback();
         feedback.classList.add('show');
-        void feedback.offsetHeight; // force a synchronous layout recalc — cheap
-                                     // insurance against engines that don't
-                                     // reliably relayout a flex/grid item's
-                                     // size for content shown after the fact
 
         if (data.clause_translation) {
           clauseBlock.classList.add('show');
