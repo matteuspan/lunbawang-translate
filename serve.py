@@ -32,9 +32,15 @@ STATE_FILE_V1      = Path(__file__).parent / "tinker_state_v1.json"
 STATE_FILE_RUN1    = Path(__file__).parent / "tinker_state_run1.json"
 STATE_FILE_INKLING = Path(__file__).parent / "tinker_state_inkling.json"
 INKLING_CHECKPOINT_EVERY = 2000  # only expose every Nth Inkling checkpoint in the dropdown
+
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
 TINKER_BASE = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
+
+# Inputs at or below this many words are treated as "short". Short inputs get
+# the explicit output-only hint, and (for Inkling) start at a higher reasoning
+# effort — see _effort_for() for the measurements behind that.
+SHORT_INPUT_WORDS = 5
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO  = "matteuspan/lunbawang-translate"
@@ -322,7 +328,7 @@ def translate(req: TranslateRequest):
 
     if direction == "lb2en":
         user_content = f"Translate this everyday Lun Bawang sentence to English:\n{text}"
-        if len(text.split()) <= 5:
+        if len(text.split()) <= SHORT_INPUT_WORDS:
             user_content += "\n(Output only the translation of this word or phrase.)"
         detected_lang = "lb"
     else:
@@ -348,23 +354,49 @@ def translate(req: TranslateRequest):
             )
             return strip_think_tags(r.choices[0].message.content or "")
 
-        def _call(content: str) -> str:
-            # reasoning_effort="none" (the effective default when unset)
-            # produces frequent single-token empty completions on short
-            # phrases; "low" cuts this to ~4% (measured in eval). A
-            # "Thinking effort level: N" system message was tried first but
-            # turned out to be inert noise over this REST endpoint —
-            # reasoning_effort is the real control. On the rare empty result
-            # at "low", one retry at "medium" resolves most of the rest while
-            # keeping the common case fast — only Inkling checkpoints set
-            # reasoning_effort, so this never triggers for Qwen.
-            out = _completion(content, "low" if is_inkling else None)
-            if not out and is_inkling:
-                out = _completion(content, "medium")
+        # Escalation ladder. reasoning_effort="none" (the effective default
+        # when unset) produces single-token empty completions constantly, so
+        # "low" is the floor; each retry steps up one rung.
+        _NEXT_EFFORT = {"low": "medium", "medium": "high"}
+
+        def _effort_for(source: str) -> str:
+            """Pick the starting effort from the length of the source text.
+
+            Measured on checkpoint-11500 (5 trials/phrase, short en->lb):
+            short inputs come back empty 55% of the time at "low" but only
+            10% at "medium". Since an empty result is retried at "medium"
+            anyway, starting "low" on a short input just buys a wasted round
+            trip half the time — same final answer, twice the latency, and
+            bimodal (~1.5s or ~3.9s) instead of steady (~2.5s).
+
+            Long inputs almost never come back empty at "low", so they keep
+            the faster setting. The failures are actually lexical rather than
+            purely length-based ("eat" is fine, "hello" always fails), so
+            word count is a blunt proxy — but over-routing is cheap (~1s)
+            next to a missed retry (~2.4s), so erring long is the right side
+            to be wrong on.
+            """
+            return "medium" if len(source.split()) <= SHORT_INPUT_WORDS else "low"
+
+        def _call(content: str, source: str) -> str:
+            """Translate `content`; `source` is the raw text it was built from,
+            used only to choose the starting effort.
+
+            Retries once on an empty completion, escalating a rung — so inputs
+            that already start at "medium" still get a second attempt (~10% of
+            short phrases are empty even at "medium"). Only Inkling checkpoints
+            set reasoning_effort at all, so none of this applies to Qwen.
+            """
+            if not is_inkling:
+                return _completion(content, None)
+            effort = _effort_for(source)
+            out = _completion(content, effort)
+            if not out:
+                out = _completion(content, _NEXT_EFFORT.get(effort, "high"))
             return out
 
         # Whole-sentence translation
-        translation = clean_translation(_call(user_content), source=text)
+        translation = clean_translation(_call(user_content, text), source=text)
 
         # Clause-by-clause translation (en2lb only, when >= 2 clauses detected)
         result = {
@@ -379,9 +411,9 @@ def translate(req: TranslateRequest):
                 clause_parts = []
                 for clause in clauses:
                     clause_content = f"Translate this everyday English sentence to Lun Bawang:\n{clause}"
-                    if len(clause.split()) <= 5:
+                    if len(clause.split()) <= SHORT_INPUT_WORDS:
                         clause_content += "\n(Output only the translation of this word or phrase.)"
-                    clause_parts.append(clean_translation(_call(clause_content)))
+                    clause_parts.append(clean_translation(_call(clause_content, clause)))
                 result["clauses"] = clauses
                 result["clause_translation"] = ", ".join(clause_parts)
 
