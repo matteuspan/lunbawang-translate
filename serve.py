@@ -16,6 +16,8 @@ import json
 import os
 import re
 import argparse
+import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -41,6 +43,16 @@ TINKER_BASE = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/
 # the explicit output-only hint, and (for Inkling) start at a higher reasoning
 # effort — see _effort_for() for the measurements behind that.
 SHORT_INPUT_WORDS = 5
+
+# Tinker cold-starts a sampler that hasn't been used recently: measured 14–21s
+# for the first call vs ~2s once warm, on a checkpoint idle for a couple of
+# hours. The frontend pings /api/warmup as soon as someone shows intent to
+# type, so the load overlaps with them composing their query instead of
+# landing on it. This throttle caps the cost: however much traffic arrives,
+# a given checkpoint is only actually warmed once per interval.
+WARMUP_MIN_INTERVAL = 60.0        # seconds
+_last_warmup: dict[str, float] = {}
+_warmup_lock = threading.Lock()
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO  = "matteuspan/lunbawang-translate"
@@ -217,6 +229,10 @@ class FeedbackRequest(BaseModel):
     correction: str | None = None
 
 
+class WarmupRequest(BaseModel):
+    checkpoint: str | None = None  # None = use the default checkpoint
+
+
 @app.get("/api/status")
 def status():
     state = get_state()
@@ -307,6 +323,47 @@ def _inkling_checkpoint_paths() -> set[str]:
         return set()
     state = json.loads(STATE_FILE_INKLING.read_text())
     return {ck["path"] for ck in state.get("checkpoints", [])}
+
+
+def _warm_sampler(checkpoint: str) -> None:
+    """Send one tiny throwaway completion so Tinker loads the sampler.
+
+    Best-effort by design: nothing depends on the result, and any failure
+    (network, cold-start timeout, bad checkpoint) must not surface to the
+    user — they'll simply pay the cold start on their real query, which is
+    the status quo this is trying to improve on.
+    """
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
+        kwargs = {"reasoning_effort": "low"} if checkpoint in _inkling_checkpoint_paths() else {}
+        client.chat.completions.create(
+            model=checkpoint,
+            messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                      {"role": "user", "content": "Translate to English:\nmo"}],
+            max_tokens=8, temperature=0.1, top_p=0.9, **kwargs,
+        )
+    except Exception:
+        pass
+
+
+@app.post("/api/warmup")
+def warmup(req: WarmupRequest, background_tasks: BackgroundTasks):
+    """Fire-and-forget sampler warm-up, called when a user looks like they're
+    about to translate. Returns immediately; the actual call runs in the
+    background so the client never waits on it."""
+    checkpoint = req.checkpoint or get_latest_checkpoint()
+    if not checkpoint:
+        return {"warming": False, "reason": "no checkpoint"}
+
+    now = time.monotonic()
+    with _warmup_lock:
+        if now - _last_warmup.get(checkpoint, 0.0) < WARMUP_MIN_INTERVAL:
+            return {"warming": False, "reason": "recently warmed"}
+        _last_warmup[checkpoint] = now
+
+    background_tasks.add_task(_warm_sampler, checkpoint)
+    return {"warming": True}
 
 
 @app.post("/api/translate")

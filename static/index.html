@@ -919,6 +919,28 @@
     }
   });
 
+  // ── Warm the sampler ──────────────────────────────────────
+  // Tinker cold-starts a sampler that hasn't been used recently (measured
+  // 14-21s for the first call vs ~2s warm). Ping it the moment someone
+  // looks like they're going to translate, so that load happens while
+  // they're still typing instead of after they finish. Fired on intent
+  // rather than page load so crawlers and bounces don't trigger it; the
+  // server throttles per checkpoint as a second guard. Fire-and-forget:
+  // nothing here blocks or reports, and failure just means the user pays
+  // the cold start they'd have paid anyway.
+  let warmRequested = false;
+  function warmSampler(){
+    if (warmRequested) return;
+    warmRequested = true;
+    fetch('/api/warmup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkpoint: checkpointSelect.value || null }),
+    }).catch(() => {});
+  }
+  src.addEventListener('focus', warmSampler, { once: true });
+  src.addEventListener('input', warmSampler, { once: true });
+
   // ── Feedback ──────────────────────────────────────────────
   async function submitFeedback(rating, correctionVal = null){
     if (!lastTranslation || !lastDirection || !lastCheckpoint) return;
