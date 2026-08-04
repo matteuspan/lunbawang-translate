@@ -136,6 +136,90 @@ def detect_language(text: str) -> str:
     return "lb2en"
 
 
+# ── Phrasebook (deterministic exact-match lookup) ───────────────────────────
+#
+# Short conversational phrases are how most people judge a translator, and they
+# are also where the model is least reliable (single-token empty outputs,
+# lexical failures on greetings). For a small, hand-verified set we bypass the
+# model entirely and return a fixed answer. Two properties drive the design:
+#
+#   * Consistency with the website. Every pair below is the verbatim phrase
+#     glossary shown on the homepage (static/index.html), so what the
+#     translator returns for "Good morning" always matches what the on-page
+#     glossary teaches.
+#   * Precision over recall. These answers are served at 100% confidence with
+#     no model in the loop, so a wrong entry is worse than a model guess. We
+#     only include pairs we can vouch for, and only fire on an exact, whole-
+#     input match (case- and trailing-punctuation-insensitive) — never partial
+#     or fuzzy. Ambiguous candidates are deliberately left out (e.g. "hello":
+#     the feedback snapshot shows two competing forms, "sini'" and "Alo", so it
+#     is not safe to serve deterministically).
+#
+# The lookup runs only for the default production checkpoint (see translate());
+# the checkpoint-compare dropdown still shows raw model output so evaluations
+# aren't masked by the phrasebook.
+
+# (lun_bawang, english). Direction-agnostic source of truth; both lookup maps
+# derive from it. The first 12 pairs are the homepage glossary verbatim.
+PHRASEBOOK: list[tuple[str, str]] = [
+    ("Do pekak", "Good morning"),
+    ("Ro meco", "Good evening"),
+    ("Ro lawe", "Goodbye"),
+    ("Mo", "Yes"),
+    ("Nam", "No"),
+    ("Anun bala?", "How are you?"),
+    ("Ui mawa nemu", "I love you"),
+    ("Tinam", "Mother"),
+    ("Tamam", "Father"),
+    ("Rurum", "Friend"),
+    ("Aceh, dueh, teluh", "One, two, three"),
+    ("Kuman", "Eat"),
+    # Not on the on-page glossary but a very common test word, and well attested
+    # for "water" across three independent corpus sources (borneodictionary,
+    # longsemadoh, mortensen: abpa'/abpa/ebpa').
+    ("Abpa'", "Water"),
+]
+
+
+def _pb_norm(s: str) -> str:
+    """Normalize a phrase for exact-match lookup: fold case, collapse internal
+    whitespace, and drop trailing terminal punctuation. Deliberately keeps
+    internal punctuation significant (the commas in 'Aceh, dueh, teluh' must be
+    typed) — the match is on the whole phrase, never fuzzy or partial."""
+    s = re.sub(r"\s+", " ", s.strip()).lower()
+    return s.rstrip("?!.,;:")
+
+
+_PB_EN2LB = {_pb_norm(en): lb for lb, en in PHRASEBOOK}
+_PB_LB2EN = {_pb_norm(lb): en for lb, en in PHRASEBOOK}
+
+
+def phrasebook_lookup(text: str, direction: str):
+    """Return (translation, resolved_direction, detected_lang) for an exact
+    full-phrase hit, else None.
+
+    An explicit direction ("en2lb"/"lb2en") only consults that side. "auto"
+    tries the English side first, then the Lun Bawang side, and the side that
+    matches also fixes the direction — so known phrases the heuristic detector
+    would mislabel (e.g. "Do pekak", where "do" reads as an English word) are
+    still routed correctly. The two maps share no keys, so the order is safe."""
+    key = _pb_norm(text)
+    if direction == "en2lb":
+        lb = _PB_EN2LB.get(key)
+        return (lb, "en2lb", "en") if lb else None
+    if direction == "lb2en":
+        en = _PB_LB2EN.get(key)
+        return (en, "lb2en", "lb") if en else None
+    # auto — let the matching side decide the direction
+    lb = _PB_EN2LB.get(key)
+    if lb:
+        return (lb, "en2lb", "en")
+    en = _PB_LB2EN.get(key)
+    if en:
+        return (en, "lb2en", "lb")
+    return None
+
+
 def strip_think_tags(text: str) -> str:
     """Remove Qwen3 <think>…</think> reasoning blocks from output."""
     return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
@@ -378,6 +462,21 @@ def translate(req: TranslateRequest):
             "error": "No checkpoint yet — training is still in progress.",
             "translation": None,
         }
+
+    # Deterministic phrasebook: an exact full-phrase match on a curated set
+    # bypasses the model, for consistency with the on-page glossary and to avoid
+    # the empty/lexical failures the model has on these short phrases. Gated to
+    # the default checkpoint so the compare dropdown still shows raw model output.
+    if checkpoint == get_latest_checkpoint():
+        hit = phrasebook_lookup(text, req.direction)
+        if hit:
+            translation, resolved_dir, detected = hit
+            return {
+                "translation": translation,
+                "direction": resolved_dir,
+                "detected_lang": detected,
+                "source": "phrasebook",
+            }
 
     direction = req.direction
     if direction == "auto":
