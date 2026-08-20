@@ -20,6 +20,9 @@ Flattening rules
     - "sentence"    an entry's example sentences — a full parallel Lun Bawang /
                     English pair, the highest-value data in the book — matching
                     the existing "sentence" rows in the corpus.
+    - "redirect"    a 'see X' pointer with no meaning of its own (e.g. "aa" ->
+                    "see naa"). Kept for completeness but not a training pair;
+                    --drop-redirects omits them.
 * "also X" variant forms become extra rows with the same gloss (--no-variants
   to skip). Cross-references stay as provenance only, never as pairs — the root
   they point to has its own entry elsewhere in the dictionary.
@@ -56,9 +59,25 @@ def clean_gloss(gloss: str) -> str:
     return g[:-1].rstrip() if g.endswith(".") and not g.endswith("..") else g
 
 
-def sense_type(kind: str) -> str:
-    """Map the model's sense kind onto the corpus `type` (the quality flag)."""
-    return "definition" if kind == "definition" else "word"
+# A gloss that only points elsewhere ("see naa", "cf. X") — caught even if the
+# model failed to tag kind="redirect".
+_REDIRECT_RE = re.compile(r"^(see|cf\.?|same as|compare)\b", re.IGNORECASE)
+
+
+def sense_type(kind: str, gloss: str) -> str:
+    """Map the model's sense kind + gloss text onto the corpus `type`:
+      - "redirect"   'see X' pointer, no meaning of its own (not a training pair)
+      - "definition" descriptive gloss (lb->en-leaning)
+      - "word"       clean bidirectional equivalent
+
+    Redirect is decided by the gloss TEXT, not the model's `kind`: the model
+    sometimes over-tags redirect on a real gloss that merely carries a
+    cross-reference (e.g. 'will be fenced.'), and we must keep those. So a stray
+    kind=='redirect' on non-pointer text falls back to "definition".
+    """
+    if _REDIRECT_RE.match(gloss):
+        return "redirect"
+    return "word" if kind == "equivalent" else "definition"
 
 
 def iter_entries(jsonl_path: Path):
@@ -72,7 +91,8 @@ def iter_entries(jsonl_path: Path):
             yield entry
 
 
-def build_rows(jsonl_path: Path, source: str, include_variants: bool) -> list:
+def build_rows(jsonl_path: Path, source: str, include_variants: bool,
+               drop_redirects: bool = False) -> list:
     rows = []
     for entry in iter_entries(jsonl_path):
         headword = normalize(entry.get("headword", ""))
@@ -86,7 +106,9 @@ def build_rows(jsonl_path: Path, source: str, include_variants: bool) -> list:
             gloss = clean_gloss(sense.get("gloss", ""))
             if not gloss:
                 continue
-            typ = sense_type(sense.get("kind", "equivalent"))
+            typ = sense_type(sense.get("kind", "equivalent"), gloss)
+            if typ == "redirect" and drop_redirects:
+                continue
             for lb in surface_forms:
                 rows.append({"source": source, "lun_bawang": lb,
                              "english": gloss, "type": typ})
@@ -139,6 +161,8 @@ def main():
                     help="Value for the `source` column (rename to the dictionary's citation).")
     ap.add_argument("--no-variants", action="store_true",
                     help="Do not emit rows for 'also X' variant surface forms.")
+    ap.add_argument("--drop-redirects", action="store_true",
+                    help="Omit 'see X' redirect rows entirely (default: keep them tagged type=redirect).")
     ap.add_argument("--dedupe-against", type=Path, action="append", default=[],
                     metavar="CSV", help="Skip pairs already in this corpus CSV (repeatable).")
     ap.add_argument("--dry-run", action="store_true",
@@ -148,7 +172,8 @@ def main():
     if not args.entries.exists():
         raise SystemExit(f"No entries file: {args.entries} (run ocr_dictionary.py first)")
 
-    rows = build_rows(args.entries, args.source, include_variants=not args.no_variants)
+    rows = build_rows(args.entries, args.source, include_variants=not args.no_variants,
+                      drop_redirects=args.drop_redirects)
 
     seen = set()
     for existing in args.dedupe_against:

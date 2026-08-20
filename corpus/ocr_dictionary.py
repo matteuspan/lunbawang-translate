@@ -71,15 +71,32 @@ SYSTEM_PROMPT = (
     "- Read in natural order: do the left page before the right page, and within "
     "each page finish the entire left column top-to-bottom before the right "
     "column.\n"
-    "- Each bold head-word begins an entry. A trailing subscript digit "
-    "(e.g. mekafal with a small 1) distinguishes homographs — record it in "
-    "`homograph`, and put the bare word (no digit) in `headword`.\n"
+    "- EVERY word printed in BOLD is its own head-word and its own entry. This "
+    "is critical: the dictionary is root-based, so a single paragraph usually "
+    "starts with a root head-word and then continues with SEVERAL more bold "
+    "head-words — its derived/affixed forms — run together in the same paragraph, "
+    "each followed by its own gloss and example sentences. For instance a 'aab' "
+    "paragraph also contains the bold forms 'ngaab', 'nengaab', 'inaab', 'meaab', "
+    "'aaban', 'fingaab', 'nefingaab'. Emit a SEPARATE entry for every one of "
+    "these bold forms — never merge them into the root and never skip them. Each "
+    "form's gloss and examples run until the next bold head-word.\n"
+    "- A trailing subscript digit (e.g. mekafal with a small 1) distinguishes "
+    "homographs — record it in `homograph`, and put the bare word (no digit) in "
+    "`headword`.\n"
     "- Numbered senses (1. ... 2. ...) become separate items in `senses` with "
     "their number in `n`; an unnumbered single gloss is one sense with n = null.\n"
-    "- Decide each sense's `kind`: 'equivalent' when the gloss is a direct "
-    "word/phrase translation (e.g. 'left-handed', 'water', 'good morning'); "
-    "'definition' when it is a descriptive gloss (e.g. 'can be channeled or "
-    "drained', 'able to make a partition or wall').\n"
+    "- Decide each sense's `kind`:\n"
+    "    * 'equivalent' — a direct word or short-phrase translation, usable on "
+    "its own in either direction (e.g. 'left-handed', 'sneeze', 'make even', "
+    "'a fence', 'good morning').\n"
+    "    * 'definition' — a descriptive or explanatory gloss that states the "
+    "meaning but is not a plain translation; often longer or with a parenthetical "
+    "(e.g. 'a complete amount (when the materials that fell short are made up)', "
+    "'able to make a partition or wall').\n"
+    "    * 'redirect' — the gloss is nothing but a pointer to another entry "
+    "('see X', 'same as X', 'cf. X'), with no meaning of its own. Put the whole "
+    "pointer text in `gloss`. A real gloss (e.g. 'will be fenced') that merely "
+    "also carries a <bracketed> cross-reference is NOT a redirect.\n"
     "- 'also X' forms go in `variants`. Cross-references printed in <angle "
     "brackets> go in `cross_refs`, writing any subscript as a trailing digit "
     "(<abang with small 1> -> 'abang1').\n"
@@ -139,8 +156,8 @@ ENTRY_TOOL = {
                                     },
                                     "kind": {
                                         "type": "string",
-                                        "enum": ["equivalent", "definition"],
-                                        "description": "'equivalent' = direct translation; 'definition' = descriptive gloss.",
+                                        "enum": ["equivalent", "definition", "redirect"],
+                                        "description": "'equivalent' = direct bidirectional translation; 'definition' = descriptive gloss; 'redirect' = 'see X' pointer with no meaning of its own.",
                                     },
                                     "register": {
                                         "type": ["string", "null"],
