@@ -46,7 +46,10 @@ import time
 from pathlib import Path
 
 MODEL_DEFAULT = "claude-sonnet-5"   # strong vision, cheaper than Opus; --model to change
-MAX_TOKENS = 8000                    # ~47 structured entries/page fits comfortably
+# A dense four-column spread can hold ~140 entries with example sentences, which
+# is well over 20k output tokens of JSON — an 8k cap silently truncates the
+# forced tool call and the page parses to nothing. Give it real headroom.
+MAX_TOKENS = 32000
 
 IMAGE_EXTS = {".jpg": "image/jpeg", ".jpeg": "image/jpeg",
               ".png": "image/png", ".webp": "image/webp"}
@@ -59,8 +62,15 @@ SYSTEM_PROMPT = (
     "- Transcribe EXACTLY what is printed. Never correct, modernise, or "
     "normalise spelling. Preserve glottal-stop apostrophes (' and the typographic "
     "form) and every diacritic as printed.\n"
-    "- Read the page in natural reading order: finish the entire left column "
-    "top-to-bottom before starting the right column.\n"
+    "- Each image is a screenshot from an e-book reader and usually shows a "
+    "two-page spread. Ignore everything that is not dictionary text: reader "
+    "buttons and toolbars, the page-number slider, sidebar icons, running "
+    "headers, page numbers, the large section-letter heading (e.g. 'Aa'), and "
+    "any faint show-through from the reverse side. If a page of the spread is "
+    "blank or front-matter, skip it.\n"
+    "- Read in natural order: do the left page before the right page, and within "
+    "each page finish the entire left column top-to-bottom before the right "
+    "column.\n"
     "- Each bold head-word begins an entry. A trailing subscript digit "
     "(e.g. mekafal with a small 1) distinguishes homographs — record it in "
     "`homograph`, and put the bare word (no digit) in `headword`.\n"
@@ -82,8 +92,8 @@ SYSTEM_PROMPT = (
     "entry with no example sentence has an empty `examples` array.\n"
     "- Do NOT invent entries. If the very first or very last line is a partial "
     "entry cut off by the page edge, transcribe what is visible.\n"
-    "- Ignore the running header, page number, and any faint show-through text "
-    "bleeding from the reverse side of the page."
+    "- If the spread contains no dictionary entries at all, return an empty "
+    "`entries` array."
 )
 
 # Strict schema — the model is forced to call this tool, so output always matches.
@@ -234,12 +244,16 @@ def list_pages(images_dir: Path) -> list:
 
 
 def run_sample(client, pages, model, out_path):
-    """Synchronous path — immediate feedback for validating a few pages."""
+    """Synchronous path — immediate feedback for validating a few pages.
+
+    Streams because a dense spread can emit tens of thousands of output tokens,
+    which would otherwise risk an HTTP timeout on a non-streaming call."""
     with out_path.open("a", encoding="utf-8") as f:
         for path in pages:
             print(f"  {path.name} ... ", end="", flush=True)
             try:
-                msg = client.messages.create(**build_params(path, model))
+                with client.messages.stream(**build_params(path, model)) as stream:
+                    msg = stream.get_final_message()
             except Exception as e:  # noqa: BLE001 - report and continue
                 print(f"ERROR: {e}")
                 continue
@@ -247,10 +261,13 @@ def run_sample(client, pages, model, out_path):
                 print("REFUSED by safety classifier")
                 continue
             entries = extract_entries(msg)
+            note = ""
+            if msg.stop_reason == "max_tokens":
+                note = "  ** TRUNCATED (hit max_tokens) — raise MAX_TOKENS **"
             f.write(json.dumps({"image": path.name, "entries": entries},
                                ensure_ascii=False) + "\n")
             f.flush()
-            print(f"{len(entries)} entries")
+            print(f"{len(entries)} entries{note}")
 
 
 def run_batch(client, pages, model, out_path, poll_interval):
@@ -271,18 +288,25 @@ def run_batch(client, pages, model, out_path, poll_interval):
               f"errored={counts.errored}", flush=True)
         time.sleep(poll_interval)
 
-    ok = err = 0
+    ok = err = truncated = 0
     with out_path.open("a", encoding="utf-8") as f:
         for item in client.messages.batches.results(batch.id):
             if item.result.type != "succeeded":
                 err += 1
                 print(f"  {item.custom_id}: {item.result.type}")
                 continue
-            entries = extract_entries(item.result.message)
+            msg = item.result.message
+            if msg.stop_reason == "max_tokens":
+                truncated += 1
+                print(f"  {item.custom_id}: ** TRUNCATED (hit max_tokens) **")
+            entries = extract_entries(msg)
             f.write(json.dumps({"image": item.custom_id, "entries": entries},
                                ensure_ascii=False) + "\n")
             ok += 1
-    print(f"Done: {ok} pages written, {err} failed. Re-run to retry failures.")
+    msg = f"Done: {ok} pages written, {err} failed."
+    if truncated:
+        msg += f" {truncated} TRUNCATED — raise MAX_TOKENS and re-run those pages."
+    print(msg + " Re-run to retry failures.")
 
 
 def main():
