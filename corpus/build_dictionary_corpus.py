@@ -75,6 +75,17 @@ def drop_trailing_period(g: str) -> str:
     return g[:-1].rstrip() if g.endswith(".") and not g.endswith("..") else g
 
 
+# "[...]" in an example translation is a translator's aside with no counterpart
+# on the Lun Bawang side — noise that misaligns the parallel sentence pair.
+_BRACKET_RE = re.compile(r"\s*\[[^\]]*\]")
+
+
+def strip_brackets(text: str) -> str:
+    """Remove '[...]' translator notes and tidy the result."""
+    text = _BRACKET_RE.sub("", text)
+    return re.sub(r"\s+([.,;:?!])", r"\1", text).strip()
+
+
 # A gloss that only points elsewhere ("see naa", "cf. X") — caught even if the
 # model failed to tag kind="redirect".
 _REDIRECT_RE = re.compile(r"^(see|cf\.?|same as|compare)\b", re.IGNORECASE)
@@ -145,7 +156,8 @@ def build_rows(jsonl_path: Path, source: str, include_variants: bool,
         # existing corpus convention). They are not multiplied over variants.
         for ex in entry.get("examples", []):
             lb = normalize(ex.get("lun_bawang", ""))
-            en, _ = strip_also(normalize(ex.get("english", "")))   # drop trailing "(also X)"
+            en, _ = strip_also(normalize(ex.get("english", "")))   # drop "(also X)"
+            en = strip_brackets(en)                                 # drop "[...]" translator notes
             if lb and en:
                 rows.append({"source": source, "lun_bawang": lb,
                              "english": en, "type": "sentence"})
