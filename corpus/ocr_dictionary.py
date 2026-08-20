@@ -75,6 +75,11 @@ SYSTEM_PROMPT = (
     "(<abang with small 1> -> 'abang1').\n"
     "- A register label printed with a sense (e.g. 'archaic', 'vulgar') goes in "
     "`register`, not in the gloss.\n"
+    "- Many entries include one or more EXAMPLE SENTENCES: an italic Lun Bawang "
+    "sentence immediately followed by its English translation in roman type. "
+    "Capture each as an item in `examples`, with the Lun Bawang sentence in "
+    "`lun_bawang` and its English translation in `english`, both verbatim. An "
+    "entry with no example sentence has an empty `examples` array.\n"
     "- Do NOT invent entries. If the very first or very last line is a partial "
     "entry cut off by the page edge, transcribe what is visible.\n"
     "- Ignore the running header, page number, and any faint show-through text "
@@ -97,7 +102,7 @@ ENTRY_TOOL = {
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
-                    "required": ["headword", "homograph", "senses", "variants", "cross_refs"],
+                    "required": ["headword", "homograph", "senses", "examples", "variants", "cross_refs"],
                     "properties": {
                         "headword": {
                             "type": "string",
@@ -130,6 +135,25 @@ ENTRY_TOOL = {
                                     "register": {
                                         "type": ["string", "null"],
                                         "description": "A usage label such as 'archaic' printed with the sense, else null.",
+                                    },
+                                },
+                            },
+                        },
+                        "examples": {
+                            "type": "array",
+                            "description": "Example sentences: an italic Lun Bawang sentence and its English translation.",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "required": ["lun_bawang", "english"],
+                                "properties": {
+                                    "lun_bawang": {
+                                        "type": "string",
+                                        "description": "The Lun Bawang example sentence, exactly as printed.",
+                                    },
+                                    "english": {
+                                        "type": "string",
+                                        "description": "Its English translation, exactly as printed.",
                                     },
                                 },
                             },

@@ -17,6 +17,9 @@ Flattening rules
     - "definition"  descriptive glosses (kind == "definition", e.g. "can be
                     channeled or drained"). Kept so nothing is lost, but tagged
                     so training can down-weight or drop them from en->lb.
+    - "sentence"    an entry's example sentences — a full parallel Lun Bawang /
+                    English pair, the highest-value data in the book — matching
+                    the existing "sentence" rows in the corpus.
 * "also X" variant forms become extra rows with the same gloss (--no-variants
   to skip). Cross-references stay as provenance only, never as pairs — the root
   they point to has its own entry elsewhere in the dictionary.
@@ -87,6 +90,15 @@ def build_rows(jsonl_path: Path, source: str, include_variants: bool) -> list:
             for lb in surface_forms:
                 rows.append({"source": source, "lun_bawang": lb,
                              "english": gloss, "type": typ})
+
+        # Example sentences are full parallel pairs -> type "sentence" (the
+        # existing corpus convention). They are not multiplied over variants.
+        for ex in entry.get("examples", []):
+            lb = normalize(ex.get("lun_bawang", ""))
+            en = normalize(ex.get("english", ""))
+            if lb and en:
+                rows.append({"source": source, "lun_bawang": lb,
+                             "english": en, "type": "sentence"})
     return rows
 
 
