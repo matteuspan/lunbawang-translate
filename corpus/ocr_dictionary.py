@@ -41,6 +41,7 @@ processed in sorted filename order — so name them zero-padded (page_0001.jpg).
 import argparse
 import base64
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -289,8 +290,14 @@ def run_sample(client, pages, model, out_path):
 
 def run_batch(client, pages, model, out_path, poll_interval):
     """Batch API path — ~50% cheaper, for the full book."""
-    requests = [{"custom_id": path.name, "params": build_params(path, model)}
-                for path in pages]
+    # custom_id must match ^[a-zA-Z0-9_-]{1,64}$ (no dots), so key on a
+    # sanitized id and map it back to the real filename for the output.
+    id_to_name = {}
+    requests = []
+    for path in pages:
+        cid = re.sub(r"[^A-Za-z0-9_-]", "_", path.stem)[:64]
+        id_to_name[cid] = path.name
+        requests.append({"custom_id": cid, "params": build_params(path, model)})
     print(f"Submitting batch of {len(requests)} pages ...")
     batch = client.messages.batches.create(requests=requests)
     print(f"  batch id: {batch.id}")
@@ -317,7 +324,8 @@ def run_batch(client, pages, model, out_path, poll_interval):
                 truncated += 1
                 print(f"  {item.custom_id}: ** TRUNCATED (hit max_tokens) **")
             entries = extract_entries(msg)
-            f.write(json.dumps({"image": item.custom_id, "entries": entries},
+            name = id_to_name.get(item.custom_id, item.custom_id)
+            f.write(json.dumps({"image": name, "entries": entries},
                                ensure_ascii=False) + "\n")
             ok += 1
     msg = f"Done: {ok} pages written, {err} failed."
