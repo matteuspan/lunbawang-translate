@@ -53,9 +53,25 @@ def normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def clean_gloss(gloss: str) -> str:
-    """Tidy an English gloss: normalise, drop a single trailing period."""
-    g = normalize(gloss)
+# "(also X)" / "(also X, Y)" in a gloss is a synonym cross-reference — an
+# alternative spelling of the head-word, not part of the English meaning.
+_ALSO_RE = re.compile(r"\s*\(also\s+([^)]*)\)", re.IGNORECASE)
+
+
+def strip_also(gloss: str) -> tuple:
+    """Split a normalised gloss into (clean_english, [variant forms]): pull any
+    '(also X)' cross-ref out of the English and return X as variant surface
+    forms so they still become their own rows, just not as English text."""
+    forms = []
+    for m in _ALSO_RE.finditer(gloss):
+        forms += [f.strip() for f in m.group(1).split(",") if f.strip()]
+    clean = _ALSO_RE.sub("", gloss)
+    clean = re.sub(r"\s+([.,;:])", r"\1", clean).strip()   # tidy orphaned space
+    return clean, forms
+
+
+def drop_trailing_period(g: str) -> str:
+    """Drop a single trailing period (keep ellipses)."""
     return g[:-1].rstrip() if g.endswith(".") and not g.endswith("..") else g
 
 
@@ -98,15 +114,27 @@ def build_rows(jsonl_path: Path, source: str, include_variants: bool,
         headword = normalize(entry.get("headword", ""))
         if not headword:
             continue
+
+        # Clean each sense's gloss, pulling "(also X)" cross-refs out of the
+        # English and collecting them as extra variant surface forms.
+        extra_variants = []
+        senses = []
+        for sense in entry.get("senses", []):
+            gloss, forms = strip_also(normalize(sense.get("gloss", "")))
+            extra_variants += forms
+            gloss = drop_trailing_period(gloss)
+            if gloss:
+                senses.append((gloss, sense.get("kind", "equivalent")))
+
         surface_forms = [headword]
         if include_variants:
-            surface_forms += [normalize(v) for v in entry.get("variants", []) if normalize(v)]
+            candidates = [normalize(v) for v in entry.get("variants", [])] + \
+                         [normalize(v) for v in extra_variants]
+            # de-dupe, preserve order, drop empties and the head-word itself
+            surface_forms += [v for v in dict.fromkeys(candidates) if v and v != headword]
 
-        for sense in entry.get("senses", []):
-            gloss = clean_gloss(sense.get("gloss", ""))
-            if not gloss:
-                continue
-            typ = sense_type(sense.get("kind", "equivalent"), gloss)
+        for gloss, kind in senses:
+            typ = sense_type(kind, gloss)
             if typ == "redirect" and drop_redirects:
                 continue
             for lb in surface_forms:
@@ -117,7 +145,7 @@ def build_rows(jsonl_path: Path, source: str, include_variants: bool,
         # existing corpus convention). They are not multiplied over variants.
         for ex in entry.get("examples", []):
             lb = normalize(ex.get("lun_bawang", ""))
-            en = normalize(ex.get("english", ""))
+            en, _ = strip_also(normalize(ex.get("english", "")))   # drop trailing "(also X)"
             if lb and en:
                 rows.append({"source": source, "lun_bawang": lb,
                              "english": en, "type": "sentence"})
