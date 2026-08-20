@@ -55,7 +55,11 @@ def normalize(text: str) -> str:
 
 # "(also X)" / "(also X, Y)" in a gloss is a synonym cross-reference — an
 # alternative spelling of the head-word, not part of the English meaning.
-_ALSO_RE = re.compile(r"\s*\(also\s+([^)]*)\)", re.IGNORECASE)
+# Extraction is strict (well-formed parens only, so partial OCR truncations
+# don't yield garbage variant forms); stripping is lenient (tolerates a missing
+# closing paren from a line the OCR cut off, e.g. "a necktie (also abet").
+_ALSO_EXTRACT = re.compile(r"\(also\s+([^)]+)\)", re.IGNORECASE)
+_ALSO_STRIP = re.compile(r"\s*\(also\b[^)]*\)?", re.IGNORECASE)
 
 
 def strip_also(gloss: str) -> tuple:
@@ -63,9 +67,9 @@ def strip_also(gloss: str) -> tuple:
     '(also X)' cross-ref out of the English and return X as variant surface
     forms so they still become their own rows, just not as English text."""
     forms = []
-    for m in _ALSO_RE.finditer(gloss):
+    for m in _ALSO_EXTRACT.finditer(gloss):
         forms += [f.strip() for f in m.group(1).split(",") if f.strip()]
-    clean = _ALSO_RE.sub("", gloss)
+    clean = _ALSO_STRIP.sub("", gloss)
     clean = re.sub(r"\s+([.,;:])", r"\1", clean).strip()   # tidy orphaned space
     return clean, forms
 
@@ -155,7 +159,8 @@ def build_rows(jsonl_path: Path, source: str, include_variants: bool,
         # Example sentences are full parallel pairs -> type "sentence" (the
         # existing corpus convention). They are not multiplied over variants.
         for ex in entry.get("examples", []):
-            lb = normalize(ex.get("lun_bawang", ""))
+            lb, _ = strip_also(normalize(ex.get("lun_bawang", "")))
+            lb = strip_brackets(lb)
             en, _ = strip_also(normalize(ex.get("english", "")))   # drop "(also X)"
             en = strip_brackets(en)                                 # drop "[...]" translator notes
             if lb and en:
