@@ -18,3 +18,4 @@ inkling_train.log
 trainv2.log
 orch.log
 eval/val_bleu_cache/
+eval_run_step*.log
