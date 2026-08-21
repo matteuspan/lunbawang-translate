@@ -38,6 +38,8 @@ EVAL_SET_ORDER = {
     "bible": 0, "bible_en2lb": 1,
     "dict": 2,  "dict_en2lb": 3,
     "sentence": 4, "sentence_en2lb": 5,
+    "dictword": 6, "dictword_en2lb": 7,
+    "dictsent": 8, "dictsent_en2lb": 9,
 }
 
 
