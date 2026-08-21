@@ -98,7 +98,26 @@
     {
       "step": 2000,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2000",
-      "val_loss": 0.008092
+      "val_loss": 0.008092,
+      "val_bible_bleu": 68.03,
+      "val_dict_exact_pct": 19.9,
+      "val_sent_bleu": 11.49,
+      "val_sent_bleu_short": 15.97,
+      "val_sent_bleu_long": 11.5,
+      "val_bleu_bible": 64.067,
+      "val_bleu_bible_en2lb": 75.007,
+      "val_exact_dict": 13.2,
+      "val_exact_dict_en2lb": 17.4,
+      "val_bleu_sentence": 26.464,
+      "val_bleu_sent_short": 21.599,
+      "val_bleu_sent_long": 27.126,
+      "val_bleu_sentence_en2lb": 7.337,
+      "val_bleu_sent_short_en2lb": 0.869,
+      "val_bleu_sent_long_en2lb": 9.639,
+      "val_exact_dictword": 1.9,
+      "val_exact_dictword_en2lb": 4.0,
+      "val_bleu_dictsent": 12.895,
+      "val_bleu_dictsent_en2lb": 1.86
     }
   ],
   "steps": 2000,
