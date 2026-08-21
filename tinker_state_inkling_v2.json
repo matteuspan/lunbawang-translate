@@ -118,9 +118,114 @@
       "val_exact_dictword_en2lb": 4.0,
       "val_bleu_dictsent": 12.895,
       "val_bleu_dictsent_en2lb": 1.86
+    },
+    {
+      "step": 2100,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2100",
+      "val_loss": 0.00664
+    },
+    {
+      "step": 2200,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2200",
+      "val_loss": 0.006662
+    },
+    {
+      "step": 2300,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2300",
+      "val_loss": 0.006915
+    },
+    {
+      "step": 2400,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2400",
+      "val_loss": 0.006477
+    },
+    {
+      "step": 2500,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2500",
+      "val_loss": 0.007898
+    },
+    {
+      "step": 2600,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2600",
+      "val_loss": 0.006331
+    },
+    {
+      "step": 2700,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2700",
+      "val_loss": 0.006784
+    },
+    {
+      "step": 2800,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2800",
+      "val_loss": 0.006419
+    },
+    {
+      "step": 2900,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2900",
+      "val_loss": 0.005544
+    },
+    {
+      "step": 3000,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3000",
+      "val_loss": 0.004308
+    },
+    {
+      "step": 3100,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3100",
+      "val_loss": 0.005246
+    },
+    {
+      "step": 3200,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3200",
+      "val_loss": 0.00518
+    },
+    {
+      "step": 3300,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3300",
+      "val_loss": 0.006862
+    },
+    {
+      "step": 3400,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3400",
+      "val_loss": 0.004384
+    },
+    {
+      "step": 3500,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3500",
+      "val_loss": 0.005065
+    },
+    {
+      "step": 3600,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3600",
+      "val_loss": 0.004197
+    },
+    {
+      "step": 3700,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3700",
+      "val_loss": 0.005203
+    },
+    {
+      "step": 3800,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3800",
+      "val_loss": 0.003498
+    },
+    {
+      "step": 3900,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3900",
+      "val_loss": 0.004384
+    },
+    {
+      "step": 4000,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4000",
+      "val_loss": 0.005407,
+      "val_bible_bleu": 66.33,
+      "val_dict_exact_pct": 19.9,
+      "val_sent_bleu": 12.77,
+      "val_sent_bleu_short": 21.02,
+      "val_sent_bleu_long": 12.77
     }
   ],
-  "steps": 2000,
+  "steps": 4000,
   "model_id": "d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0",
-  "training_state_path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/weights/checkpoint-2000"
+  "training_state_path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/weights/checkpoint-4000"
 }
