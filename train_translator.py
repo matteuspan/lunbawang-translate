@@ -1085,12 +1085,18 @@ if __name__ == "__main__":
     parser.add_argument("--max-steps", type=int, default=None,
                         help="Stop after this many global steps (e.g. to match another "
                              "run's step count for a fair comparison)")
+    parser.add_argument("--save-every", type=int, default=None,
+                        help="Checkpoint cadence override (default SAVE_EVERY). Lower it "
+                             "(e.g. 100) when running on an ephemeral host so a resumable "
+                             "checkpoint lands before the container can recycle.")
     args = parser.parse_args()
 
     BASE_MODEL = args.base_model
     LORA_RANK  = args.lora_rank
     if args.state_file:
         STATE_FILE = Path(args.state_file)
+    if args.save_every:
+        SAVE_EVERY = args.save_every
 
     if args.train:
         train(new_run=args.new_run, max_steps=args.max_steps)

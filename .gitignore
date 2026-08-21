@@ -15,3 +15,5 @@ feedback.jsonl
 # Actively-written training log (races with the per-turn git hook while a
 # background run is in progress) — committed as a finished snapshot instead
 inkling_train.log
+trainv2.log
+orch.log
