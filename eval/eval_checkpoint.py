@@ -26,6 +26,8 @@ from openai import OpenAI
 MAX_WORKERS = 24  # concurrent translation calls — sequential was the dominant eval
                   # cost; the calls are I/O-bound so raising this scales wall-time
                   # down almost linearly (Bible verses are the slowest, ~3s each)
+VAL_DICTWORD = 150  # cap on new-dictionary word probes (of ~779) — seeded sample,
+VAL_DICTSENT = 60   # same probes every eval so the trajectory stays comparable
 
 ROOT_DIR     = Path(__file__).parent.parent
 STATE_FILE   = ROOT_DIR / "tinker_state.json"
@@ -155,6 +157,13 @@ _dict_corpus = load_aux(DICT_FILE)
 _, _dict_val = aux_split(_dict_corpus, val_frac=0.1) if _dict_corpus else ([], [])
 dictword_val = [r for r in _dict_val if r[3] == "word"]
 dictsent_val = [r for r in _dict_val if r[3] == "sentence"]
+# Sub-sample to keep each eval cheap (~420 calls vs ~2000). Seeded, so the same
+# probes are drawn every checkpoint — the trajectory stays comparable.
+_rng_dict = random.Random(42)
+if len(dictword_val) > VAL_DICTWORD:
+    dictword_val = _rng_dict.sample(dictword_val, VAL_DICTWORD)
+if len(dictsent_val) > VAL_DICTSENT:
+    dictsent_val = _rng_dict.sample(dictsent_val, VAL_DICTSENT)
 print(f"  Dict(word) val: {len(dictword_val)} | Dict(sent) val: {len(dictsent_val)}\n")
 
 # ── Translate helper ──────────────────────────────────────────────────────────
