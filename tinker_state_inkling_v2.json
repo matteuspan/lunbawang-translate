@@ -1,0 +1,42 @@
+{
+  "checkpoints": [
+    {
+      "step": 100,
+      "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-100",
+      "val_loss": 0.044857
+    },
+    {
+      "step": 200,
+      "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-200",
+      "val_loss": 0.029942
+    },
+    {
+      "step": 300,
+      "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-300",
+      "val_loss": 0.01936
+    },
+    {
+      "step": 400,
+      "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-400",
+      "val_loss": 0.014457
+    },
+    {
+      "step": 500,
+      "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-500",
+      "val_loss": 0.014805
+    },
+    {
+      "step": 600,
+      "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-600",
+      "val_loss": 0.015161
+    },
+    {
+      "step": 700,
+      "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-700",
+      "val_loss": 0.01142
+    }
+  ],
+  "steps": 700,
+  "model_id": "d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0",
+  "training_state_path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/weights/checkpoint-700"
+}
