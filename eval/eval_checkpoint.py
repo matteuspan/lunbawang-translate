@@ -339,13 +339,19 @@ for (lb, eng, *_), hyp in zip(sent_val, s_hyps_el):
 
 # ── Dictionary word exact-match (both directions) — the new lexical slice ──────
 dictword_pct = dictword_pct_el = 0.0
+dictword_chrf = dictword_chrf_el = 0.0
 if dictword_val:
-    print(f"\nDict-word exact match ({len(dictword_val)} examples)…")
+    print(f"\nDict-word ({len(dictword_val)} examples)…")
     dw_hyps, dw_refs = translate_batch(dictword_val, "lb2en", "dictword", src_idx=0, ref_idx=1)
     dictword_pct = sum(h.lower().strip()==r.lower().strip() for h,r in zip(dw_hyps, dw_refs)) / len(dw_refs) * 100
     dw_hyps_el, dw_refs_el = translate_batch(dictword_val, "en2lb", "dictword_en2lb", src_idx=1, ref_idx=0)
     dictword_pct_el = sum(h.lower().strip()==r.lower().strip() for h,r in zip(dw_hyps_el, dw_refs_el)) / len(dw_refs_el) * 100
-    print(f"  → lb→en {dictword_pct:.1f}% | en→lb {dictword_pct_el:.1f}%\n")
+    # chrF is far more informative than exact-match for dictionary words: it
+    # credits synonyms/extra words ("lift" vs "lift something up") and one-letter
+    # spelling variants ("melau" vs "meleu") that exact-match scores as total misses.
+    dictword_chrf = sb.corpus_chrf(dw_hyps, [dw_refs]).score
+    dictword_chrf_el = sb.corpus_chrf(dw_hyps_el, [dw_refs_el]).score
+    print(f"  → exact lb→en {dictword_pct:.1f}% en→lb {dictword_pct_el:.1f}%  |  chrF lb→en {dictword_chrf:.1f} en→lb {dictword_chrf_el:.1f}\n")
 
 # ── Dictionary sentence BLEU (both directions) — the new parallel-sentence slice ─
 dictsent_bleu = dictsent_bleu_el = 0.0
@@ -376,6 +382,8 @@ if step is not None:
         "val_bleu_sent_long_en2lb":  round(long_bleu_el, 3),
         "val_exact_dictword":        round(dictword_pct, 1),
         "val_exact_dictword_en2lb":  round(dictword_pct_el, 1),
+        "val_chrf_dictword":         round(dictword_chrf, 2),
+        "val_chrf_dictword_en2lb":   round(dictword_chrf_el, 2),
         "val_bleu_dictsent":         round(dictsent_bleu, 3),
         "val_bleu_dictsent_en2lb":   round(dictsent_bleu_el, 3),
     }
