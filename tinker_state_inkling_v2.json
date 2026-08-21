@@ -252,9 +252,357 @@
       "step": 4300,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4300",
       "val_loss": 0.00426
+    },
+    {
+      "step": 4400,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4400",
+      "val_loss": 0.004609
+    },
+    {
+      "step": 4500,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4500",
+      "val_loss": 0.004723
+    },
+    {
+      "step": 4600,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4600",
+      "val_loss": 0.003859
+    },
+    {
+      "step": 4700,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4700",
+      "val_loss": 0.003476
+    },
+    {
+      "step": 4800,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4800",
+      "val_loss": 0.004498
+    },
+    {
+      "step": 4900,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4900",
+      "val_loss": 0.004771
+    },
+    {
+      "step": 5000,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5000",
+      "val_loss": 0.004237
+    },
+    {
+      "step": 5100,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5100",
+      "val_loss": 0.004464
+    },
+    {
+      "step": 5200,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5200",
+      "val_loss": 0.003269
+    },
+    {
+      "step": 5300,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5300",
+      "val_loss": 0.003966
+    },
+    {
+      "step": 5400,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5400",
+      "val_loss": 0.003872
+    },
+    {
+      "step": 5500,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5500",
+      "val_loss": 0.004816
+    },
+    {
+      "step": 5600,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5600",
+      "val_loss": 0.003478
+    },
+    {
+      "step": 5700,
+      "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5700",
+      "val_loss": 0.003497
+    },
+    {
+      "step": 5800,
+      "path": "tinker://ca7e51df-ed73-5599-9f12-22e82c5e4165:train:0/sampler_weights/checkpoint-5800",
+      "val_loss": 0.00381
+    },
+    {
+      "step": 5900,
+      "path": "tinker://ca7e51df-ed73-5599-9f12-22e82c5e4165:train:0/sampler_weights/checkpoint-5900",
+      "val_loss": 0.003572
+    },
+    {
+      "step": 6000,
+      "path": "tinker://64751545-4764-5fe0-bd76-3975aa5d63ad:train:0/sampler_weights/checkpoint-6000",
+      "val_loss": 0.00484,
+      "val_bible_bleu": 72.19,
+      "val_dict_exact_pct": 24.0,
+      "val_sent_bleu": 12.68,
+      "val_sent_bleu_short": 0.0,
+      "val_sent_bleu_long": 12.69,
+      "val_bleu_bible": 66.29,
+      "val_bleu_bible_en2lb": 74.426,
+      "val_exact_dict": 23.6,
+      "val_exact_dict_en2lb": 21.5,
+      "val_bleu_sentence": 24.803,
+      "val_bleu_sent_short": 26.803,
+      "val_bleu_sent_long": 23.172,
+      "val_bleu_sentence_en2lb": 11.307,
+      "val_bleu_sent_short_en2lb": 2.692,
+      "val_bleu_sent_long_en2lb": 12.59,
+      "val_exact_dictword": 2.0,
+      "val_exact_dictword_en2lb": 6.7,
+      "val_chrf_dictword": 16.98,
+      "val_chrf_dictword_en2lb": 20.49,
+      "val_bleu_dictsent": 10.403,
+      "val_bleu_dictsent_en2lb": 7.812
+    },
+    {
+      "step": 6100,
+      "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6100",
+      "val_loss": 0.004544
+    },
+    {
+      "step": 6200,
+      "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6200",
+      "val_loss": 0.003912
+    },
+    {
+      "step": 6300,
+      "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6300",
+      "val_loss": 0.002895
+    },
+    {
+      "step": 6400,
+      "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6400",
+      "val_loss": 0.003334
+    },
+    {
+      "step": 6500,
+      "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6500",
+      "val_loss": 0.003362
+    },
+    {
+      "step": 6600,
+      "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6600",
+      "val_loss": 0.003373
+    },
+    {
+      "step": 6700,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-6700",
+      "val_loss": 0.004398
+    },
+    {
+      "step": 6800,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-6800",
+      "val_loss": 0.003071
+    },
+    {
+      "step": 6900,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-6900",
+      "val_loss": 0.002947
+    },
+    {
+      "step": 7000,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7000",
+      "val_loss": 0.003049
+    },
+    {
+      "step": 7100,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7100",
+      "val_loss": 0.002307
+    },
+    {
+      "step": 7200,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7200",
+      "val_loss": 0.002405
+    },
+    {
+      "step": 7300,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7300",
+      "val_loss": 0.002571
+    },
+    {
+      "step": 7400,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7400",
+      "val_loss": 0.003824
+    },
+    {
+      "step": 7500,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7500",
+      "val_loss": 0.002511
+    },
+    {
+      "step": 7600,
+      "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7600",
+      "val_loss": 0.002386
+    },
+    {
+      "step": 7700,
+      "path": "tinker://02337d39-c1a2-5feb-85e5-aa08d377a3a7:train:0/sampler_weights/checkpoint-7700",
+      "val_loss": 0.003809
+    },
+    {
+      "step": 7800,
+      "path": "tinker://02337d39-c1a2-5feb-85e5-aa08d377a3a7:train:0/sampler_weights/checkpoint-7800",
+      "val_loss": 0.002735
+    },
+    {
+      "step": 7900,
+      "path": "tinker://32d48a33-798c-5130-ba80-2f58238b6aa0:train:0/sampler_weights/checkpoint-7900",
+      "val_loss": 0.004224
+    },
+    {
+      "step": 8000,
+      "path": "tinker://a42b9be6-961a-5067-9e46-c265fdaca0d3:train:0/sampler_weights/checkpoint-8000",
+      "val_loss": 0.005545,
+      "val_bible_bleu": 65.66,
+      "val_dict_exact_pct": 22.6,
+      "val_sent_bleu": 13.76,
+      "val_sent_bleu_short": 0.0,
+      "val_sent_bleu_long": 13.77,
+      "val_bleu_bible": 60.187,
+      "val_bleu_bible_en2lb": 74.539,
+      "val_exact_dict": 24.3,
+      "val_exact_dict_en2lb": 20.8,
+      "val_bleu_sentence": 24.486,
+      "val_bleu_sent_short": 29.784,
+      "val_bleu_sent_long": 21.649,
+      "val_bleu_sentence_en2lb": 9.529,
+      "val_bleu_sent_short_en2lb": 2.586,
+      "val_bleu_sent_long_en2lb": 10.358,
+      "val_exact_dictword": 2.7,
+      "val_exact_dictword_en2lb": 10.0,
+      "val_chrf_dictword": 17.01,
+      "val_chrf_dictword_en2lb": 24.0,
+      "val_bleu_dictsent": 14.26,
+      "val_bleu_dictsent_en2lb": 8.591
+    },
+    {
+      "step": 8100,
+      "path": "tinker://db7bb5fe-6053-5c16-8461-4669f6ea6d9f:train:0/sampler_weights/checkpoint-8100",
+      "val_loss": 0.005107
+    },
+    {
+      "step": 8200,
+      "path": "tinker://db7bb5fe-6053-5c16-8461-4669f6ea6d9f:train:0/sampler_weights/checkpoint-8200",
+      "val_loss": 0.003011
+    },
+    {
+      "step": 8300,
+      "path": "tinker://6413f347-12ee-5107-a4b2-07befe3b5370:train:0/sampler_weights/checkpoint-8300",
+      "val_loss": 0.003394
+    },
+    {
+      "step": 8400,
+      "path": "tinker://6413f347-12ee-5107-a4b2-07befe3b5370:train:0/sampler_weights/checkpoint-8400",
+      "val_loss": 0.002448
+    },
+    {
+      "step": 8500,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8500",
+      "val_loss": 0.003047
+    },
+    {
+      "step": 8600,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8600",
+      "val_loss": 0.003109
+    },
+    {
+      "step": 8700,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8700",
+      "val_loss": 0.00341
+    },
+    {
+      "step": 8800,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8800",
+      "val_loss": 0.003138
+    },
+    {
+      "step": 8900,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8900",
+      "val_loss": 0.002827
+    },
+    {
+      "step": 9000,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9000",
+      "val_loss": 0.002758
+    },
+    {
+      "step": 9100,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9100",
+      "val_loss": 0.002886
+    },
+    {
+      "step": 9200,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9200",
+      "val_loss": 0.002163
+    },
+    {
+      "step": 9300,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9300",
+      "val_loss": 0.003388
+    },
+    {
+      "step": 9400,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9400",
+      "val_loss": 0.002663
+    },
+    {
+      "step": 9500,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9500",
+      "val_loss": 0.002246
+    },
+    {
+      "step": 9600,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9600",
+      "val_loss": 0.002386
+    },
+    {
+      "step": 9700,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9700",
+      "val_loss": 0.002351
+    },
+    {
+      "step": 9800,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9800",
+      "val_loss": 0.002414
+    },
+    {
+      "step": 9900,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9900",
+      "val_loss": 0.002278
+    },
+    {
+      "step": 10000,
+      "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-10000",
+      "val_loss": 0.002199,
+      "val_bible_bleu": 65.72,
+      "val_dict_exact_pct": 24.7,
+      "val_sent_bleu": 13.16,
+      "val_sent_bleu_short": 0.0,
+      "val_sent_bleu_long": 13.17,
+      "val_bleu_bible": 64.451,
+      "val_bleu_bible_en2lb": 75.869,
+      "val_exact_dict": 21.5,
+      "val_exact_dict_en2lb": 22.9,
+      "val_bleu_sentence": 22.459,
+      "val_bleu_sent_short": 20.069,
+      "val_bleu_sent_long": 22.481,
+      "val_bleu_sentence_en2lb": 9.165,
+      "val_bleu_sent_short_en2lb": 5.156,
+      "val_bleu_sent_long_en2lb": 9.726,
+      "val_exact_dictword": 2.0,
+      "val_exact_dictword_en2lb": 9.3,
+      "val_chrf_dictword": 17.4,
+      "val_chrf_dictword_en2lb": 25.23,
+      "val_bleu_dictsent": 12.408,
+      "val_bleu_dictsent_en2lb": 8.787
     }
   ],
-  "steps": 4300,
+  "steps": 10000,
   "model_id": "d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0",
-  "training_state_path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/weights/checkpoint-4300"
+  "training_state_path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/weights/checkpoint-10000"
 }
