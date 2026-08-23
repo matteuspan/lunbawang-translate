@@ -174,11 +174,15 @@ _uses_tml = bool(cli_args.base_model) and cli_args.base_model.split(":")[0].star
 )
 _messages_base = [{"role": "system", "content": SYSTEM_PROMPT}]
 # reasoning_effort="none" (the effective default when unset) reproduced a 100%
-# empty-completion rate on short phrases in testing; "low" fixed it (~19%
-# residual). A "Thinking effort level: N" system message was tried first but
+# empty-completion rate on short phrases in testing; "low" cut it to ~19%
+# residual, but on the dictionary-retrained v2 weights ~36% of single-word
+# lb->en probes still come back empty at "low" (they score zero, understating
+# dict-word metrics). "medium" drops the empty rate to ~0% across checkpoints,
+# so it's the eval floor — matching serve.py, which also starts every input at
+# "medium". A "Thinking effort level: N" system message was tried first but
 # turned out to be inert noise over this REST endpoint — reasoning_effort is
 # the real control.
-_completion_kwargs = {"reasoning_effort": "low"} if _uses_tml else {}
+_completion_kwargs = {"reasoning_effort": "medium"} if _uses_tml else {}
 
 
 def translate(text, direction="lb2en", retries=2):
