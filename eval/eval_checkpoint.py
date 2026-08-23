@@ -23,12 +23,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from openai import OpenAI
 
-MAX_WORKERS = 10  # concurrent translation calls — sequential was the dominant eval cost
+MAX_WORKERS = 24  # concurrent translation calls — sequential was the dominant eval
+                  # cost; the calls are I/O-bound so raising this scales wall-time
+                  # down almost linearly (Bible verses are the slowest, ~3s each)
+VAL_DICTWORD = 150  # cap on new-dictionary word probes (of ~779) — seeded sample,
+VAL_DICTSENT = 60   # same probes every eval so the trajectory stays comparable
 
 ROOT_DIR     = Path(__file__).parent.parent
 STATE_FILE   = ROOT_DIR / "tinker_state.json"
 CORPUS_FILE  = ROOT_DIR / "corpus" / "parallel_corpus.csv"
 AUX_FILE     = ROOT_DIR / "corpus" / "aux_corpus.csv"
+DICT_FILE    = ROOT_DIR / "corpus" / "dictionary_corpus.csv"
 TINKER_BASE  = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
 API_KEY      = os.environ["TINKER_API_KEY"]
 RAW_DIR      = Path(__file__).parent / "eval_raw"
@@ -142,7 +147,24 @@ _, bible_val = bible_split(load_bible())
 _, aux_val   = aux_split(load_aux())
 dict_val = [r for r in aux_val if r[3]=="word"]
 sent_val = [r for r in aux_val if r[3]=="sentence"]
-print(f"  Bible val: {len(bible_val)} | Dict val: {len(dict_val)} | Sent val: {len(sent_val)}\n")
+print(f"  Bible val: {len(bible_val)} | Dict val: {len(dict_val)} | Sent val: {len(sent_val)}")
+
+# Dictionary corpus held-out slices. aux_split here is byte-identical to the
+# trainer's aux_train_val_split (same seed=42, same 0.1 fraction, same full
+# corpus before any definition trim), so these ARE exactly the trainer's
+# held-out dictionary rows — evaluated but never trained on.
+_dict_corpus = load_aux(DICT_FILE)
+_, _dict_val = aux_split(_dict_corpus, val_frac=0.1) if _dict_corpus else ([], [])
+dictword_val = [r for r in _dict_val if r[3] == "word"]
+dictsent_val = [r for r in _dict_val if r[3] == "sentence"]
+# Sub-sample to keep each eval cheap (~420 calls vs ~2000). Seeded, so the same
+# probes are drawn every checkpoint — the trajectory stays comparable.
+_rng_dict = random.Random(42)
+if len(dictword_val) > VAL_DICTWORD:
+    dictword_val = _rng_dict.sample(dictword_val, VAL_DICTWORD)
+if len(dictsent_val) > VAL_DICTSENT:
+    dictsent_val = _rng_dict.sample(dictsent_val, VAL_DICTSENT)
+print(f"  Dict(word) val: {len(dictword_val)} | Dict(sent) val: {len(dictsent_val)}\n")
 
 # ── Translate helper ──────────────────────────────────────────────────────────
 client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
@@ -152,11 +174,15 @@ _uses_tml = bool(cli_args.base_model) and cli_args.base_model.split(":")[0].star
 )
 _messages_base = [{"role": "system", "content": SYSTEM_PROMPT}]
 # reasoning_effort="none" (the effective default when unset) reproduced a 100%
-# empty-completion rate on short phrases in testing; "low" fixed it (~19%
-# residual). A "Thinking effort level: N" system message was tried first but
+# empty-completion rate on short phrases in testing; "low" cut it to ~19%
+# residual, but on the dictionary-retrained v2 weights ~36% of single-word
+# lb->en probes still come back empty at "low" (they score zero, understating
+# dict-word metrics). "medium" drops the empty rate to ~0% across checkpoints,
+# so it's the eval floor — matching serve.py, which also starts every input at
+# "medium". A "Thinking effort level: N" system message was tried first but
 # turned out to be inert noise over this REST endpoint — reasoning_effort is
 # the real control.
-_completion_kwargs = {"reasoning_effort": "low"} if _uses_tml else {}
+_completion_kwargs = {"reasoning_effort": "medium"} if _uses_tml else {}
 
 
 def translate(text, direction="lb2en", retries=2):
@@ -315,6 +341,32 @@ print("Sentence samples (en→lb):")
 for (lb, eng, *_), hyp in zip(sent_val, s_hyps_el):
     print(f"  EN:  {eng}\n  Got: {hyp}\n  Ref: {lb}\n")
 
+# ── Dictionary word exact-match (both directions) — the new lexical slice ──────
+dictword_pct = dictword_pct_el = 0.0
+dictword_chrf = dictword_chrf_el = 0.0
+if dictword_val:
+    print(f"\nDict-word ({len(dictword_val)} examples)…")
+    dw_hyps, dw_refs = translate_batch(dictword_val, "lb2en", "dictword", src_idx=0, ref_idx=1)
+    dictword_pct = sum(h.lower().strip()==r.lower().strip() for h,r in zip(dw_hyps, dw_refs)) / len(dw_refs) * 100
+    dw_hyps_el, dw_refs_el = translate_batch(dictword_val, "en2lb", "dictword_en2lb", src_idx=1, ref_idx=0)
+    dictword_pct_el = sum(h.lower().strip()==r.lower().strip() for h,r in zip(dw_hyps_el, dw_refs_el)) / len(dw_refs_el) * 100
+    # chrF is far more informative than exact-match for dictionary words: it
+    # credits synonyms/extra words ("lift" vs "lift something up") and one-letter
+    # spelling variants ("melau" vs "meleu") that exact-match scores as total misses.
+    dictword_chrf = sb.corpus_chrf(dw_hyps, [dw_refs]).score
+    dictword_chrf_el = sb.corpus_chrf(dw_hyps_el, [dw_refs_el]).score
+    print(f"  → exact lb→en {dictword_pct:.1f}% en→lb {dictword_pct_el:.1f}%  |  chrF lb→en {dictword_chrf:.1f} en→lb {dictword_chrf_el:.1f}\n")
+
+# ── Dictionary sentence BLEU (both directions) — the new parallel-sentence slice ─
+dictsent_bleu = dictsent_bleu_el = 0.0
+if dictsent_val:
+    print(f"Dict-sentence BLEU ({len(dictsent_val)} examples)…")
+    ds_hyps, ds_refs = translate_batch(dictsent_val, "lb2en", "dictsent", src_idx=0, ref_idx=1)
+    dictsent_bleu = sb.corpus_bleu(ds_hyps, [ds_refs]).score
+    ds_hyps_el, ds_refs_el = translate_batch(dictsent_val, "en2lb", "dictsent_en2lb", src_idx=1, ref_idx=0)
+    dictsent_bleu_el = sb.corpus_bleu(ds_hyps_el, [ds_refs_el]).score
+    print(f"  → lb→en {dictsent_bleu:.2f} | en→lb {dictsent_bleu_el:.2f}\n")
+
 jsonl_file.close()
 
 # ── Update tinker_state.json / tinker_state_run1.json ────────────────────────
@@ -332,6 +384,12 @@ if step is not None:
         "val_bleu_sentence_en2lb":   round(sent_bleu_el, 3),
         "val_bleu_sent_short_en2lb": round(short_bleu_el, 3),
         "val_bleu_sent_long_en2lb":  round(long_bleu_el, 3),
+        "val_exact_dictword":        round(dictword_pct, 1),
+        "val_exact_dictword_en2lb":  round(dictword_pct_el, 1),
+        "val_chrf_dictword":         round(dictword_chrf, 2),
+        "val_chrf_dictword_en2lb":   round(dictword_chrf_el, 2),
+        "val_bleu_dictsent":         round(dictsent_bleu, 3),
+        "val_bleu_dictsent_en2lb":   round(dictsent_bleu_el, 3),
     }
     with open(target_file, "r+") as f:
         fcntl.flock(f, fcntl.LOCK_EX)

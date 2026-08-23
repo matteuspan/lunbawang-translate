@@ -76,6 +76,24 @@ CONV_FILE       = Path(__file__).parent / "corpus" / "conversational_corpus.csv"
 FEEDBACK_REPEAT = 10   # more aggressive than AUX_REPEAT — fewer entries, higher signal
 CONV_REPEAT     = 3    # T4T conversational dialogue verses; 3× weighting
 
+# ── Dictionary corpus (Kemaloh Lundayeh) ──
+# Separate corpus, wired in like CONV_FILE so it gets its own seeded split and
+# does NOT perturb the parallel/aux RNG streams (keeps historical eval sets
+# comparable). Per-type direction gating lives in make_datums_typed:
+#   word      → both directions (clean equivalent)
+#   sentence  → both directions (parallel pair; upweighted, the high-value slice)
+#   definition→ lb→en ONLY (descriptive English gloss, a bad en→lb target)
+#   redirect  → dropped ("see X" pointer, not a translation pair)
+DICT_FILE          = Path(__file__).parent / "corpus" / "dictionary_corpus.csv"
+DICT_WORD_REPEAT   = 1
+DICT_DEF_REPEAT    = 1     # lb→en only
+DICT_SENT_REPEAT   = 3     # parallel sentence pairs — weighted like conv
+DICT_DEF_MAX_WORDS = 30    # drop encyclopedic definition outliers (up to 94 words)
+DICT_VAL_FRACTION  = 0.1   # held-out fraction; eval mirrors this seed/frac exactly
+
+WARMUP_STEPS = 500    # linear LR warmup 0→LEARNING_RATE (optimizer is reset on warm-start)
+
+
 SYSTEM_PROMPT = (
     "You are a translator specializing in the Lun Bawang language of Borneo. "
     "Translate ONLY the exact text provided — output just the translation, nothing else. "
@@ -381,6 +399,59 @@ def make_datums_bidirectional(tokenizer, pairs_with_meta, is_bible=True):
     return datums, skipped
 
 
+# Per-`type` direction gating for the dictionary corpus. word/sentence are clean
+# bidirectional pairs; definition is a descriptive English gloss (only safe as an
+# lb→en target, never en→lb); redirect is a "see X" pointer and is dropped.
+TYPE_DIRECTIONS = {
+    "word":       ("lb2en", "en2lb"),
+    "sentence":   ("lb2en", "en2lb"),
+    "definition": ("lb2en",),
+    "redirect":   (),
+}
+
+def make_datums_typed(tokenizer, rows, type_directions=TYPE_DIRECTIONS):
+    """Build datums honouring a per-`type` direction map. rows are
+    (lb, eng, source, type_) as returned by load_aux_corpus. Unknown types fall
+    back to both directions. Returns (datums, n_skipped)."""
+    datums, skipped = [], 0
+    for lb, eng, _src, typ in rows:
+        for direction in type_directions.get(typ, ("lb2en", "en2lb")):
+            src, tgt = (lb, eng) if direction == "lb2en" else (eng, lb)
+            d = make_datum(tokenizer, src, tgt, direction)
+            if d is None:
+                skipped += 1
+            else:
+                datums.append(d)
+    return datums, skipped
+
+
+def _norm_text(s: str) -> str:
+    """Normalise for leakage comparison (mirror build_dictionary_corpus.normalize)."""
+    s = s.replace("’", "'").replace("‘", "'")
+    return re.sub(r"\s+", " ", s).strip().lower()
+
+
+def build_val_blocklist(*val_lists) -> set:
+    """Set of normalised (lb, en) PAIRS for every held-out val example, used to
+    drop dictionary training rows that duplicate a held-out probe — across all
+    corpora, including Bible (which the dict builder never deduped against).
+
+    Blocks on the exact pair, not either side alone: a dict row that shares only
+    one side with a probe (e.g. 'fa→water' vs the probe 'abpa→water') is a
+    distinct translation, not leakage — training on it can only deflate the
+    probe's score, never inflate it, so it stays. Only an identical (source,
+    target) pair can be memorised and inflate the eval."""
+    return {(_norm_text(item[0]), _norm_text(item[1])) for vl in val_lists for item in vl}
+
+
+def lr_at(step: int, peak: float = LEARNING_RATE, warmup: int = WARMUP_STEPS) -> float:
+    """Linear warmup 0→peak over `warmup` steps, then constant. Pure function of
+    the (restored-on-resume) global step, so it stays correct across warm-start."""
+    if warmup and step < warmup:
+        return peak * (step + 1) / warmup
+    return peak
+
+
 # ── Validation ────────────────────────────────────────────────────────────────
 
 def compute_val_loss(tc, val_datums, n=VAL_LOSS_SAMPLES, seed=42):
@@ -635,6 +706,15 @@ def train(new_run: bool = False, max_steps: int | None = None):
     else:
         print("  conversational_corpus.csv not found — run corpus/build_conversational_corpus.py")
 
+    print("Loading dictionary corpus (Kemaloh Lundayeh)…")
+    dict_corpus = load_aux_corpus(DICT_FILE) if DICT_FILE.exists() else []
+    if dict_corpus:
+        from collections import Counter
+        tc_ = Counter(r[3] for r in dict_corpus)
+        print(f"  {len(dict_corpus)} dictionary rows ({dict(tc_)})")
+    else:
+        print("  dictionary_corpus.csv not found — run corpus/build_dictionary_corpus.py")
+
     # ── Splits ──
     print("\nSplitting data…")
     bible_train, bible_val = bible_train_val_split(bible_corpus, val_fraction=0.1)
@@ -662,6 +742,29 @@ def train(new_run: bool = False, max_steps: int | None = None):
     aux_sent_val += conv_val
     if conv_corpus:
         print(f"  Conv:     {len(conv_train)} train / {len(conv_val)} val")
+
+    # Dictionary: split the FULL corpus first (so the held-out set matches eval's
+    # split exactly), then trim long definitions and leakage-dedup TRAIN only.
+    dict_train, dict_val = (
+        aux_train_val_split(dict_corpus, val_fraction=DICT_VAL_FRACTION)
+        if dict_corpus else ([], [])
+    )
+    if dict_train:
+        n0 = len(dict_train)
+        dict_train = [
+            r for r in dict_train
+            if not (r[3] == "definition" and len(r[1].split()) > DICT_DEF_MAX_WORDS)
+        ]
+        # Leakage guard: drop any dict train row whose exact (lb,en) pair equals a
+        # held-out val probe in ANY corpus (the builder only deduped against aux).
+        blocklist = build_val_blocklist(bible_val, aux_val, feedback_val, conv_val, dict_val)
+        n1 = len(dict_train)
+        dict_train = [
+            r for r in dict_train
+            if (_norm_text(r[0]), _norm_text(r[1])) not in blocklist
+        ]
+        print(f"  Dict:     {len(dict_train)} train / {len(dict_val)} val "
+              f"({n0 - n1} long defs trimmed, {n1 - len(dict_train)} leakage rows dropped)")
 
     # ── Connect to Tinker ──
     service = ServiceClient()
@@ -738,8 +841,25 @@ def train(new_run: bool = False, max_steps: int | None = None):
     else:
         print("  No conversational datums")
 
+    print("Tokenising dictionary train datums (typed directions)…")
+    dict_word_rows = [r for r in dict_train if r[3] == "word"]
+    dict_def_rows  = [r for r in dict_train if r[3] == "definition"]
+    dict_sent_rows = [r for r in dict_train if r[3] == "sentence"]
+    dict_word_datums, dskip_w = make_datums_typed(tokenizer, dict_word_rows)
+    dict_def_datums,  dskip_d = make_datums_typed(tokenizer, dict_def_rows)
+    dict_sent_datums, dskip_s = make_datums_typed(tokenizer, dict_sent_rows)
+    dict_train_datums = (dict_word_datums * DICT_WORD_REPEAT
+                         + dict_def_datums * DICT_DEF_REPEAT
+                         + dict_sent_datums * DICT_SENT_REPEAT)
+    if dict_train:
+        print(f"  word {len(dict_word_datums)}×{DICT_WORD_REPEAT} + "
+              f"def {len(dict_def_datums)}×{DICT_DEF_REPEAT} (lb→en) + "
+              f"sent {len(dict_sent_datums)}×{DICT_SENT_REPEAT} "
+              f"→ {len(dict_train_datums)} datums ({dskip_w + dskip_d + dskip_s} skipped)")
+
     all_train_datums = (bible_train_datums + aux_train_datums_repeated
-                        + feedback_train_datums_repeated + conv_train_datums_repeated)
+                        + feedback_train_datums_repeated + conv_train_datums_repeated
+                        + dict_train_datums)
     print(f"\n  Total training datums: {len(all_train_datums)}")
 
     # ── Tokenise validation data ──
@@ -761,7 +881,7 @@ def train(new_run: bool = False, max_steps: int | None = None):
 
         for step, batch in enumerate(batches):
             fwdbwd_future = tc.forward_backward(batch, "cross_entropy")
-            optim_future  = tc.optim_step(AdamParams(learning_rate=LEARNING_RATE))
+            optim_future  = tc.optim_step(AdamParams(learning_rate=lr_at(global_step)))
 
             fwdbwd_result = fwdbwd_future.result()
             optim_future.result()
@@ -965,12 +1085,18 @@ if __name__ == "__main__":
     parser.add_argument("--max-steps", type=int, default=None,
                         help="Stop after this many global steps (e.g. to match another "
                              "run's step count for a fair comparison)")
+    parser.add_argument("--save-every", type=int, default=None,
+                        help="Checkpoint cadence override (default SAVE_EVERY). Lower it "
+                             "(e.g. 100) when running on an ephemeral host so a resumable "
+                             "checkpoint lands before the container can recycle.")
     args = parser.parse_args()
 
     BASE_MODEL = args.base_model
     LORA_RANK  = args.lora_rank
     if args.state_file:
         STATE_FILE = Path(args.state_file)
+    if args.save_every:
+        SAVE_EVERY = args.save_every
 
     if args.train:
         train(new_run=args.new_run, max_steps=args.max_steps)
