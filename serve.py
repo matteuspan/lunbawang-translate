@@ -39,6 +39,7 @@ INKLING_CHECKPOINT_EVERY = 2000  # only expose every Nth Inkling checkpoint in t
 # but are NOT the serving default (see get_latest_checkpoint, which is unchanged).
 STATE_FILE_INKLING_V2 = Path(__file__).parent / "tinker_state_inkling_v2.json"
 INKLING_V2_CHECKPOINT_EVERY = 2000  # only expose every Nth v2 checkpoint in the dropdown
+DEFAULT_V2_STEP = 16000  # the v2 checkpoint served as the production default (see get_latest_checkpoint)
 
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
@@ -285,10 +286,20 @@ def _all_checkpoints() -> list[dict]:
 
 
 def get_latest_checkpoint() -> str | None:
-    """Inkling-Small · checkpoint-11500 is the production default (see README
-    for the comparison against the archived Qwen3-8B v1 run) — it wins or
-    ties on 5/6 held-out metrics. Falls back to the Qwen v1/v0 chain only if
-    the Inkling state file is unavailable."""
+    """The v2 dictionary-retrain · checkpoint-16000 is the production default.
+    It was warm-started from Inkling checkpoint-11500 and trained on the Kemaloh
+    Lundayeh dictionary; on the everyday-quality blend (dict-sentence BLEU both
+    directions + general-sentence BLEU + dict-word chrF), measured at the same
+    "medium" reasoning effort the server uses, it is the best checkpoint of the
+    run — strongest general lb→en sentences and en→lb dictionary quality, with
+    Bible fidelity holding (~57 BLEU, no collapse). Pinned by step so it can't
+    drift as checkpoints are added. Falls back to Inkling checkpoint-11500, then
+    the Qwen v1/v0 chain, if the v2 state file is unavailable."""
+    if STATE_FILE_INKLING_V2.exists():
+        v2_ckpts = json.loads(STATE_FILE_INKLING_V2.read_text()).get("checkpoints", [])
+        for ck in v2_ckpts:
+            if ck["step"] == DEFAULT_V2_STEP:
+                return ck["path"]
     if STATE_FILE_INKLING.exists():
         inkling_ckpts = json.loads(STATE_FILE_INKLING.read_text()).get("checkpoints", [])
         if inkling_ckpts:
