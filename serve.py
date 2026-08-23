@@ -443,7 +443,7 @@ def _warm_sampler(checkpoint: str) -> None:
     try:
         from openai import OpenAI
         client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
-        kwargs = {"reasoning_effort": "low"} if checkpoint in _inkling_checkpoint_paths() else {}
+        kwargs = {"reasoning_effort": "medium"} if checkpoint in _inkling_checkpoint_paths() else {}
         client.chat.completions.create(
             model=checkpoint,
             messages=[{"role": "system", "content": SYSTEM_PROMPT},
@@ -539,23 +539,23 @@ def translate(req: TranslateRequest):
         _NEXT_EFFORT = {"low": "medium", "medium": "high"}
 
         def _effort_for(source: str) -> str:
-            """Pick the starting effort from the length of the source text.
+            """Starting reasoning effort. "medium" for every input, long or
+            short.
 
-            Measured on checkpoint-11500 (5 trials/phrase, short en->lb):
-            short inputs come back empty 55% of the time at "low" but only
-            10% at "medium". Since an empty result is retried at "medium"
-            anyway, starting "low" on a short input just buys a wasted round
-            trip half the time — same final answer, twice the latency, and
-            bimodal (~1.5s or ~3.9s) instead of steady (~2.5s).
-
-            Long inputs almost never come back empty at "low", so they keep
-            the faster setting. The failures are actually lexical rather than
-            purely length-based ("eat" is fine, "hello" always fails), so
-            word count is a blunt proxy — but over-routing is cheap (~1s)
-            next to a missed retry (~2.4s), so erring long is the right side
-            to be wrong on.
+            "medium" is the floor because "low" produces single-token empty
+            completions at rates that depend on the checkpoint and are not
+            worth chasing per-input. On checkpoint-11500, short en->lb phrases
+            came back empty 55% of the time at "low" vs 10% at "medium"; on the
+            dictionary-retrained v2 weights the low-effort empty rate on single
+            Lun Bawang words is worse still (~36% lb->en) even though those are
+            exactly the inputs it was trained on. At "medium" both collapse to
+            0%. Long inputs rarely empty at either setting, but keeping one
+            effort for everything removes a length heuristic that never tracked
+            the real (lexical, not length-based) cause of the empties, at the
+            cost of a little latency on long inputs — a trade we take for
+            consistency and to stay robust across checkpoints.
             """
-            return "medium" if len(source.split()) <= SHORT_INPUT_WORDS else "low"
+            return "medium"
 
         def _call(content: str, source: str) -> str:
             """Translate `content`; `source` is the raw text it was built from,
