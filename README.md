@@ -2,7 +2,7 @@
 
 **Live demo:** https://translate.lunbawang.com/
 
-A bidirectional **Lun Bawang ↔ English** machine translator, built by fine-tuning language models on the first parallel corpus ever assembled for the language. The web interface is deployed on Render and runs against a fine-tuned model served via the [Tinker](https://thinkingmachines.ai/tinker/) API. The production default is **Inkling-Small · Step 11,500** — see [Inkling-Small Experiment](#inkling-small-experiment) for the full comparison against the original Qwen3-8B run.
+A bidirectional **Lun Bawang ↔ English** machine translator, built by fine-tuning language models on the first parallel corpus ever assembled for the language. The web interface is deployed on Render and runs against a fine-tuned model served via the [Tinker](https://thinkingmachines.ai/tinker/) API. The production default is the **v2 dictionary retrain — Inkling-Small · Step 16,000**, warm-started from the earlier Inkling checkpoint-11,500 and continued on the OCR'd Kemaloh Lundayeh–English dictionary (22,038 pairs). See [Evaluation](#evaluation) for how it was selected and [Past experiments and versions](#past-experiments-and-versions) for the earlier Qwen3-8B and Inkling runs.
 
 ---
 
@@ -22,13 +22,14 @@ FastAPI server (serve.py)
   │  OpenAI-compatible REST call
   ▼
 Tinker inference API
-  └─ Inkling-Small + LoRA fine-tune (checkpoint-11500, production default)
+  └─ Inkling-Small + LoRA (v2 dictionary retrain, checkpoint-16000, production default)
 ```
 
 1. The user types Lun Bawang or English text in the browser.
 2. The server auto-detects the source language from a vocabulary heuristic, then calls the Tinker API with a chat-format prompt.
-3. The model generates a translation; `<think>…</think>` reasoning blocks (from Qwen3's chain-of-thought mode) are stripped before the response is returned. For Inkling checkpoints, `reasoning_effort="low"` is passed on every call — see [Inkling-Small Experiment](#inkling-small-experiment) for why, and why a single retry at `"medium"` is issued if the first call comes back empty.
-4. Optionally, English input can be split into clauses and each clause translated independently, giving a secondary clause-by-clause translation alongside the whole-sentence result.
+3. The model generates a translation; `<think>…</think>` reasoning blocks are stripped before the response is returned. Every Inkling call passes `reasoning_effort="medium"` — see [The empty-output issue](#the-empty-output-issue-resolved) for why medium is the floor, and why a single retry at `"high"` is issued if a call comes back empty.
+4. For the production default checkpoint, an exact full-phrase match against a small curated **phrasebook** bypasses the model entirely, for consistency with the on-page glossary and to sidestep the model's weakness on very short inputs. The comparison dropdown still shows raw model output.
+5. Optionally, English input can be split into clauses and each clause translated independently, giving a secondary clause-by-clause translation alongside the whole-sentence result.
 
 ### Language auto-detection
 
@@ -42,49 +43,42 @@ Long English sentences are split on commas, semicolons, and coordinating conjunc
 
 ## Data
 
-Four sources were used, totalling ~31,000 training pairs.
+The training corpus combines a large Biblical parallel text with several smaller, higher-diversity everyday-language sources, plus the OCR'd Kemaloh Lundayeh dictionary added for the v2 retrain.
 
 ### 1. Lun Bawang Bible (primary corpus, ~30,000 verse pairs)
 
-The only substantial public Lun Bawang text available is the full Bible translation published by the Sabah Theological Seminary. The PDF (`LunBawang-Bible.pdf`) was parsed with `parse_lun_bawang.py` into verse-level segments, then aligned verse-by-verse with the [World English Bible](https://worldenglish.bible) (WEB, public domain) using `build_parallel_corpus.py`.
+The only substantial public Lun Bawang text available is the full Bible translation published by the Sabah Theological Seminary. The PDF (`LunBawang-Bible.pdf`) was parsed with `parse_lun_bawang.py` into verse-level segments, then aligned verse-by-verse with the [World English Bible](https://worldenglish.bible) (WEB, public domain) using `build_parallel_corpus.py`, keyed on book code + chapter + verse. The result is `parallel_corpus.csv` (~30,000 matched verse pairs across 66 books).
 
-The alignment keys on book code + chapter + verse number. The result is `parallel_corpus.csv` (~30,000 matched verse pairs across 66 books).
+**Train / val split:** 90% train / 10% val, stratified by Bible book.
 
-**Train / val split:** 90% train / 10% val, stratified by Bible book, so every book appears in both sets.
+### 2. Kemaloh Lundayeh–English Dictionary (v2 retrain corpus, 22,038 pairs)
 
-### 2. Borneo Dictionary (word-level pairs, ~400 entries)
+A ~400-page scanned dictionary — Ganang, Crain & Pearson-Rounds, *Kemaloh Lundayeh–English Dictionary* — was OCR'd into structured entries via the Anthropic Batch API (Claude vision, forced tool-use into a strict entry schema: headword, homograph, senses, examples, variants, cross-references), then flattened into the corpus's `source,lun_bawang,english,type` schema by `corpus/build_dictionary_corpus.py`. The result is `corpus/dictionary_corpus.csv` with four row types:
 
-Word-level Lun Bawang ↔ English pairs from borneodictionary.com/lun-bawang/ were copied into `borneodict.txt`. The parser (`build_aux_corpus.py`) reads repeating blocks of the form:
+| type | count | used for |
+|------|-------|----------|
+| `word` | 7,478 | headword ↔ gloss (both directions) |
+| `definition` | 11,184 | headword → descriptive English gloss (**lb→en only**; a definition is a poor en→lb target) |
+| `sentence` | 2,281 | example sentences (both directions, up-weighted 3×) |
+| `redirect` | 1,095 | "see X" cross-references (dropped from training) |
 
-```
-LB_HEADWORD
-English: DEFINITION
-Bahasa Malaysia: BM_DEFINITION
-```
+This is the source that shifts the model from Bible-only fluency toward everyday vocabulary. See [Evaluation](#evaluation) for how it is weighted and gated.
 
-Each headword / English definition pair becomes one training entry.
+### 3. Borneo Dictionary (word-level pairs, ~400 entries)
 
-### 3. Longsemadoh WordPress (words + conversational sentences, ~350 entries)
+Word-level pairs from borneodictionary.com/lun-bawang/, parsed from repeating `LB_HEADWORD / English: … / Bahasa Malaysia: …` blocks by `build_aux_corpus.py`.
 
-A language learning page from longsemadoh.wordpress.com was copied into `longsemadoh.txt`. This source uses five different inline formats simultaneously (dialogue blocks, alternating EN/-LB lines, numbered sentences, parenthetical LB, and dash/equals-separated pairs). The parser handles all five formats and uses an English-word scoring heuristic to orient each pair correctly (LB side vs. English side).
+### 4. Longsemadoh WordPress (words + conversational sentences, ~350 entries)
 
-Entries with ≥3 Lun Bawang words are classified as `sentence`; shorter entries as `word`.
+A language-learning page from longsemadoh.wordpress.com using five different inline formats simultaneously (dialogue blocks, alternating EN/LB lines, numbered sentences, parenthetical LB, dash/equals-separated pairs). The parser handles all five and uses an English-word scoring heuristic to orient each pair. Entries with ≥3 Lun Bawang words are classified as `sentence`, shorter ones as `word`.
 
-### 4. Mortensen (2021) — Laba' fairy tale (~54 sentence pairs)
+### 5. Mortensen (2021) — Laba' fairy tale (~54 sentence pairs)
 
-Appendix A.1 of Mortensen's PhD dissertation "The Kemaloh Lun Bawang Language of Borneo" (University of Hawai'i, UMI #10969) contains a full Mouse-deer vs. Crocodile fairy tale in two-column parallel format: Lun Bawang prose on the left, English translation on the right. This is narrative dialogue — the domain farthest from the Biblical training data — and is almost certainly absent from any LLM's pre-training corpus.
-
-`parse_mortensen.py` uses pdfminer coordinate-based column separation (left column x < 250 = LB, right column x ≥ 250 = EN) to extract and align paragraph-level pairs. Footnote starters (lines matching `^\d+[A-Za-z]`) and their continuation paragraphs are filtered; inline footnote reference numbers (e.g., `em,1 uten`) are stripped from the LB text. Output: `mortensen_corpus.csv`.
-
-Used for non-commercial research purposes.
+Appendix A.1 of Mortensen's PhD dissertation "The Kemaloh Lun Bawang Language of Borneo" (University of Hawai'i) contains a Mouse-deer vs. Crocodile fairy tale in two-column parallel format — narrative dialogue, the domain farthest from the Biblical data. `parse_mortensen.py` uses pdfminer coordinate-based column separation to extract and align paragraph-level pairs. Used for non-commercial research purposes.
 
 ### Combined auxiliary corpus
 
-`build_aux_corpus.py` combines sources 2, 3, and 4 into `aux_corpus.csv` (columns: `source`, `lun_bawang`, `english`, `type`).
-
-**Train / val split:** 80% train / 20% val, randomised per source, so each source appears in both train and val.
-
-**Up-weighting:** Auxiliary training datums are repeated 5× in the training loop to compensate for their small size relative to the ~54,000 Bible datums (2 directions × 27,000 train verses).
+`build_aux_corpus.py` combines sources 3, 4, and 5 into `aux_corpus.csv` (columns: `source`, `lun_bawang`, `english`, `type`). Split 80% train / 20% val, randomised per source. The dictionary corpus (source 2) is loaded and split separately (see [Evaluation](#evaluation)).
 
 ---
 
@@ -92,23 +86,18 @@ Used for non-commercial research purposes.
 
 [Tinker](https://thinkingmachines.ai/tinker/) is a hosted fine-tuning and inference service. It provides a Python SDK (`tinker`) and an OpenAI-compatible REST API for serving.
 
-**Base model:** `Qwen/Qwen3-8B` (archived v0/v1 runs) or `thinkingmachines/Inkling-Small` (current production default — see [Inkling-Small Experiment](#inkling-small-experiment)), selected with `--base-model`
-**Adaptation:** LoRA, rank 16
-**Optimiser:** Adam, lr 5e-5
-**Batch size:** 8
-**Sequence length cap:** 384 tokens (longer pairs are dropped)
-
-To use Tinker you need an API key set as:
+**Base model:** `thinkingmachines/Inkling-Small` (current production) or `Qwen/Qwen3-8B` (archived v0/v1 runs), selected with `--base-model`
+**Adaptation:** LoRA, rank 16 · **Optimiser:** Adam, lr 5e-5 · **Batch size:** 8 · **Sequence length cap:** 384 tokens
 
 ```bash
 export TINKER_API_KEY=your_key_here
 ```
 
-The training client is created with `ServiceClient().create_lora_training_client(...)`. Each saved checkpoint has a `tinker://…` URI that is passed directly to the OpenAI-compatible inference endpoint as the `model` parameter.
+The training client is created with `ServiceClient().create_lora_training_client(...)`. Each saved checkpoint has a `tinker://…` URI passed directly to the OpenAI-compatible inference endpoint as the `model` parameter.
 
 ### Training format
 
-Every source pair produces two datums — LB→EN and EN→LB — using Qwen3's standard chat template:
+Every source pair produces datums using the model's chat template (native TML rendering for Inkling; the generic HF template for Qwen):
 
 ```
 [system]  You are a translator specializing in the Lun Bawang language …
@@ -116,25 +105,22 @@ Every source pair produces two datums — LB→EN and EN→LB — using Qwen3's 
 [assistant] {english_text}
 ```
 
-Only the assistant tokens contribute to the loss (weights = 0 on prompt, 1 on completion). Short-input hints (`Output only the translation of this word or phrase.`) are added for inputs ≤5 words at inference time.
+Only the assistant tokens contribute to the loss. Short-input hints (`Output only the translation of this word or phrase.`) are added for inputs ≤5 words at inference time.
 
 ### Training command
 
 ```bash
-python3.13 train_translator.py --train
-# Alternate base model / separate experiment, e.g. Inkling-Small:
+# Current recipe (Inkling base, dictionary corpus folded in):
 python3.13 train_translator.py --train \
   --base-model thinkingmachines/Inkling-Small \
-  --state-file tinker_state_inkling.json \
-  --max-steps 11500   # match an existing run's step count for direct comparison
+  --state-file tinker_state_inkling_v2.json
 ```
 
-The script resumes automatically from the last checkpoint if the target state file exists. Progress is logged to stdout and checkpoint metadata is saved back to the state file after every 500 steps. `--base-model thinkingmachines/*` requires `pip install tml-renderers torch` (see [Inkling-Small Experiment](#inkling-small-experiment) — these models use a native TML chat format, not the generic HF chat template).
+The script resumes automatically from the last checkpoint if the target state file exists, and full-resumes optimizer state where available. `--base-model thinkingmachines/*` requires `pip install tml-renderers torch` (these models use a native TML chat format, not the generic HF chat template). The v2 run was **warm-started** from Inkling checkpoint-11,500 (weights only; optimizer reset, with a 500-step LR warmup).
 
 ### Interactive CLI translation
 
 ```bash
-python3.13 train_translator.py --translate
 python3.13 train_translator.py --translate --direction en2lb --text "In the beginning"
 ```
 
@@ -142,20 +128,64 @@ python3.13 train_translator.py --translate --direction en2lb --text "In the begi
 
 ## Evaluation
 
-Three validation metrics are computed during training:
+Validation metrics are computed during training and written back to the state file. A fast `val_loss` (teacher-forced cross-entropy, no sampling) runs every 100 steps; the full bidirectional BLEU / exact-match / chrF eval runs every 2,000 steps against fixed, seeded held-out sets. All sampling-based eval uses `reasoning_effort="medium"`, matching serving.
 
-| Metric | Subset | Frequency | Method |
-|--------|--------|-----------|--------|
-| `val_loss` | 200 random Bible val datums | Every 500 steps | Cross-entropy forward pass, no sampling |
-| `val_bleu_bible` | 50 sampled Bible val pairs (LB→EN) | Every 2,000 steps | sacrebleu corpus BLEU |
-| `val_exact_dict` | All 133 dictionary val pairs (LB→EN) | Every 2,000 steps | Case-insensitive exact string match |
-| `val_bleu_sentence` | All 16 sentence val pairs (LB→EN) | Every 2,000 steps | sacrebleu corpus BLEU |
+### Current production model — v2 dictionary retrain (Inkling · Step 16,000)
 
-`val_loss` is fast (no sampling, no cold start). BLEU and exact-match require spawning a sampling client, so they run less frequently.
+The v2 run warm-starts from Inkling checkpoint-11,500 and continues for one epoch over the combined Bible + auxiliary + **dictionary** corpus. Recipe decisions (made with the maintainer):
 
-### Results by checkpoint
+- **Per-type direction gating** — `word`/`sentence` → both directions; `definition` → **lb→en only**; `redirect` → dropped.
+- **Balanced weighting** — word 1×, definition 1×, sentence 3× → the dictionary is **~28% of the training mix**.
+- **Long-definition trim** (>30 words) from train only, applied *after* the split so held-out rows still match eval.
+- **Leakage guard** — drops any dict train row whose exact `(lb, en)` pair equals a held-out probe in any corpus.
+- **Held-out dictionary eval slices** — new `dictword`/`dictsent` sets (both directions), seeded identically to the trainer's split so they are exactly the model's held-out rows. Word recall is scored with **chrF** (partial credit) alongside exact-match, because a single-word gold answer rarely matches token-for-token even when the meaning is right.
 
-All BLEU scores are sacrebleu corpus BLEU on fixed held-out sets. Bidirectional evaluation (LB→EN and EN→LB) uses the same 50 Bible, 144 dictionary, and 40 sentence examples for every checkpoint.
+**Selection.** The goal was everyday English↔Lun Bawang quality, not literal Bible fidelity, so checkpoints were ranked by an everyday-quality blend — `dict-sentence BLEU (both directions) + general-sentence BLEU + 0.1·dict-word chrF` — excluding only any checkpoint where Bible BLEU catastrophically collapsed (a gibberish cliff; a moderate drop toward conversational register is expected and fine). The final call was made at `reasoning_effort="medium"` because at `low` a large fraction of single-word probes return empty completions and score zero, understating the dictionary metrics (see below).
+
+**Contender comparison (medium effort):**
+
+| Step | dict-sent lb→en | dict-sent en→lb | sentence lb→en | dict-word en→lb chrF | Bible lb→en | **blend** |
+|------|-----------------|-----------------|----------------|----------------------|-------------|-----------|
+| 8,000 | 13.3 | 7.3 | 24.6 | 24.6 | 60.2 | 47.0 |
+| 12,000 | 12.3 | 10.5 | 25.2 | 24.8 | 59.3 | 49.6 |
+| 14,000 | 12.7 | 3.6 | 26.6 | 20.6 | 57.2 | 44.5 |
+| **16,000** | 12.6 | 10.0 | **27.9** | **27.1** | 58.9 | **52.3** |
+
+**Step 16,000 is the best checkpoint of the run** — strongest general lb→en sentences and en→lb dictionary quality, with Bible fidelity holding (~57 BLEU, no collapse). It is now the served default; warmup, the phrasebook shortcut, and the dropdown "(default)" marker all follow it.
+
+**Training trajectory (auto-evals, `low` effort — the curve, not the final selection):**
+
+| Step | Val loss | Bible lb→en | dict-sent lb→en | dict-sent en→lb | dict-word chrF (lb / en) | Sent lb→en |
+|------|----------|-------------|-----------------|-----------------|--------------------------|------------|
+| 2,000 | 0.0081 | 64.1 | 12.9 | 1.9 | — | 26.5 |
+| 4,000 | 0.0054 | 57.6 | 11.9 | 5.9 | — | 26.2 |
+| 6,000 | 0.0048 | 66.3 | 10.4 | 7.8 | 17.0 / 20.5 | 24.8 |
+| 8,000 | 0.0055 | 60.2 | 14.3 | 8.6 | 17.0 / 24.0 | 24.5 |
+| 10,000 | 0.0022 | 64.5 | 12.4 | 8.8 | 17.4 / 25.2 | 22.5 |
+| 12,000 | 0.0018 | 59.3 | 11.9 | 9.3 | 16.8 / 25.9 | 24.8 |
+| 14,000 | 0.0021 | 57.2 | 13.3 | 7.0 | 16.2 / 16.5 | 26.6 |
+
+The **en→lb direction improved steadily** across the run — the direction that was weakest and matters most for everyday use. Dictionary single-word *exact*-match stays low (~2–13%) throughout because single-word gold answers rarely match token-for-token; chrF is the metric to watch there. Raw per-translation outputs for every eval run live in `eval/eval_raw/*.jsonl` (merged into `eval/eval_outputs.csv`).
+
+### The empty-output issue (resolved)
+
+Inkling supports a `reasoning_effort` control. Training never includes an effort signal, so any value is somewhat out-of-distribution — and at `low` effort certain short inputs (single common words, short idioms) come back as a single end-of-message token with **zero generated content** rather than a wrong-but-present translation. Measured on 50 single-word lb→en probes:
+
+| checkpoint | low | medium |
+|------------|-----|--------|
+| v1 · checkpoint-11,500 | 4% | 0% |
+| v2 · checkpoint-16,000 | 36% | 0% |
+
+The dictionary retrain did **not** fix this at the model level — v2 is actually *more* empty-prone at `low`, even though single words are what it trained on. At `medium` both collapse to 0%. **Mitigation shipped to production** (`serve.py`): every input starts at `reasoning_effort="medium"`, with a single retry at `"high"` on the rare empty. Eval uses `medium` too, so its numbers reflect what the served model actually does.
+
+---
+
+## Past experiments and versions
+
+<details>
+<summary><b>Qwen3-8B — v0 and v1 runs</b> (the original base model, superseded by Inkling)</summary>
+
+All BLEU scores are sacrebleu corpus BLEU on fixed held-out sets. Bidirectional eval uses the same 50 Bible, 144 dictionary, and 40 sentence examples per checkpoint.
 
 #### v0 — run 1 (model `42a2c780`, 16,000 steps)
 
@@ -164,33 +194,24 @@ All BLEU scores are sacrebleu corpus BLEU on fixed held-out sets. Bidirectional 
 | 8,000 | 0.185 | 54.55 | 44.06 | 20.1% | 16.7% | 34.98² | 1.24 |
 | 16,000 | 0.054 | 58.24 | — | 19.5% | — | 33.59¹ | — |
 
-¹ Unidirectional (LB→EN only) eval; earlier eval code.
-² Measured on the original sentence val set (longsemadoh conversational sentences only, before Mortensen narrative prose was added to the val set in v1). With the current val set the score is 5.99.
+¹ Unidirectional (LB→EN only) eval; earlier eval code. ² Measured on the original sentence val set (longsemadoh only, before Mortensen prose was added in v1); with the current val set the score is 5.99.
 
-Training stopped at step 16,000 (mid-epoch 3). Val loss continued falling steeply into epoch 3, indicating overfitting to Biblical register. Step 8,000 gave the best balance between Bible BLEU and generalisation; step 16,000 was stronger on Biblical prose but weaker on conversational text.
+Training stopped at step 16,000 (mid-epoch 3); val loss kept falling into epoch 3, indicating overfitting to Biblical register. Step 8,000 gave the best balance.
 
-##### Comparison with GPT models (v0 val set)
+**Comparison with GPT models (v0 val set):**
 
-The same val sets were run against general-purpose OpenAI models to establish a baseline for what an off-the-shelf LLM can do with no Lun Bawang-specific training. Scripts: `eval/eval_openai.py`, `eval/eval_checkpoint.py`. Raw outputs saved to `eval/eval_raw/`; combined into `eval/eval_outputs.csv` via `eval/merge_evals.py`.
+| Model | Bible BLEU | Dict exact | Sentence BLEU | Avg ms/call |
+|-------|-----------|-----------|---------------|-------------|
+| **Our model (v0·checkpoint-8000)** | **51.70** | **20.3%** | **30.79** | ~5,400 |
+| gpt-4o | 10.44 | 6.0% | 21.46 | ~716 |
+| gpt-5-mini | 8.79 | 3.8% | 10.95 | ~18,300 |
+| gpt-4o-mini | 7.22 | 2.3% | 11.84 | — |
 
-| Model | Bible BLEU | Dict exact match | Sentence BLEU | Avg ms/call | Notes |
-|-------|-----------|-----------------|---------------|-------------|-------|
-| **Our model (v0·checkpoint-8000)** | **51.70** | **20.3%** | **30.79** | ~5,400 | Qwen3-8B + LoRA, Tinker inference |
-| gpt-4o | 10.44 | 6.0% | 21.46 | ~716 | |
-| gpt-5-mini | 8.79 | 3.8% | 10.95 | ~18,300 | Reasoning model; slow despite "mini" label |
-| gpt-4o-mini | 7.22 | 2.3% | 11.84 | — | |
-
-Key takeaways:
-- Our fine-tuned model scores **5× higher** on Bible BLEU and **3× higher** on Dict exact match than the best general GPT model (gpt-4o), despite being 8B parameters vs. GPT-4o's much larger scale.
-- gpt-5-mini is a reasoning model and takes ~18s per API call — 25× slower than gpt-4o and 3× slower than our model on Tinker. Its BLEU scores are also worse, suggesting reasoning capability does not compensate for lack of Lun Bawang training data.
-- All GPT models struggle with the dictionary exact-match task (single-word translations), confirming that Lun Bawang vocabulary is largely absent from general pre-training data.
-- The ~5,400ms timing reflects Tinker's cold-start latency; warm-cache requests are faster.
+The fine-tuned model scores ~5× higher on Bible BLEU and ~3× higher on Dict exact-match than the best general GPT model, confirming that Lun Bawang vocabulary is largely absent from general pre-training data.
 
 #### v1 — run 2 (model `719fbcd8`, 11,500 steps)
 
-v1 adds manually transcribed entries from the Mortensen (2021) dissertation appendix and a small amount of user feedback from the live site to the training set. The Mortensen narrative sentences also join the sentence val set, making v1 sentence BLEU scores not directly comparable to v0.
-
-Sentence BLEU is split by reference length: **sh** = short (≤10 words), **lg** = long (>10 words).
+v1 adds Mortensen (2021) narrative sentences and a small amount of user feedback. Sentence BLEU split by reference length: **sh** ≤10 words, **lg** >10 words.
 
 | Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN (sh / lg) | Sent EN→LB (sh / lg) |
 |------|----------|------------|------------|-----------|-----------|----------------------|----------------------|
@@ -201,36 +222,18 @@ Sentence BLEU is split by reference length: **sh** = short (≤10 words), **lg**
 | 10,000 | 0.147 | 46.88 | 46.70 | 23.6% | 16.7% | 21.72 (20.1 / 22.4) | 11.04 (2.3 / 12.8) |
 | **11,500** | — | **58.82** | **56.48** | **24.3%** | 15.3% | **22.07 (20.3 / 22.2)** | **9.51 (4.2 / 10.3)** |
 
-† Step 6,000 EN→LB dict anomaly: model was emitting `<think>` tokens at that checkpoint.
+† Step 6,000 EN→LB dict anomaly: model was emitting `<think>` tokens at that checkpoint. **v1 · Step 11,500 was the best Qwen checkpoint**, superseded by Inkling.
 
-#### Best checkpoint comparison
+</details>
 
-All scores on the v1 val set (50 Bible, 144 dict, 40 sentence examples including Mortensen narrative prose). Sentence BLEU: **sh** = short (≤10 words), **lg** = long (>10 words).
+<details>
+<summary><b>Inkling-Small v1 — the step-matched 11,500 run</b> (predecessor to the v2 dictionary retrain)</summary>
 
-| Metric | v0 · Step 8,000 | **v1 · Step 11,500** |
-|--------|-----------------|----------------------|
-| Bible BLEU LB→EN | 54.55 | **58.82** |
-| Bible BLEU EN→LB | 44.06 | **56.48** |
-| Dict exact LB→EN | 20.1% | **24.3%** |
-| Dict exact EN→LB | 16.7% | 15.3% |
-| Sent BLEU LB→EN | 5.99 (13.8 / 2.6) | **22.07 (20.3 / 22.2)** |
-| Sent BLEU EN→LB | 1.24 (1.4 / 1.4) | **9.51 (4.2 / 10.3)** |
+[Inkling-Small](https://thinkingmachines.ai/) is Thinking Machines' small reasoning model, available on Tinker at lower per-token cost than Qwen3-8B. It was fine-tuned on the exact same corpus, LoRA config, and step count (11,500) as the archived v1 Qwen run, for a direct step-matched comparison. The v2 dictionary retrain warm-starts from this run's checkpoint-11,500.
 
-**v1 · Step 11,500 was the best checkpoint of the Qwen3-8B runs** (superseded as the production default by Inkling-Small — see below). It achieves the best Bible BLEU in both directions and best dictionary exact-match among v0/v1, and EN→LB is substantially improved across the board compared to v0. The sentence BLEU gap is particularly stark: v0 scores 5.99 LB→EN and 1.24 EN→LB on the v1 val set; v1 scores 22.07 and 9.51.
+Inkling uses a native TML chat format (`tml_renderers`) rather than a generic HF chat template. Training and inference prompts must be rendered through `tml_renderers.Renderer`, or the fine-tuned model produces empty output through the real serving API even though in-loop training-time eval looks fine. `train_translator.py` and `eval/eval_checkpoint.py` both auto-detect `thinkingmachines/*` base models and switch rendering paths accordingly.
 
----
-
-## Inkling-Small Experiment
-
-[Inkling-Small](https://thinkingmachines.ai/) is Thinking Machines' small reasoning model, available on Tinker at a lower per-token cost than Qwen3-8B. It was fine-tuned on the exact same corpus, LoRA config (rank 16, lr 5e-5, batch size 8), and step count (11,500) as the archived v1 Qwen run, for a direct step-matched comparison.
-
-### Training format differences
-
-Inkling uses a native TML chat format (`tml_renderers`) rather than a generic HF chat template — `<|message_system|>`, `<|content_text|>`, `<|end_message|>`, etc. — which Tinker's serving endpoint expects server-side. Training and inference prompts must be rendered through `tml_renderers.Renderer` rather than `tokenizer.apply_chat_template()`, or the fine-tuned model produces empty output through the real serving API even though in-loop training-time eval looks fine (the two use different tokenization paths). `train_translator.py` and `eval/eval_checkpoint.py` both auto-detect `thinkingmachines/*` base models and switch rendering paths accordingly.
-
-### Results by checkpoint
-
-Same bidirectional eval as the v1 table above (50 Bible, 144 dictionary, 40 sentence examples).
+#### Results by checkpoint (50 Bible, 144 dictionary, 40 sentence examples)
 
 | Step | Val loss | Bible LB→EN | Bible EN→LB | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
 |------|----------|------------|------------|-----------|-----------|-----------|-----------|
@@ -241,7 +244,7 @@ Same bidirectional eval as the v1 table above (50 Bible, 144 dictionary, 40 sent
 | 10,000 | 0.051 | 66.46 | 67.00 | 16.0% | 12.5% | 18.87 | 5.75 |
 | **11,500** | **0.044** | **59.11** | **71.59** | **17.4%** | **18.8%** | **24.57** | **9.85** |
 
-### Final comparison: Inkling-Small vs. Qwen3-8B v1 (step 11,500)
+#### Inkling-Small vs. Qwen3-8B v1 (step 11,500)
 
 | Metric | Inkling-Small | Qwen v1 | Winner |
 |--------|---------------|---------|--------|
@@ -252,75 +255,39 @@ Same bidirectional eval as the v1 table above (50 Bible, 144 dictionary, 40 sent
 | Sent BLEU LB→EN | **24.57** | 22.07 | Inkling (+2.5) |
 | Sent BLEU EN→LB | **9.85** | 9.51 | ~tied |
 
-Inkling-Small wins or ties on 5 of 6 metrics, with a decisive and consistent edge on Bible EN→LB throughout the run. Qwen retains a real advantage on dictionary LB→EN exact-match. **Inkling-Small · Step 11,500 is the new production default** (see [Deployment](#deployment-render)).
+Inkling-Small won or tied on 5 of 6 metrics and became the production default before the v2 dictionary retrain superseded it.
 
-### The empty-output issue
-
-Partway through this run, a serving-time failure mode surfaced: certain short inputs — mostly single common words or short idioms ("eat", "drink", "yes", "straight ahead", "turn left") — occasionally came back as a single end-of-message token with **zero generated content**, rather than a wrong-but-present translation. This section documents the investigation because it's a real, checkpoint-intrinsic quirk of Inkling that anyone else fine-tuning it should watch for.
-
-**Root cause.** Inkling supports a `reasoning_effort` control (`none` / `low` / `medium` / `high` / …) that governs how much internal deliberation it does before answering. Training (`render_for_sft()`) never includes any effort signal, so *any* effort value used at inference time is somewhat out-of-distribution — but `reasoning_effort="none"` (the default when unset) was measured to reproduce a **100% empty-completion rate** on a curated set of known-hard short phrases. We initially tried to control this via a `"Thinking effort level: N"` system-message string (mirroring the native SDK's completion renderer) — this turned out to be **inert noise** over the OpenAI-compatible REST endpoint (varying its value from 0 to 0.99 gave inconsistent, non-monotonic empty rates, 12–18/27). The actual fix was the OpenAI client's real `reasoning_effort` parameter, passed outside the message list. It reliably beats `"none"`, but by how much varies a lot by checkpoint — on the same curated hard-phrase probe, `"low"` measured ~19% empty on an earlier checkpoint but 95% on checkpoint-10,000 (`"medium"`/`"high"` capped that particular checkpoint's worst case at 35%). The per-checkpoint table below, measured on the full held-out eval rather than a curated worst-case set, is the more representative number.
-
-**Empty-output rate over the course of training** (measured directly from the full eval JSONL at each checkpoint, `reasoning_effort="low"` used from step 10,000 onward — earlier checkpoints used the inert text-message workaround, effectively `"none"`):
-
-| Step | Overall | Dict LB→EN | Dict EN→LB | Sent LB→EN | Sent EN→LB |
-|------|---------|------------|------------|------------|------------|
-| 2,000 | 0% | 0% | 0% | 0% | 0% |
-| 4,000 | 13% | 5% | 34% | 0% | 12% |
-| 6,000 | 1% | 3% | 0% | 0% | 2% |
-| 8,000 | 30% | 41% | 50% | 0% | 25% |
-| 10,000 | 15% | 13% | 31% | 0% | 15% |
-| **11,500** | **4%** | **8%** | **4%** | **0%** | **2%** |
-
-For comparison, **Qwen v1 has a 0% empty rate on the identical eval set at every checkpoint** — this is an Inkling-specific quirk, not a general artifact of fine-tuning on this corpus. It's also concentrated almost entirely in EN→LB and dictionary-style short inputs; Bible verses and LB→EN sentences never produced an empty result at any checkpoint measured.
-
-**Mitigation shipped to production** (`serve.py`): every Inkling call uses `reasoning_effort="low"` by default (fast, and correct the overwhelming majority of the time). If a call comes back empty, the server automatically retries once at `reasoning_effort="medium"` before returning to the user — `"medium"`/`"high"` measured meaningfully lower failure rates than `"low"` on the hardest cases in testing. This escalation only ever triggers for Inkling checkpoints and only on the rare empty result, so it doesn't add latency to the common case. In manual testing against the ten hardest known-empty phrases from the final checkpoint's eval data, this brought the empty rate to 0/10.
+</details>
 
 ### BLEU context
 
-A Bible BLEU score above 50 for a rare language with ~30k training sentences is strong. Google Translate achieves ~40 BLEU for well-resourced language pairs like French→English with billions of sentence pairs. For comparison, published results on similarly low-resource languages (Swahili, Welsh, Basque at small data scales) typically fall in the 20–35 range with equivalent training set sizes.
-
-The ceiling is partly set by reference translation quality and the domain gap: training data is primarily Biblical, while the sentence evaluation set is conversational and narrative.
+A Bible BLEU above 50 for a rare language with ~30k training sentences is strong — Google Translate achieves ~40 BLEU for well-resourced pairs like French→English. Published results on similarly low-resource languages typically fall in the 20–35 range at equivalent data scales. The ceiling is partly set by reference quality and the domain gap: training data is primarily Biblical, while the sentence/dictionary eval sets are conversational and lexical.
 
 ---
 
 ## User Feedback Loop
 
-The web UI collects thumbs up/down feedback on every translation. This data feeds back into future fine-tuning runs to improve quality on real user input — particularly conversational Lun Bawang, which the current training data (almost entirely Biblical prose) does not cover well.
+The web UI collects thumbs up/down feedback on every translation, feeding future fine-tuning runs.
 
 ### How feedback is collected
 
-After each translation, a 👍 / 👎 widget appears below the output:
+- **Thumbs up** — records the translation as a correct example.
+- **Thumbs down** — optionally prompts for a correction; if provided, the correction is used as the training target; thumbs-down with no correction is discarded.
 
-- **Thumbs up** — records the translation as a correct example
-- **Thumbs down** — optionally prompts for a correction; if provided, the corrected translation is used as the training target instead of the model's output; thumbs-down with no correction is discarded (we know it's wrong but not what's right)
-
-Each feedback entry records: source text, translation direction (LB→EN or EN→LB), checkpoint used, model output, rating, and correction (if provided). IPs are truncated to the `/24` prefix (e.g. `1.2.3.x`) before being written anywhere.
+Each entry records source text, direction, checkpoint, model output, rating, and correction. IPs are truncated to the `/24` prefix before being written anywhere.
 
 ### Storage
 
-- **Sole store:** `eval/feedback.csv` in the GitHub repo — if `GITHUB_TOKEN` is set, every submission triggers an async commit that fetches the current CSV, appends the new row, and writes it back. No local database or file is used; data survives Render redeploys automatically.
+**Sole store:** `eval/feedback.csv` in the repo — if `GITHUB_TOKEN` is set, every submission triggers an async commit that appends the row. No local database; data survives Render redeploys.
 
 ### Reviewing and preparing training data
 
 ```bash
-python3.13 eval/review_feedback.py --dry-run                # summary + QC flags, no file written
+python3.13 eval/review_feedback.py --dry-run                # summary + QC flags
 python3.13 eval/review_feedback.py --csv eval/feedback.csv  # writes feedback_corpus.csv
 ```
 
-The QC script filters no-ops (user submitted the same text as the correction), self-copies (correction matches source), and empty corrections. It flags IP addresses submitting an unusual volume of entries for manual review.
-
-Output is `feedback_corpus.csv` with the same schema as `aux_corpus.csv` (`source`, `lun_bawang`, `english`, `type`).
-
-### Using feedback in training
-
-`train_translator.py` automatically loads `feedback_corpus.csv` if present. Feedback entries are repeated **10×** during training (vs. 5× for the aux corpus) — they represent high-confidence human signal and the dataset will be small relative to the ~30k Bible pairs.
-
-```bash
-python3.13 train_translator.py --train
-# → "Loading feedback corpus… N feedback entries"
-```
-
-Feedback val entries are merged into the existing dict/sentence evaluation sets, so BLEU and exact-match scores automatically reflect improvement on user-corrected examples.
+The QC script filters no-ops, self-copies, and empty corrections, and flags unusual submission volume. Output `feedback_corpus.csv` uses the same schema as `aux_corpus.csv`. `train_translator.py` loads it automatically and repeats feedback entries 10× (vs. 5× for aux) as high-confidence human signal.
 
 ---
 
@@ -328,8 +295,7 @@ Feedback val entries are merged into the existing dict/sentence evaluation sets,
 
 ### Prerequisites
 
-- Python 3.13
-- A Tinker API key
+- Python 3.13 and a Tinker API key.
 
 ### Install dependencies
 
@@ -337,109 +303,88 @@ Feedback val entries are merged into the existing dict/sentence evaluation sets,
 pip install -r requirements.txt
 ```
 
-`requirements.txt` includes: `fastapi`, `uvicorn`, `openai`, `sacrebleu`, `requests`, `beautifulsoup4`
+`requirements.txt` includes: `fastapi`, `uvicorn`, `openai`, `sacrebleu`, `requests`, `beautifulsoup4`.
 
 ### Run the web server
 
 ```bash
 export TINKER_API_KEY=your_key_here
-python3.13 serve.py
-# → http://localhost:8000
+python3.13 serve.py            # → http://localhost:8000  (use --port to change)
 ```
 
-Custom port:
-
-```bash
-python3.13 serve.py --port 8080
-```
-
-The server reads `tinker_state.json` to discover available checkpoints. If `tinker_state.json` is absent or has no checkpoints yet, the UI shows a "training in progress" notice and polls every 20 seconds.
+The server reads `tinker_state.json` (and the per-run state files) to discover checkpoints. If none exist yet, the UI shows a "training in progress" notice.
 
 ### Rebuild the corpora (optional)
 
-These steps are only needed if you want to retrain from scratch:
-
 ```bash
-# 1. Parse the Lun Bawang Bible PDF into verses
-python3.13 corpus/parse_lun_bawang.py
-
-# 2. Align with World English Bible
-python3.13 corpus/build_parallel_corpus.py
-
-# 3. Parse Mortensen (2021) dissertation appendix (requires the PDF)
-python3.13 corpus/parse_mortensen.py
-
-# 4. Build the auxiliary word/sentence corpus (includes Mortensen if present)
-python3.13 corpus/build_aux_corpus.py
-
-# 5. Train (requires TINKER_API_KEY)
-python3.13 train_translator.py --train
+python3.13 corpus/parse_lun_bawang.py       # 1. Parse the Lun Bawang Bible PDF into verses
+python3.13 corpus/build_parallel_corpus.py  # 2. Align with World English Bible
+python3.13 corpus/parse_mortensen.py        # 3. Parse the Mortensen (2021) appendix (needs the PDF)
+python3.13 corpus/build_aux_corpus.py       # 4. Build the auxiliary word/sentence corpus
+python3.13 corpus/build_dictionary_corpus.py  # 5. Flatten OCR'd dictionary entries → dictionary_corpus.csv
+python3.13 train_translator.py --train --base-model thinkingmachines/Inkling-Small \
+  --state-file tinker_state_inkling_v2.json   # 6. Train (requires TINKER_API_KEY)
 ```
+
+Dictionary OCR itself (scans → `corpus/dictionary_entries.jsonl`) is run by `corpus/ocr_dictionary.py` against the Anthropic Batch API and needs `ANTHROPIC_API_KEY` plus the page images.
 
 ---
 
 ## Deployment (Render)
 
-The app is deployed on [Render](https://render.com) as a web service. On startup Render runs:
+The app is deployed on [Render](https://render.com) as a web service; on startup Render runs `python3.13 serve.py`. `TINKER_API_KEY` is a Render environment variable. The committed state files (`tinker_state*.json`) tell the server which checkpoints exist and where to find them on Tinker — no model weights are stored in the repo.
 
-```
-python3.13 serve.py
-```
-
-`TINKER_API_KEY` is set as a Render environment variable. The committed state files (`tinker_state.json`, `tinker_state_v1.json`, `tinker_state_inkling.json`, …) tell the server which checkpoints exist and where to find them on Tinker's infrastructure — no model weights are stored in the repo.
-
-The checkpoint dropdown in the UI lets you compare any saved checkpoint across every run. **Inkling · Step 11,500 is pre-selected as the default** — see [Inkling-Small Experiment](#inkling-small-experiment) for why.
+The checkpoint dropdown lets you compare any saved checkpoint across every run. **v2 · Step 16,000 is pre-selected as the default.**
 
 ---
 
 ## Project Structure
 
 ```
-raretranslator/
-├── serve.py                  # FastAPI web server + translation API
-├── train_translator.py       # Fine-tuning + evaluation script
-├── tinker_state.json         # Checkpoint metadata for the current run
-├── tinker_state_v1.json      # Archived Qwen3-8B v1 run (comparison baseline)
-├── tinker_state_inkling.json # Inkling-Small run — production default (see README)
-├── feedback_corpus.csv       # Generated by eval/review_feedback.py; loaded by training
+lunbawang-translate/
+├── serve.py                     # FastAPI web server + translation API + phrasebook
+├── train_translator.py          # Fine-tuning + in-loop evaluation
+├── orchestrate_retrain.py       # Recycle-proof driver used to run the v2 retrain on an ephemeral host
+├── cleanup_checkpoints.py       # Utility for pruning Tinker checkpoints
+├── tinker_state.json            # Checkpoint metadata for the current run
+├── tinker_state_v1.json         # Archived Qwen3-8B v1 run
+├── tinker_state_inkling.json    # Inkling-Small v1 (step-matched 11,500 run)
+├── tinker_state_inkling_v2.json # Inkling v2 dictionary retrain — production default (step 16,000)
+├── feedback_corpus.csv          # Generated by eval/review_feedback.py; loaded by training
 ├── requirements.txt
-├── static/
-│   └── index.html            # Single-page frontend
+├── static/index.html            # Single-page frontend
 │
-├── corpus/                   # Corpus building: source files, scripts, and output data
-│   ├── parse_lun_bawang.py   # Extract verses from LunBawang-Bible.pdf
-│   ├── build_parallel_corpus.py  # Align LB Bible verses with WEB English
-│   ├── parse_mortensen.py    # Extract parallel pairs from Mortensen (2021) dissertation PDF
-│   ├── build_aux_corpus.py   # Parse borneodict.txt + longsemadoh.txt + Mortensen
-│   ├── LunBawang-Bible.pdf   # Source: full Lun Bawang Bible translation
-│   ├── Mortensen_hawii_0085A_10969.pdf  # Source: Mortensen (2021) dissertation
-│   ├── borneodict.txt        # Copied from borneodictionary.com
-│   ├── longsemadoh.txt       # Copied from longsemadoh.wordpress.com
-│   ├── parallel_corpus.csv   # ~30k Bible verse pairs (LB + EN)
-│   ├── aux_corpus.csv        # ~800 word/sentence pairs from web + Mortensen sources
-│   └── mortensen_corpus.csv  # ~54 sentence pairs from Mortensen (2021) fairy tale
+├── corpus/                      # Corpus building: source files, scripts, output data
+│   ├── parse_lun_bawang.py      # Extract verses from LunBawang-Bible.pdf
+│   ├── build_parallel_corpus.py # Align LB Bible verses with WEB English
+│   ├── parse_mortensen.py       # Extract parallel pairs from the Mortensen (2021) PDF
+│   ├── build_aux_corpus.py      # Parse borneodict.txt + longsemadoh.txt + Mortensen
+│   ├── ocr_dictionary.py        # OCR the Kemaloh Lundayeh dictionary scans (Anthropic Batch API)
+│   ├── build_dictionary_corpus.py  # Flatten OCR'd entries → dictionary_corpus.csv
+│   ├── parallel_corpus.csv      # ~30k Bible verse pairs
+│   ├── aux_corpus.csv           # ~800 word/sentence pairs from web + Mortensen
+│   ├── dictionary_corpus.csv    # 22,038 pairs from the Kemaloh Lundayeh dictionary
+│   └── dictionary_entries.jsonl # Structured OCR output (pre-flatten)
 │
-└── eval/                     # Evaluation + feedback review scripts and outputs
-    ├── eval_checkpoint.py    # Standalone BLEU/exact-match eval for a single checkpoint
-    ├── eval_openai.py        # Eval any OpenAI model on the same val set
-    ├── merge_evals.py        # Merge per-run eval_raw/*.jsonl into eval_outputs.csv
-    ├── review_feedback.py    # QC + prepare feedback_corpus.csv for training
-    ├── feedback.csv          # sole feedback store — appended to on every submission
-    ├── eval_outputs.csv      # Combined eval results across all runs
-    ├── eval_results_openai.json
-    └── eval_raw/             # Per-run JSONL output files
-        └── *.jsonl
+└── eval/                        # Evaluation + feedback review scripts and outputs
+    ├── eval_checkpoint.py       # Standalone bidirectional BLEU/exact/chrF eval for a checkpoint
+    ├── eval_openai.py           # Eval any OpenAI model on the same val set
+    ├── merge_evals.py           # Merge eval_raw/*.jsonl → eval_outputs.csv
+    ├── review_feedback.py       # QC + prepare feedback_corpus.csv
+    ├── feedback.csv             # Sole feedback store
+    ├── eval_outputs.csv         # Combined eval results across all runs
+    └── eval_raw/*.jsonl         # Per-run raw model outputs (one JSON object per translation)
 ```
 
 ---
 
 ## Limitations
 
-- **Domain bias:** Training data is primarily Biblical prose. The model handles conversational input reasonably well but may produce archaic or overly formal Lun Bawang for casual text.
-- **Small vocabulary:** The combined corpus covers only a fraction of Lun Bawang vocabulary. Uncommon words are often hallucinated or approximated.
-- **En→LB is harder:** The model was evaluated primarily in the LB→EN direction. English→Lun Bawang output is harder to verify without a native speaker.
-- **No morphological analysis:** Lun Bawang has productive affixation (nasal prefixes, infixes, reduplication). The model learns these patterns implicitly from examples rather than through explicit linguistic structure.
-- **Occasional empty output (Inkling default):** ~4% of short/single-word translations came back empty in the final checkpoint's held-out eval, mitigated in production by an automatic retry at higher reasoning effort (see [Inkling-Small Experiment](#inkling-small-experiment)). Not fully eliminated — a repeat translation attempt on the same input usually succeeds if you hit it.
+- **Single-word gloss recall:** the model gets sentence register and structure right more reliably than rare single-word translations, sometimes defaulting to a generic gloss ("a variety of tree") for a word it doesn't know. Dictionary exact-match stays low; chrF (partial credit) is the better signal there.
+- **Sentence fidelity:** conversational translations are fluent and in the right register but don't always preserve exact meaning (BLEU ~12–13 on held-out dictionary sentences).
+- **En→LB is harder to verify:** the weaker direction, and harder to check without a native speaker — though it improved most across the v2 run.
+- **No morphological analysis:** Lun Bawang has productive affixation (nasal prefixes, infixes, reduplication), learned implicitly from examples rather than explicit structure.
+- **Rare residual empty output:** ~1% of single-word inputs still return empty even at `medium` effort; the server retries once at `high`, and a repeat attempt almost always succeeds.
 
 ---
 
@@ -447,9 +392,8 @@ raretranslator/
 
 - Lun Bawang Bible translation: Sabah Theological Seminary / Bible Society of Malaysia
 - English reference: [World English Bible](https://worldenglish.bible) (public domain)
-- Dictionary data: borneodictionary.com
+- Dictionary data: Ganang, R., Crain, J., & Pearson-Rounds, V. *Kemaloh Lundayeh–English Dictionary* (OCR'd for the v2 retrain, non-commercial research use); borneodictionary.com
 - Phrasebook data: longsemadoh.wordpress.com
-- Narrative parallel text: Mortensen, M. (2021). *The Kemaloh Lun Bawang Language of Borneo*. PhD dissertation, University of Hawai'i at Mānoa. Used for non-commercial research purposes.
+- Narrative parallel text: Mortensen, M. (2021). *The Kemaloh Lun Bawang Language of Borneo*. PhD dissertation, University of Hawai'i at Mānoa. Non-commercial research use.
 - Fine-tuning infrastructure: [Tinker](https://thinkingmachines.ai/tinker/) by Thinking Machines
-- Production base model: Inkling-Small by Thinking Machines
-- Archived base model (v0/v1): [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) by Alibaba Cloud
+- Base models: Inkling-Small by Thinking Machines (current); [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) by Alibaba Cloud (archived v0/v1)
