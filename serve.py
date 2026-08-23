@@ -34,6 +34,12 @@ STATE_FILE_V1      = Path(__file__).parent / "tinker_state_v1.json"
 STATE_FILE_RUN1    = Path(__file__).parent / "tinker_state_run1.json"
 STATE_FILE_INKLING = Path(__file__).parent / "tinker_state_inkling.json"
 INKLING_CHECKPOINT_EVERY = 2000  # only expose every Nth Inkling checkpoint in the dropdown
+# The v2 (dictionary) run — warm-started from Inkling checkpoint-11500 and still
+# training. Its checkpoints are exposed in the compare dropdown for evaluation
+# but are NOT the serving default (see get_latest_checkpoint, which is unchanged).
+STATE_FILE_INKLING_V2 = Path(__file__).parent / "tinker_state_inkling_v2.json"
+INKLING_V2_CHECKPOINT_EVERY = 2000  # only expose every Nth v2 checkpoint in the dropdown
+DEFAULT_V2_STEP = 16000  # the v2 checkpoint served as the production default (see get_latest_checkpoint)
 
 STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
@@ -280,10 +286,20 @@ def _all_checkpoints() -> list[dict]:
 
 
 def get_latest_checkpoint() -> str | None:
-    """Inkling-Small · checkpoint-11500 is the production default (see README
-    for the comparison against the archived Qwen3-8B v1 run) — it wins or
-    ties on 5/6 held-out metrics. Falls back to the Qwen v1/v0 chain only if
-    the Inkling state file is unavailable."""
+    """The v2 dictionary-retrain · checkpoint-16000 is the production default.
+    It was warm-started from Inkling checkpoint-11500 and trained on the Kemaloh
+    Lundayeh dictionary; on the everyday-quality blend (dict-sentence BLEU both
+    directions + general-sentence BLEU + dict-word chrF), measured at the same
+    "medium" reasoning effort the server uses, it is the best checkpoint of the
+    run — strongest general lb→en sentences and en→lb dictionary quality, with
+    Bible fidelity holding (~57 BLEU, no collapse). Pinned by step so it can't
+    drift as checkpoints are added. Falls back to Inkling checkpoint-11500, then
+    the Qwen v1/v0 chain, if the v2 state file is unavailable."""
+    if STATE_FILE_INKLING_V2.exists():
+        v2_ckpts = json.loads(STATE_FILE_INKLING_V2.read_text()).get("checkpoints", [])
+        for ck in v2_ckpts:
+            if ck["step"] == DEFAULT_V2_STEP:
+                return ck["path"]
     if STATE_FILE_INKLING.exists():
         inkling_ckpts = json.loads(STATE_FILE_INKLING.read_text()).get("checkpoints", [])
         if inkling_ckpts:
@@ -392,6 +408,18 @@ def list_checkpoints():
         label = f"Inkling · Step {ck['step']:,}"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
+    # Inkling v2 (dictionary) run — selectable for comparison but never the
+    # default. Same every-Nth thinning as the base Inkling run, plus the newest
+    # checkpoint so the freshest weights are always reachable.
+    inkling_v2_state = _load(STATE_FILE_INKLING_V2)
+    inkling_v2_all = inkling_v2_state.get("checkpoints", [])
+    inkling_v2_ckpts = [ck for ck in inkling_v2_all if ck["step"] % INKLING_V2_CHECKPOINT_EVERY == 0]
+    if inkling_v2_all and inkling_v2_all[-1] not in inkling_v2_ckpts:
+        inkling_v2_ckpts.append(inkling_v2_all[-1])
+    for ck in inkling_v2_ckpts:
+        label = f"Inkling v2 (dict) · Step {ck['step']:,}"
+        result.append({"label": label, "path": ck["path"], "step": ck["step"]})
+
     # Mark whichever entry is the actual serving default (see
     # get_latest_checkpoint) rather than assuming it's the last bucket.
     default_checkpoint = get_latest_checkpoint()
@@ -403,10 +431,16 @@ def list_checkpoints():
 
 
 def _inkling_checkpoint_paths() -> set[str]:
-    if not STATE_FILE_INKLING.exists():
-        return set()
-    state = json.loads(STATE_FILE_INKLING.read_text())
-    return {ck["path"] for ck in state.get("checkpoints", [])}
+    """Paths for every Inkling-family checkpoint (base run + v2 dictionary run).
+    Both share the thinkingmachines TML base, so both need reasoning_effort set
+    on completions — grouping them here keeps warmup and translate() correct for
+    v2 checkpoints without any further branching."""
+    paths: set[str] = set()
+    for state_file in (STATE_FILE_INKLING, STATE_FILE_INKLING_V2):
+        if state_file.exists():
+            state = json.loads(state_file.read_text())
+            paths.update(ck["path"] for ck in state.get("checkpoints", []))
+    return paths
 
 
 def _warm_sampler(checkpoint: str) -> None:
@@ -420,7 +454,7 @@ def _warm_sampler(checkpoint: str) -> None:
     try:
         from openai import OpenAI
         client = OpenAI(api_key=API_KEY, base_url=TINKER_BASE)
-        kwargs = {"reasoning_effort": "low"} if checkpoint in _inkling_checkpoint_paths() else {}
+        kwargs = {"reasoning_effort": "medium"} if checkpoint in _inkling_checkpoint_paths() else {}
         client.chat.completions.create(
             model=checkpoint,
             messages=[{"role": "system", "content": SYSTEM_PROMPT},
@@ -516,23 +550,23 @@ def translate(req: TranslateRequest):
         _NEXT_EFFORT = {"low": "medium", "medium": "high"}
 
         def _effort_for(source: str) -> str:
-            """Pick the starting effort from the length of the source text.
+            """Starting reasoning effort. "medium" for every input, long or
+            short.
 
-            Measured on checkpoint-11500 (5 trials/phrase, short en->lb):
-            short inputs come back empty 55% of the time at "low" but only
-            10% at "medium". Since an empty result is retried at "medium"
-            anyway, starting "low" on a short input just buys a wasted round
-            trip half the time — same final answer, twice the latency, and
-            bimodal (~1.5s or ~3.9s) instead of steady (~2.5s).
-
-            Long inputs almost never come back empty at "low", so they keep
-            the faster setting. The failures are actually lexical rather than
-            purely length-based ("eat" is fine, "hello" always fails), so
-            word count is a blunt proxy — but over-routing is cheap (~1s)
-            next to a missed retry (~2.4s), so erring long is the right side
-            to be wrong on.
+            "medium" is the floor because "low" produces single-token empty
+            completions at rates that depend on the checkpoint and are not
+            worth chasing per-input. On checkpoint-11500, short en->lb phrases
+            came back empty 55% of the time at "low" vs 10% at "medium"; on the
+            dictionary-retrained v2 weights the low-effort empty rate on single
+            Lun Bawang words is worse still (~36% lb->en) even though those are
+            exactly the inputs it was trained on. At "medium" both collapse to
+            0%. Long inputs rarely empty at either setting, but keeping one
+            effort for everything removes a length heuristic that never tracked
+            the real (lexical, not length-based) cause of the empties, at the
+            cost of a little latency on long inputs — a trade we take for
+            consistency and to stay robust across checkpoints.
             """
-            return "medium" if len(source.split()) <= SHORT_INPUT_WORDS else "low"
+            return "medium"
 
         def _call(content: str, source: str) -> str:
             """Translate `content`; `source` is the raw text it was built from,
