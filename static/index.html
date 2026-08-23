@@ -220,6 +220,14 @@
   textarea{ outline:none; overflow:hidden; }
   textarea::placeholder{ color:var(--clay); opacity:.65; }
   .out.empty{ color:var(--clay); opacity:.65; }
+  /* Fixed box height + internal scroll (not min-height growth): translations
+     arrive on a debounce as you type, so a growing output would reflow
+     everything below it on each response — a visible jitter on narrow screens
+     where the pane's reserved height is small. Pinning the height keeps the
+     output's footprint constant; long results scroll within the box instead of
+     pushing the page. The reserved heights match what min-height already was
+     (116 / 210 desktop), so the resting look is unchanged. */
+  .out{ height:116px; overflow-y:auto; }
 
   .pane-foot{
     display:flex;
@@ -481,6 +489,7 @@
     .pane{ padding:24px 26px 16px; }
     .pane + .pane{ border-top:0; }
     textarea, .out{ min-height: 210px; font-size:20px; }
+    .out{ height:210px; }   /* keep the output box a fixed height on desktop too */
 
     /* sit under the translation (right) column, text-aligned with it, so
        it reads as belonging to the output rather than the input */
