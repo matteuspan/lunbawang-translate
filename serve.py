@@ -45,11 +45,6 @@ STATIC_DIR  = Path(__file__).parent / "static"
 API_KEY     = os.environ["TINKER_API_KEY"]
 TINKER_BASE = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
 
-# Inputs at or below this many words are treated as "short". Short inputs get
-# the explicit output-only hint, and (for Inkling) start at a higher reasoning
-# effort — see _effort_for() for the measurements behind that.
-SHORT_INPUT_WORDS = 5
-
 # Tinker cold-starts a sampler that hasn't been used recently: measured 14–21s
 # for the first call vs ~2s once warm, on a checkpoint idle for a couple of
 # hours. The frontend pings /api/warmup as soon as someone shows intent to
@@ -516,13 +511,25 @@ def translate(req: TranslateRequest):
     if direction == "auto":
         direction = detect_language(text)
 
+    # Use the EXACT instruction the model was trained on — a bare
+    # "Translate to English:" / "Translate to Lun Bawang:" with no extra
+    # wording (see train_translator.py make_datums). Two earlier embellishments
+    # were both out-of-distribution and reliably produced empty completions on
+    # hard single words:
+    #   1. "Translate this everyday Lun Bawang sentence to English:" — calling a
+    #      single word a "sentence" emptied "langub" 5/5 at every reasoning
+    #      effort (0/5 with the bare prompt).
+    #   2. an appended "(Output only the translation of this word or phrase.)"
+    #      hint for short inputs — emptied "water" 5/5 (0/5 without it).
+    # No retry ladder can recover these because the emptiness is in the prompt,
+    # not the effort. The model already outputs just the translation (it was
+    # trained to) and conversational register is steered by the system prompt,
+    # so matching training exactly loses nothing and fixes the empties.
     if direction == "lb2en":
-        user_content = f"Translate this everyday Lun Bawang sentence to English:\n{text}"
-        if len(text.split()) <= SHORT_INPUT_WORDS:
-            user_content += "\n(Output only the translation of this word or phrase.)"
+        user_content = f"Translate to English:\n{text}"
         detected_lang = "lb"
     else:
-        user_content = f"Translate this everyday English sentence to Lun Bawang:\n{text}"
+        user_content = f"Translate to Lun Bawang:\n{text}"
         detected_lang = "en"
 
     try:
@@ -613,9 +620,7 @@ def translate(req: TranslateRequest):
             if len(clauses) >= 2:
                 clause_parts = []
                 for clause in clauses:
-                    clause_content = f"Translate this everyday English sentence to Lun Bawang:\n{clause}"
-                    if len(clause.split()) <= SHORT_INPUT_WORDS:
-                        clause_content += "\n(Output only the translation of this word or phrase.)"
+                    clause_content = f"Translate to Lun Bawang:\n{clause}"
                     clause_parts.append(clean_translation(_call(clause_content, clause)))
                 result["clauses"] = clauses
                 result["clause_translation"] = ", ".join(clause_parts)
