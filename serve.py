@@ -568,21 +568,34 @@ def translate(req: TranslateRequest):
             """
             return "medium"
 
-        def _call(content: str, source: str) -> str:
-            """Translate `content`; `source` is the raw text it was built from,
-            used only to choose the starting effort.
+        # On an empty completion, retry across these settings in order. The
+        # empties are stochastic, effort-dependent, AND come in short
+        # time-correlated waves where several settings fail together — so a
+        # single medium->high escalation sometimes lands entirely inside a wave
+        # and still returns empty (observed live: an input that was 0% empty at
+        # medium moments earlier came back empty 8/8 during a wave). Cycling
+        # through *different* settings — including "none" (no reasoning_effort),
+        # which stayed reliable on the v2 weights while "low"/"medium" were
+        # waving — gives uncorrelated attempts that ride the wave out. "low" is
+        # skipped: it measured the single worst setting on these weights.
+        _EMPTY_RETRY_EFFORTS = ["high", None, "medium", "high"]
 
-            Retries once on an empty completion, escalating a rung — so inputs
-            that already start at "medium" still get a second attempt (~10% of
-            short phrases are empty even at "medium"). Only Inkling checkpoints
-            set reasoning_effort at all, so none of this applies to Qwen.
+        def _call(content: str, source: str) -> str:
+            """Translate `content`; `source` chooses the starting effort.
+
+            Returns the first non-empty completion, escalating/cycling settings
+            on empty (see _EMPTY_RETRY_EFFORTS). Normal inputs return on the
+            first call; only a genuinely wave-affected hard word pays the extra
+            round-trips. Only Inkling checkpoints set reasoning_effort at all,
+            so none of this applies to Qwen.
             """
             if not is_inkling:
                 return _completion(content, None)
-            effort = _effort_for(source)
-            out = _completion(content, effort)
-            if not out:
-                out = _completion(content, _NEXT_EFFORT.get(effort, "high"))
+            out = _completion(content, _effort_for(source))
+            for eff in _EMPTY_RETRY_EFFORTS:
+                if out:
+                    break
+                out = _completion(content, eff)
             return out
 
         # Whole-sentence translation
