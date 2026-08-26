@@ -105,7 +105,7 @@ Every source pair produces datums using the model's chat template (native TML re
 [assistant] {english_text}
 ```
 
-Only the assistant tokens contribute to the loss. Short-input hints (`Output only the translation of this word or phrase.`) are added for inputs ≤5 words at inference time.
+Only the assistant tokens contribute to the loss. Serving (`serve.py`) and eval use this exact instruction verbatim — a bare `Translate to English:` / `Translate to Lun Bawang:` — because any extra wording (e.g. calling a single word a "sentence", or appending an "output only the translation" hint) is out-of-distribution and reliably triggers empty completions on hard single words.
 
 ### Training command
 
