@@ -832,6 +832,16 @@
         out.classList.add('empty');
         clearClauses();
         if (data.error.includes('training')) notice.classList.add('show');
+      } else if (!(data.translation || '').trim()) {
+        // The model occasionally returns an empty completion on hard/rare
+        // single words even after the server's retries. Show a helpful line
+        // rather than a blank box (which reads as "broken"), and invite a retry.
+        out.textContent = 'No translation came back for that — tap Clear and try again, or reword it slightly.';
+        out.classList.add('empty');
+        copyBtn.hidden = true;
+        notice.classList.remove('show');
+        hideFeedback();
+        clearClauses();
       } else {
         out.textContent = data.translation;
         out.classList.remove('empty');
