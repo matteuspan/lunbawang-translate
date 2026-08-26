@@ -192,11 +192,17 @@ def translate(text, direction="lb2en", retries=2):
     exception (observed: this correlated with connection instability that
     preceded a container restart). Retry a couple of times before accepting
     empty as the real answer, so eval numbers reflect the model, not noise."""
-    hint = "\n(Output only the translation of this word or phrase.)" if len(text.split()) <= 5 else ""
+    # Match the training prompt (train_translator.py) and serve.py verbatim: a
+    # bare "Translate to English:" / "Translate to Lun Bawang:" with no
+    # short-input hint. The "(Output only …)" hint is out-of-distribution and
+    # reliably empties hard single words at every reasoning_effort (e.g. "water"
+    # en->lb: 5/5 empty with the hint, 0/5 without) — those blanks scored zero
+    # and were quietly depressing the dictionary single-word metrics. Dropping
+    # it makes eval measure exactly what production serves.
     user_content = (
-        f"Translate to English:\n{text}{hint}"
+        f"Translate to English:\n{text}"
         if direction == "lb2en"
-        else f"Translate to Lun Bawang:\n{text}{hint}"
+        else f"Translate to Lun Bawang:\n{text}"
     )
     t0 = time.monotonic()
     for attempt in range(retries + 1):
