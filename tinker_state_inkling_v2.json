@@ -3,97 +3,116 @@
     {
       "step": 100,
       "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-100",
-      "val_loss": 0.044857
+      "val_loss": 0.044857,
+      "weights_deleted": true
     },
     {
       "step": 200,
       "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-200",
-      "val_loss": 0.029942
+      "val_loss": 0.029942,
+      "weights_deleted": true
     },
     {
       "step": 300,
       "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-300",
-      "val_loss": 0.01936
+      "val_loss": 0.01936,
+      "weights_deleted": true
     },
     {
       "step": 400,
       "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-400",
-      "val_loss": 0.014457
+      "val_loss": 0.014457,
+      "weights_deleted": true
     },
     {
       "step": 500,
       "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-500",
-      "val_loss": 0.014805
+      "val_loss": 0.014805,
+      "weights_deleted": true
     },
     {
       "step": 600,
       "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-600",
-      "val_loss": 0.015161
+      "val_loss": 0.015161,
+      "weights_deleted": true
     },
     {
       "step": 700,
       "path": "tinker://d9ceb475-257f-5a63-8edf-6b0ef21be454:train:0/sampler_weights/checkpoint-700",
-      "val_loss": 0.01142
+      "val_loss": 0.01142,
+      "weights_deleted": true
     },
     {
       "step": 800,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-800",
-      "val_loss": 0.014106
+      "val_loss": 0.014106,
+      "weights_deleted": true
     },
     {
       "step": 900,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-900",
-      "val_loss": 0.011063
+      "val_loss": 0.011063,
+      "weights_deleted": true
     },
     {
       "step": 1000,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-1000",
-      "val_loss": 0.012337
+      "val_loss": 0.012337,
+      "weights_deleted": true
     },
     {
       "step": 1100,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-1100",
-      "val_loss": 0.010668
+      "val_loss": 0.010668,
+      "weights_deleted": true
     },
     {
       "step": 1200,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-1200",
-      "val_loss": 0.008109
+      "val_loss": 0.008109,
+      "weights_deleted": true
     },
     {
       "step": 1300,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-1300",
-      "val_loss": 0.011691
+      "val_loss": 0.011691,
+      "weights_deleted": true
     },
     {
       "step": 1400,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-1400",
-      "val_loss": 0.009966
+      "val_loss": 0.009966,
+      "weights_deleted": true
     },
     {
       "step": 1500,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-1500",
-      "val_loss": 0.010287
+      "val_loss": 0.010287,
+      "weights_deleted": true
     },
     {
       "step": 1600,
       "path": "tinker://71bc93aa-89c4-5df8-bb42-2c2888cba558:train:0/sampler_weights/checkpoint-1600",
-      "val_loss": 0.006616
+      "val_loss": 0.006616,
+      "weights_deleted": true
     },
     {
       "step": 1700,
       "path": "tinker://9d70cb18-cc76-5f3c-8bff-ada3d809b26a:train:0/sampler_weights/checkpoint-1700",
-      "val_loss": 0.008355
+      "val_loss": 0.008355,
+      "weights_deleted": true
     },
     {
       "step": 1800,
       "path": "tinker://9d70cb18-cc76-5f3c-8bff-ada3d809b26a:train:0/sampler_weights/checkpoint-1800",
-      "val_loss": 0.008397
+      "val_loss": 0.008397,
+      "weights_deleted": true
     },
     {
       "step": 1900,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-1900",
-      "val_loss": 0.011537
+      "val_loss": 0.011537,
+      "weights_deleted": true
     },
     {
       "step": 2000,
@@ -117,102 +136,122 @@
       "val_exact_dictword": 1.9,
       "val_exact_dictword_en2lb": 4.0,
       "val_bleu_dictsent": 12.895,
-      "val_bleu_dictsent_en2lb": 1.86
+      "val_bleu_dictsent_en2lb": 1.86,
+      "weights_deleted": true
     },
     {
       "step": 2100,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2100",
-      "val_loss": 0.00664
+      "val_loss": 0.00664,
+      "weights_deleted": true
     },
     {
       "step": 2200,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2200",
-      "val_loss": 0.006662
+      "val_loss": 0.006662,
+      "weights_deleted": true
     },
     {
       "step": 2300,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2300",
-      "val_loss": 0.006915
+      "val_loss": 0.006915,
+      "weights_deleted": true
     },
     {
       "step": 2400,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2400",
-      "val_loss": 0.006477
+      "val_loss": 0.006477,
+      "weights_deleted": true
     },
     {
       "step": 2500,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2500",
-      "val_loss": 0.007898
+      "val_loss": 0.007898,
+      "weights_deleted": true
     },
     {
       "step": 2600,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2600",
-      "val_loss": 0.006331
+      "val_loss": 0.006331,
+      "weights_deleted": true
     },
     {
       "step": 2700,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2700",
-      "val_loss": 0.006784
+      "val_loss": 0.006784,
+      "weights_deleted": true
     },
     {
       "step": 2800,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2800",
-      "val_loss": 0.006419
+      "val_loss": 0.006419,
+      "weights_deleted": true
     },
     {
       "step": 2900,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-2900",
-      "val_loss": 0.005544
+      "val_loss": 0.005544,
+      "weights_deleted": true
     },
     {
       "step": 3000,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3000",
-      "val_loss": 0.004308
+      "val_loss": 0.004308,
+      "weights_deleted": true
     },
     {
       "step": 3100,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3100",
-      "val_loss": 0.005246
+      "val_loss": 0.005246,
+      "weights_deleted": true
     },
     {
       "step": 3200,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3200",
-      "val_loss": 0.00518
+      "val_loss": 0.00518,
+      "weights_deleted": true
     },
     {
       "step": 3300,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3300",
-      "val_loss": 0.006862
+      "val_loss": 0.006862,
+      "weights_deleted": true
     },
     {
       "step": 3400,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3400",
-      "val_loss": 0.004384
+      "val_loss": 0.004384,
+      "weights_deleted": true
     },
     {
       "step": 3500,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3500",
-      "val_loss": 0.005065
+      "val_loss": 0.005065,
+      "weights_deleted": true
     },
     {
       "step": 3600,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3600",
-      "val_loss": 0.004197
+      "val_loss": 0.004197,
+      "weights_deleted": true
     },
     {
       "step": 3700,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3700",
-      "val_loss": 0.005203
+      "val_loss": 0.005203,
+      "weights_deleted": true
     },
     {
       "step": 3800,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3800",
-      "val_loss": 0.003498
+      "val_loss": 0.003498,
+      "weights_deleted": true
     },
     {
       "step": 3900,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-3900",
-      "val_loss": 0.004384
+      "val_loss": 0.004384,
+      "weights_deleted": true
     },
     {
       "step": 4000,
@@ -236,102 +275,122 @@
       "val_exact_dictword": 2.0,
       "val_exact_dictword_en2lb": 10.0,
       "val_bleu_dictsent": 11.874,
-      "val_bleu_dictsent_en2lb": 5.92
+      "val_bleu_dictsent_en2lb": 5.92,
+      "weights_deleted": true
     },
     {
       "step": 4100,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4100",
-      "val_loss": 0.004157
+      "val_loss": 0.004157,
+      "weights_deleted": true
     },
     {
       "step": 4200,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4200",
-      "val_loss": 0.004554
+      "val_loss": 0.004554,
+      "weights_deleted": true
     },
     {
       "step": 4300,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4300",
-      "val_loss": 0.00426
+      "val_loss": 0.00426,
+      "weights_deleted": true
     },
     {
       "step": 4400,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4400",
-      "val_loss": 0.004609
+      "val_loss": 0.004609,
+      "weights_deleted": true
     },
     {
       "step": 4500,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4500",
-      "val_loss": 0.004723
+      "val_loss": 0.004723,
+      "weights_deleted": true
     },
     {
       "step": 4600,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4600",
-      "val_loss": 0.003859
+      "val_loss": 0.003859,
+      "weights_deleted": true
     },
     {
       "step": 4700,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4700",
-      "val_loss": 0.003476
+      "val_loss": 0.003476,
+      "weights_deleted": true
     },
     {
       "step": 4800,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4800",
-      "val_loss": 0.004498
+      "val_loss": 0.004498,
+      "weights_deleted": true
     },
     {
       "step": 4900,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-4900",
-      "val_loss": 0.004771
+      "val_loss": 0.004771,
+      "weights_deleted": true
     },
     {
       "step": 5000,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5000",
-      "val_loss": 0.004237
+      "val_loss": 0.004237,
+      "weights_deleted": true
     },
     {
       "step": 5100,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5100",
-      "val_loss": 0.004464
+      "val_loss": 0.004464,
+      "weights_deleted": true
     },
     {
       "step": 5200,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5200",
-      "val_loss": 0.003269
+      "val_loss": 0.003269,
+      "weights_deleted": true
     },
     {
       "step": 5300,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5300",
-      "val_loss": 0.003966
+      "val_loss": 0.003966,
+      "weights_deleted": true
     },
     {
       "step": 5400,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5400",
-      "val_loss": 0.003872
+      "val_loss": 0.003872,
+      "weights_deleted": true
     },
     {
       "step": 5500,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5500",
-      "val_loss": 0.004816
+      "val_loss": 0.004816,
+      "weights_deleted": true
     },
     {
       "step": 5600,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5600",
-      "val_loss": 0.003478
+      "val_loss": 0.003478,
+      "weights_deleted": true
     },
     {
       "step": 5700,
       "path": "tinker://3827ffe6-b482-5980-b4f8-9e66af111494:train:0/sampler_weights/checkpoint-5700",
-      "val_loss": 0.003497
+      "val_loss": 0.003497,
+      "weights_deleted": true
     },
     {
       "step": 5800,
       "path": "tinker://ca7e51df-ed73-5599-9f12-22e82c5e4165:train:0/sampler_weights/checkpoint-5800",
-      "val_loss": 0.00381
+      "val_loss": 0.00381,
+      "weights_deleted": true
     },
     {
       "step": 5900,
       "path": "tinker://ca7e51df-ed73-5599-9f12-22e82c5e4165:train:0/sampler_weights/checkpoint-5900",
-      "val_loss": 0.003572
+      "val_loss": 0.003572,
+      "weights_deleted": true
     },
     {
       "step": 6000,
@@ -357,102 +416,122 @@
       "val_chrf_dictword": 16.98,
       "val_chrf_dictword_en2lb": 20.49,
       "val_bleu_dictsent": 10.403,
-      "val_bleu_dictsent_en2lb": 7.812
+      "val_bleu_dictsent_en2lb": 7.812,
+      "weights_deleted": true
     },
     {
       "step": 6100,
       "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6100",
-      "val_loss": 0.004544
+      "val_loss": 0.004544,
+      "weights_deleted": true
     },
     {
       "step": 6200,
       "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6200",
-      "val_loss": 0.003912
+      "val_loss": 0.003912,
+      "weights_deleted": true
     },
     {
       "step": 6300,
       "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6300",
-      "val_loss": 0.002895
+      "val_loss": 0.002895,
+      "weights_deleted": true
     },
     {
       "step": 6400,
       "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6400",
-      "val_loss": 0.003334
+      "val_loss": 0.003334,
+      "weights_deleted": true
     },
     {
       "step": 6500,
       "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6500",
-      "val_loss": 0.003362
+      "val_loss": 0.003362,
+      "weights_deleted": true
     },
     {
       "step": 6600,
       "path": "tinker://de034b99-27bb-5572-ab3b-e932eb011926:train:0/sampler_weights/checkpoint-6600",
-      "val_loss": 0.003373
+      "val_loss": 0.003373,
+      "weights_deleted": true
     },
     {
       "step": 6700,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-6700",
-      "val_loss": 0.004398
+      "val_loss": 0.004398,
+      "weights_deleted": true
     },
     {
       "step": 6800,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-6800",
-      "val_loss": 0.003071
+      "val_loss": 0.003071,
+      "weights_deleted": true
     },
     {
       "step": 6900,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-6900",
-      "val_loss": 0.002947
+      "val_loss": 0.002947,
+      "weights_deleted": true
     },
     {
       "step": 7000,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7000",
-      "val_loss": 0.003049
+      "val_loss": 0.003049,
+      "weights_deleted": true
     },
     {
       "step": 7100,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7100",
-      "val_loss": 0.002307
+      "val_loss": 0.002307,
+      "weights_deleted": true
     },
     {
       "step": 7200,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7200",
-      "val_loss": 0.002405
+      "val_loss": 0.002405,
+      "weights_deleted": true
     },
     {
       "step": 7300,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7300",
-      "val_loss": 0.002571
+      "val_loss": 0.002571,
+      "weights_deleted": true
     },
     {
       "step": 7400,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7400",
-      "val_loss": 0.003824
+      "val_loss": 0.003824,
+      "weights_deleted": true
     },
     {
       "step": 7500,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7500",
-      "val_loss": 0.002511
+      "val_loss": 0.002511,
+      "weights_deleted": true
     },
     {
       "step": 7600,
       "path": "tinker://16ac532a-b8c1-5494-bc9c-df357346dd3d:train:0/sampler_weights/checkpoint-7600",
-      "val_loss": 0.002386
+      "val_loss": 0.002386,
+      "weights_deleted": true
     },
     {
       "step": 7700,
       "path": "tinker://02337d39-c1a2-5feb-85e5-aa08d377a3a7:train:0/sampler_weights/checkpoint-7700",
-      "val_loss": 0.003809
+      "val_loss": 0.003809,
+      "weights_deleted": true
     },
     {
       "step": 7800,
       "path": "tinker://02337d39-c1a2-5feb-85e5-aa08d377a3a7:train:0/sampler_weights/checkpoint-7800",
-      "val_loss": 0.002735
+      "val_loss": 0.002735,
+      "weights_deleted": true
     },
     {
       "step": 7900,
       "path": "tinker://32d48a33-798c-5130-ba80-2f58238b6aa0:train:0/sampler_weights/checkpoint-7900",
-      "val_loss": 0.004224
+      "val_loss": 0.004224,
+      "weights_deleted": true
     },
     {
       "step": 8000,
@@ -478,102 +557,122 @@
       "val_chrf_dictword": 17.01,
       "val_chrf_dictword_en2lb": 24.0,
       "val_bleu_dictsent": 14.26,
-      "val_bleu_dictsent_en2lb": 8.591
+      "val_bleu_dictsent_en2lb": 8.591,
+      "weights_deleted": true
     },
     {
       "step": 8100,
       "path": "tinker://db7bb5fe-6053-5c16-8461-4669f6ea6d9f:train:0/sampler_weights/checkpoint-8100",
-      "val_loss": 0.005107
+      "val_loss": 0.005107,
+      "weights_deleted": true
     },
     {
       "step": 8200,
       "path": "tinker://db7bb5fe-6053-5c16-8461-4669f6ea6d9f:train:0/sampler_weights/checkpoint-8200",
-      "val_loss": 0.003011
+      "val_loss": 0.003011,
+      "weights_deleted": true
     },
     {
       "step": 8300,
       "path": "tinker://6413f347-12ee-5107-a4b2-07befe3b5370:train:0/sampler_weights/checkpoint-8300",
-      "val_loss": 0.003394
+      "val_loss": 0.003394,
+      "weights_deleted": true
     },
     {
       "step": 8400,
       "path": "tinker://6413f347-12ee-5107-a4b2-07befe3b5370:train:0/sampler_weights/checkpoint-8400",
-      "val_loss": 0.002448
+      "val_loss": 0.002448,
+      "weights_deleted": true
     },
     {
       "step": 8500,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8500",
-      "val_loss": 0.003047
+      "val_loss": 0.003047,
+      "weights_deleted": true
     },
     {
       "step": 8600,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8600",
-      "val_loss": 0.003109
+      "val_loss": 0.003109,
+      "weights_deleted": true
     },
     {
       "step": 8700,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8700",
-      "val_loss": 0.00341
+      "val_loss": 0.00341,
+      "weights_deleted": true
     },
     {
       "step": 8800,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8800",
-      "val_loss": 0.003138
+      "val_loss": 0.003138,
+      "weights_deleted": true
     },
     {
       "step": 8900,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-8900",
-      "val_loss": 0.002827
+      "val_loss": 0.002827,
+      "weights_deleted": true
     },
     {
       "step": 9000,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9000",
-      "val_loss": 0.002758
+      "val_loss": 0.002758,
+      "weights_deleted": true
     },
     {
       "step": 9100,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9100",
-      "val_loss": 0.002886
+      "val_loss": 0.002886,
+      "weights_deleted": true
     },
     {
       "step": 9200,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9200",
-      "val_loss": 0.002163
+      "val_loss": 0.002163,
+      "weights_deleted": true
     },
     {
       "step": 9300,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9300",
-      "val_loss": 0.003388
+      "val_loss": 0.003388,
+      "weights_deleted": true
     },
     {
       "step": 9400,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9400",
-      "val_loss": 0.002663
+      "val_loss": 0.002663,
+      "weights_deleted": true
     },
     {
       "step": 9500,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9500",
-      "val_loss": 0.002246
+      "val_loss": 0.002246,
+      "weights_deleted": true
     },
     {
       "step": 9600,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9600",
-      "val_loss": 0.002386
+      "val_loss": 0.002386,
+      "weights_deleted": true
     },
     {
       "step": 9700,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9700",
-      "val_loss": 0.002351
+      "val_loss": 0.002351,
+      "weights_deleted": true
     },
     {
       "step": 9800,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9800",
-      "val_loss": 0.002414
+      "val_loss": 0.002414,
+      "weights_deleted": true
     },
     {
       "step": 9900,
       "path": "tinker://442fdd44-a74e-5ed9-b74b-9cd53f8ee61c:train:0/sampler_weights/checkpoint-9900",
-      "val_loss": 0.002278
+      "val_loss": 0.002278,
+      "weights_deleted": true
     },
     {
       "step": 10000,
@@ -599,102 +698,122 @@
       "val_chrf_dictword": 17.4,
       "val_chrf_dictword_en2lb": 25.23,
       "val_bleu_dictsent": 12.408,
-      "val_bleu_dictsent_en2lb": 8.787
+      "val_bleu_dictsent_en2lb": 8.787,
+      "weights_deleted": true
     },
     {
       "step": 10100,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10100",
-      "val_loss": 0.002587
+      "val_loss": 0.002587,
+      "weights_deleted": true
     },
     {
       "step": 10200,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10200",
-      "val_loss": 0.003954
+      "val_loss": 0.003954,
+      "weights_deleted": true
     },
     {
       "step": 10300,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10300",
-      "val_loss": 0.003244
+      "val_loss": 0.003244,
+      "weights_deleted": true
     },
     {
       "step": 10400,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10400",
-      "val_loss": 0.002894
+      "val_loss": 0.002894,
+      "weights_deleted": true
     },
     {
       "step": 10500,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10500",
-      "val_loss": 0.002375
+      "val_loss": 0.002375,
+      "weights_deleted": true
     },
     {
       "step": 10600,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10600",
-      "val_loss": 0.002227
+      "val_loss": 0.002227,
+      "weights_deleted": true
     },
     {
       "step": 10700,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10700",
-      "val_loss": 0.002967
+      "val_loss": 0.002967,
+      "weights_deleted": true
     },
     {
       "step": 10800,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10800",
-      "val_loss": 0.002192
+      "val_loss": 0.002192,
+      "weights_deleted": true
     },
     {
       "step": 10900,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-10900",
-      "val_loss": 0.002071
+      "val_loss": 0.002071,
+      "weights_deleted": true
     },
     {
       "step": 11000,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11000",
-      "val_loss": 0.002438
+      "val_loss": 0.002438,
+      "weights_deleted": true
     },
     {
       "step": 11100,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11100",
-      "val_loss": 0.002431
+      "val_loss": 0.002431,
+      "weights_deleted": true
     },
     {
       "step": 11200,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11200",
-      "val_loss": 0.002482
+      "val_loss": 0.002482,
+      "weights_deleted": true
     },
     {
       "step": 11300,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11300",
-      "val_loss": 0.00306
+      "val_loss": 0.00306,
+      "weights_deleted": true
     },
     {
       "step": 11400,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11400",
-      "val_loss": 0.001975
+      "val_loss": 0.001975,
+      "weights_deleted": true
     },
     {
       "step": 11500,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11500",
-      "val_loss": 0.002637
+      "val_loss": 0.002637,
+      "weights_deleted": true
     },
     {
       "step": 11600,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11600",
-      "val_loss": 0.001818
+      "val_loss": 0.001818,
+      "weights_deleted": true
     },
     {
       "step": 11700,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11700",
-      "val_loss": 0.001572
+      "val_loss": 0.001572,
+      "weights_deleted": true
     },
     {
       "step": 11800,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11800",
-      "val_loss": 0.001759
+      "val_loss": 0.001759,
+      "weights_deleted": true
     },
     {
       "step": 11900,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-11900",
-      "val_loss": 0.002366
+      "val_loss": 0.002366,
+      "weights_deleted": true
     },
     {
       "step": 12000,
@@ -720,102 +839,122 @@
       "val_chrf_dictword": 16.78,
       "val_chrf_dictword_en2lb": 25.93,
       "val_bleu_dictsent": 11.898,
-      "val_bleu_dictsent_en2lb": 9.272
+      "val_bleu_dictsent_en2lb": 9.272,
+      "weights_deleted": true
     },
     {
       "step": 12100,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12100",
-      "val_loss": 0.004769
+      "val_loss": 0.004769,
+      "weights_deleted": true
     },
     {
       "step": 12200,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12200",
-      "val_loss": 0.002461
+      "val_loss": 0.002461,
+      "weights_deleted": true
     },
     {
       "step": 12300,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12300",
-      "val_loss": 0.001735
+      "val_loss": 0.001735,
+      "weights_deleted": true
     },
     {
       "step": 12400,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12400",
-      "val_loss": 0.002146
+      "val_loss": 0.002146,
+      "weights_deleted": true
     },
     {
       "step": 12500,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12500",
-      "val_loss": 0.00219
+      "val_loss": 0.00219,
+      "weights_deleted": true
     },
     {
       "step": 12600,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12600",
-      "val_loss": 0.002432
+      "val_loss": 0.002432,
+      "weights_deleted": true
     },
     {
       "step": 12700,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12700",
-      "val_loss": 0.002362
+      "val_loss": 0.002362,
+      "weights_deleted": true
     },
     {
       "step": 12800,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12800",
-      "val_loss": 0.001853
+      "val_loss": 0.001853,
+      "weights_deleted": true
     },
     {
       "step": 12900,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-12900",
-      "val_loss": 0.001824
+      "val_loss": 0.001824,
+      "weights_deleted": true
     },
     {
       "step": 13000,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13000",
-      "val_loss": 0.002188
+      "val_loss": 0.002188,
+      "weights_deleted": true
     },
     {
       "step": 13100,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13100",
-      "val_loss": 0.001959
+      "val_loss": 0.001959,
+      "weights_deleted": true
     },
     {
       "step": 13200,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13200",
-      "val_loss": 0.002331
+      "val_loss": 0.002331,
+      "weights_deleted": true
     },
     {
       "step": 13300,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13300",
-      "val_loss": 0.001983
+      "val_loss": 0.001983,
+      "weights_deleted": true
     },
     {
       "step": 13400,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13400",
-      "val_loss": 0.002472
+      "val_loss": 0.002472,
+      "weights_deleted": true
     },
     {
       "step": 13500,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13500",
-      "val_loss": 0.002327
+      "val_loss": 0.002327,
+      "weights_deleted": true
     },
     {
       "step": 13600,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13600",
-      "val_loss": 0.002062
+      "val_loss": 0.002062,
+      "weights_deleted": true
     },
     {
       "step": 13700,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13700",
-      "val_loss": 0.003687
+      "val_loss": 0.003687,
+      "weights_deleted": true
     },
     {
       "step": 13800,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13800",
-      "val_loss": 0.003091
+      "val_loss": 0.003091,
+      "weights_deleted": true
     },
     {
       "step": 13900,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-13900",
-      "val_loss": 0.002384
+      "val_loss": 0.002384,
+      "weights_deleted": true
     },
     {
       "step": 14000,
@@ -841,102 +980,122 @@
       "val_chrf_dictword": 16.19,
       "val_chrf_dictword_en2lb": 16.54,
       "val_bleu_dictsent": 13.277,
-      "val_bleu_dictsent_en2lb": 6.998
+      "val_bleu_dictsent_en2lb": 6.998,
+      "weights_deleted": true
     },
     {
       "step": 14100,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14100",
-      "val_loss": 0.001823
+      "val_loss": 0.001823,
+      "weights_deleted": true
     },
     {
       "step": 14200,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14200",
-      "val_loss": 0.002144
+      "val_loss": 0.002144,
+      "weights_deleted": true
     },
     {
       "step": 14300,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14300",
-      "val_loss": 0.002147
+      "val_loss": 0.002147,
+      "weights_deleted": true
     },
     {
       "step": 14400,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14400",
-      "val_loss": 0.002209
+      "val_loss": 0.002209,
+      "weights_deleted": true
     },
     {
       "step": 14500,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14500",
-      "val_loss": 0.001892
+      "val_loss": 0.001892,
+      "weights_deleted": true
     },
     {
       "step": 14600,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14600",
-      "val_loss": 0.002327
+      "val_loss": 0.002327,
+      "weights_deleted": true
     },
     {
       "step": 14700,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14700",
-      "val_loss": 0.002104
+      "val_loss": 0.002104,
+      "weights_deleted": true
     },
     {
       "step": 14800,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14800",
-      "val_loss": 0.001786
+      "val_loss": 0.001786,
+      "weights_deleted": true
     },
     {
       "step": 14900,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-14900",
-      "val_loss": 0.003562
+      "val_loss": 0.003562,
+      "weights_deleted": true
     },
     {
       "step": 15000,
       "path": "tinker://2bd06baa-cee4-58a8-894d-5da556b04f05:train:0/sampler_weights/checkpoint-15000",
-      "val_loss": 0.001876
+      "val_loss": 0.001876,
+      "weights_deleted": true
     },
     {
       "step": 15100,
       "path": "tinker://af32e4a6-5488-5b3c-8a46-a1a5110fe6d3:train:0/sampler_weights/checkpoint-15100",
-      "val_loss": 0.001964
+      "val_loss": 0.001964,
+      "weights_deleted": true
     },
     {
       "step": 15200,
       "path": "tinker://af32e4a6-5488-5b3c-8a46-a1a5110fe6d3:train:0/sampler_weights/checkpoint-15200",
-      "val_loss": 0.001833
+      "val_loss": 0.001833,
+      "weights_deleted": true
     },
     {
       "step": 15300,
       "path": "tinker://af32e4a6-5488-5b3c-8a46-a1a5110fe6d3:train:0/sampler_weights/checkpoint-15300",
-      "val_loss": 0.001393
+      "val_loss": 0.001393,
+      "weights_deleted": true
     },
     {
       "step": 15400,
       "path": "tinker://af32e4a6-5488-5b3c-8a46-a1a5110fe6d3:train:0/sampler_weights/checkpoint-15400",
-      "val_loss": 0.001302
+      "val_loss": 0.001302,
+      "weights_deleted": true
     },
     {
       "step": 15500,
       "path": "tinker://cfb19279-f23f-56d0-a789-548f94070088:train:0/sampler_weights/checkpoint-15500",
-      "val_loss": 0.001663
+      "val_loss": 0.001663,
+      "weights_deleted": true
     },
     {
       "step": 15600,
       "path": "tinker://cfb19279-f23f-56d0-a789-548f94070088:train:0/sampler_weights/checkpoint-15600",
-      "val_loss": 0.001834
+      "val_loss": 0.001834,
+      "weights_deleted": true
     },
     {
       "step": 15700,
       "path": "tinker://cfb19279-f23f-56d0-a789-548f94070088:train:0/sampler_weights/checkpoint-15700",
-      "val_loss": 0.001881
+      "val_loss": 0.001881,
+      "weights_deleted": true
     },
     {
       "step": 15800,
       "path": "tinker://cfb19279-f23f-56d0-a789-548f94070088:train:0/sampler_weights/checkpoint-15800",
-      "val_loss": 0.001454
+      "val_loss": 0.001454,
+      "weights_deleted": true
     },
     {
       "step": 15900,
       "path": "tinker://cfb19279-f23f-56d0-a789-548f94070088:train:0/sampler_weights/checkpoint-15900",
-      "val_loss": 0.002376
+      "val_loss": 0.002376,
+      "weights_deleted": true
     },
     {
       "step": 16000,

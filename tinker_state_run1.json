@@ -4,7 +4,8 @@
     {
       "step": 2000,
       "path": "tinker://42a2c780-b21f-5fde-9d37-b16e672d9043:train:0/sampler_weights/checkpoint-2000",
-      "val_loss": 0.718543
+      "val_loss": 0.718543,
+      "weights_deleted": true
     },
     {
       "step": 4000,
@@ -12,7 +13,8 @@
       "val_loss": 0.441898,
       "val_bible_bleu": 0.0,
       "val_dict_exact_pct": 0.0,
-      "val_sent_bleu": 0.0
+      "val_sent_bleu": 0.0,
+      "weights_deleted": true
     },
     {
       "step": 6000,
@@ -20,7 +22,8 @@
       "val_loss": 0.32466,
       "val_bible_bleu": 0.0,
       "val_dict_exact_pct": 0.0,
-      "val_sent_bleu": 0.0
+      "val_sent_bleu": 0.0,
+      "weights_deleted": true
     },
     {
       "step": 7560,
@@ -44,7 +47,8 @@
       "val_bleu_sent_long": 2.595,
       "val_bleu_sentence_en2lb": 1.241,
       "val_bleu_sent_short_en2lb": 1.382,
-      "val_bleu_sent_long_en2lb": 1.424
+      "val_bleu_sent_long_en2lb": 1.424,
+      "weights_deleted": true
     },
     {
       "step": 10000,
@@ -52,7 +56,8 @@
       "val_loss": 0.149543,
       "val_bible_bleu": 0.0,
       "val_dict_exact_pct": 0.0,
-      "val_sent_bleu": 0.0
+      "val_sent_bleu": 0.0,
+      "weights_deleted": true
     },
     {
       "step": 12000,
@@ -60,7 +65,8 @@
       "val_loss": 0.126804,
       "val_bible_bleu": 0.0,
       "val_dict_exact_pct": 0.0,
-      "val_sent_bleu": 0.0
+      "val_sent_bleu": 0.0,
+      "weights_deleted": true
     },
     {
       "step": 14000,
@@ -68,7 +74,8 @@
       "val_loss": 0.113845,
       "val_bible_bleu": 0.0,
       "val_dict_exact_pct": 0.0,
-      "val_sent_bleu": 0.0
+      "val_sent_bleu": 0.0,
+      "weights_deleted": true
     },
     {
       "step": 15120,
@@ -82,7 +89,8 @@
       "val_loss": 0.053765,
       "val_bleu_bible": 58.24,
       "val_exact_dict": 19.5,
-      "val_bleu_sentence": 33.594
+      "val_bleu_sentence": 33.594,
+      "weights_deleted": true
     }
   ],
   "steps": 16000

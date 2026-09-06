@@ -415,6 +415,17 @@ def list_checkpoints():
         label = f"Inkling v2 (dict) · Step {ck['step']:,}"
         result.append({"label": label, "path": ck["path"], "step": ck["step"]})
 
+    # Drop checkpoints whose weights were pruned from Tinker to save storage
+    # (tagged weights_deleted in the state files — their metadata/metrics are
+    # kept for the record, but they can no longer be served, so they must not
+    # appear as selectable options). Collected across every state file.
+    deleted_paths = set()
+    for st in (_load(STATE_FILE_RUN1), _load(STATE_FILE_V1), _load(STATE_FILE),
+               _load(STATE_FILE_INKLING), _load(STATE_FILE_INKLING_V2)):
+        deleted_paths.update(c["path"] for c in st.get("checkpoints", [])
+                             if c.get("weights_deleted"))
+    result = [e for e in result if e["path"] not in deleted_paths]
+
     # Mark whichever entry is the actual serving default (see
     # get_latest_checkpoint) rather than assuming it's the last bucket.
     default_checkpoint = get_latest_checkpoint()
