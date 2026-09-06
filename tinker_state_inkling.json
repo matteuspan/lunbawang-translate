@@ -4,17 +4,20 @@
     {
       "step": 500,
       "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-500",
-      "val_loss": 1.263722
+      "val_loss": 1.263722,
+      "weights_deleted": true
     },
     {
       "step": 1000,
       "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-1000",
-      "val_loss": 0.810086
+      "val_loss": 0.810086,
+      "weights_deleted": true
     },
     {
       "step": 1500,
       "path": "tinker://2a256b13-a031-5353-8b3f-000cd93de118:train:0/sampler_weights/checkpoint-1500",
-      "val_loss": 0.583727
+      "val_loss": 0.583727,
+      "weights_deleted": true
     },
     {
       "step": 2000,
@@ -34,22 +37,26 @@
       "val_bleu_sent_long": 21.999,
       "val_bleu_sentence_en2lb": 6.921,
       "val_bleu_sent_short_en2lb": 2.536,
-      "val_bleu_sent_long_en2lb": 7.504
+      "val_bleu_sent_long_en2lb": 7.504,
+      "weights_deleted": true
     },
     {
       "step": 2500,
       "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-2500",
-      "val_loss": 0.458505
+      "val_loss": 0.458505,
+      "weights_deleted": true
     },
     {
       "step": 3000,
       "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-3000",
-      "val_loss": 0.345315
+      "val_loss": 0.345315,
+      "weights_deleted": true
     },
     {
       "step": 3500,
       "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-3500",
-      "val_loss": 0.278952
+      "val_loss": 0.278952,
+      "weights_deleted": true
     },
     {
       "step": 4000,
@@ -69,22 +76,26 @@
       "val_bleu_sent_long": 22.734,
       "val_bleu_sentence_en2lb": 7.982,
       "val_bleu_sent_short_en2lb": 3.924,
-      "val_bleu_sent_long_en2lb": 8.755
+      "val_bleu_sent_long_en2lb": 8.755,
+      "weights_deleted": true
     },
     {
       "step": 4500,
       "path": "tinker://6f29521e-40ba-5482-bad4-9cb5d7f16ed8:train:0/sampler_weights/checkpoint-4500",
-      "val_loss": 0.189856
+      "val_loss": 0.189856,
+      "weights_deleted": true
     },
     {
       "step": 5000,
       "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-5000",
-      "val_loss": 0.199463
+      "val_loss": 0.199463,
+      "weights_deleted": true
     },
     {
       "step": 5500,
       "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-5500",
-      "val_loss": 0.153405
+      "val_loss": 0.153405,
+      "weights_deleted": true
     },
     {
       "step": 6000,
@@ -104,22 +115,26 @@
       "val_bleu_sent_long": 20.199,
       "val_bleu_sentence_en2lb": 11.916,
       "val_bleu_sent_short_en2lb": 5.706,
-      "val_bleu_sent_long_en2lb": 12.875
+      "val_bleu_sent_long_en2lb": 12.875,
+      "weights_deleted": true
     },
     {
       "step": 6500,
       "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-6500",
-      "val_loss": 0.111384
+      "val_loss": 0.111384,
+      "weights_deleted": true
     },
     {
       "step": 7000,
       "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-7000",
-      "val_loss": 0.09978
+      "val_loss": 0.09978,
+      "weights_deleted": true
     },
     {
       "step": 7500,
       "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-7500",
-      "val_loss": 0.08825
+      "val_loss": 0.08825,
+      "weights_deleted": true
     },
     {
       "step": 8000,
@@ -139,22 +154,26 @@
       "val_bleu_sent_long": 25.346,
       "val_bleu_sentence_en2lb": 3.123,
       "val_bleu_sent_short_en2lb": 2.992,
-      "val_bleu_sent_long_en2lb": 3.097
+      "val_bleu_sent_long_en2lb": 3.097,
+      "weights_deleted": true
     },
     {
       "step": 8500,
       "path": "tinker://21f523d3-cd33-5b79-85a9-396636db88e4:train:0/sampler_weights/checkpoint-8500",
-      "val_loss": 0.073262
+      "val_loss": 0.073262,
+      "weights_deleted": true
     },
     {
       "step": 9000,
       "path": "tinker://3a051457-f00d-5e81-9f89-5f9cba6b6820:train:0/sampler_weights/checkpoint-9000",
-      "val_loss": 0.063053
+      "val_loss": 0.063053,
+      "weights_deleted": true
     },
     {
       "step": 9500,
       "path": "tinker://3a051457-f00d-5e81-9f89-5f9cba6b6820:train:0/sampler_weights/checkpoint-9500",
-      "val_loss": 0.051697
+      "val_loss": 0.051697,
+      "weights_deleted": true
     },
     {
       "step": 10000,
@@ -174,17 +193,20 @@
       "val_bleu_sent_long": 18.044,
       "val_bleu_sentence_en2lb": 5.75,
       "val_bleu_sent_short_en2lb": 3.195,
-      "val_bleu_sent_long_en2lb": 5.985
+      "val_bleu_sent_long_en2lb": 5.985,
+      "weights_deleted": true
     },
     {
       "step": 10500,
       "path": "tinker://3a051457-f00d-5e81-9f89-5f9cba6b6820:train:0/sampler_weights/checkpoint-10500",
-      "val_loss": 0.042542
+      "val_loss": 0.042542,
+      "weights_deleted": true
     },
     {
       "step": 11000,
       "path": "tinker://3a051457-f00d-5e81-9f89-5f9cba6b6820:train:0/sampler_weights/checkpoint-11000",
-      "val_loss": 0.04408
+      "val_loss": 0.04408,
+      "weights_deleted": true
     },
     {
       "step": 11500,
