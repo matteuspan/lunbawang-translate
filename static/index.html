@@ -34,7 +34,73 @@
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Web",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "inLanguage": ["en", "lnd"]
+  "inLanguage": ["en", "lnd"],
+  "about": {
+    "@type": "Language",
+    "name": "Lun Bawang language",
+    "alternateName": ["Lun Dayeh", "Lundayeh", "Southern Murut"],
+    "sameAs": [
+      "https://en.wikipedia.org/wiki/Lun_Bawang_language",
+      "https://en.wikipedia.org/wiki/Lun_Bawang"
+    ]
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Lun Bawang the same as Lundayeh (Lun Dayeh)?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Lun Bawang, Lun Dayeh and Lundayeh are names for the same language and closely related communities of highland Borneo. \"Lun Bawang\" is the name used most in Sarawak, Malaysia, while \"Lun Dayeh\" or \"Lundayeh\" is more common in Indonesian Kalimantan and among speakers in Brunei. This translator works for all of them, so you can use it as a Lun Bawang, Lun Dayeh or Lundayeh translator and dictionary."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where is Lun Bawang spoken?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Lun Bawang is spoken in the highlands of central and northern Borneo: the Lawas and Limbang districts of Sarawak in Malaysia, the Krayan and Kerayan highlands of North Kalimantan in Indonesia, and parts of Temburong in Brunei. It belongs to the Apad Uat group of the Austronesian language family and is closely related to Kelabit."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How many people speak Lun Bawang?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Estimates put the number of Lun Bawang (Lundayeh) speakers at roughly 50,000 to 80,000 across Malaysia, Indonesia and Brunei. It is considered a vulnerable language, which is part of why building open tools and corpora for it matters."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do you say good morning in Lun Bawang?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A common way to say good morning is \"Do pekak\", and good evening is \"Ro meco\". \"Mo\" means yes and \"nam\" means no. You can type any English or Lun Bawang word or phrase into the translator to look up more."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How accurate is this Lun Bawang translator?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The translator runs on an AI model fine-tuned on the first parallel corpus assembled for Lun Bawang, combining a dictionary, everyday sentences and scripture. It handles everyday sentences and single-word lookups best, and, like any low-resource machine translation, can still make mistakes — especially on rare words or long, complex sentences. When it gets something wrong you can suggest a correction, which goes back into the corpus to improve future versions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is the Lun Bawang translator free to use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The Lun Bawang translator and dictionary are completely free, with no sign-up. Translation works in both directions — Lun Bawang to English and English to Lun Bawang — and the project is open source."
+      }
+    }
+  ]
 }
 </script>
 
@@ -322,14 +388,6 @@
   .thanks{ display:none; margin-top:10px; font-size:12.5px; color:var(--ok); }
   .thanks.show{ display:block; }
 
-  /* ---------- training notice ---------- */
-  .notice{
-    display:none; margin-top:14px; padding:12px 16px;
-    background:var(--bone); border-left:3px solid var(--alet); border-radius:var(--r-sm);
-    font-size:13.5px; color:var(--kiln); line-height:1.55;
-  }
-  .notice.show{ display:block; }
-
   /* ---------- signature: the bead strand ---------- */
   .strand{
     position:relative;
@@ -425,6 +483,36 @@
     font-size:12.5px; color:var(--clay); line-height:1.7;
   }
   .alsoknown b{ color:var(--kiln); font-weight:600; }
+  .about a{ color:var(--birar); text-decoration:underline; text-underline-offset:2px; }
+  .about a:hover{ color:var(--alet); }
+
+  /* ---------- FAQ ---------- */
+  .faq{ margin-top:44px; max-width:60ch; }
+  .faq h2{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--clay); font-weight:600; margin:0 0 6px;
+  }
+  .faq details{
+    border-top:1px solid var(--line);
+    padding:14px 0;
+  }
+  .faq details:last-of-type{ border-bottom:1px solid var(--line); }
+  .faq summary{
+    font-family:var(--display); font-weight:600; font-size:15.5px;
+    color:var(--kiln); cursor:pointer; list-style:none;
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+  }
+  .faq summary::-webkit-details-marker{ display:none; }
+  .faq summary::after{
+    content:'+'; font-family:var(--display); font-weight:400;
+    color:var(--clay); font-size:20px; line-height:1; flex:0 0 auto;
+    transition:transform .2s;
+  }
+  .faq details[open] summary::after{ transform:rotate(45deg); }
+  .faq details p{
+    font-family:var(--text); font-size:16px; line-height:1.6;
+    margin:10px 0 0; color:var(--kiln);
+  }
 
   /* ---------- phrase glossary ----------
      Real static text (pulled from the training corpus, not the live model)
@@ -599,11 +687,6 @@
     <div class="thanks" id="thanks">Thanks — that helps train the next model.</div>
   </div>
 
-  <div class="notice" id="notice">
-    ⏳ <strong>Model is still training.</strong> The first checkpoint saves at step 500.
-    Translation will become available once training reaches that milestone — this page checks automatically.
-  </div>
-
   <div class="controls">
     <label class="switch">
       <input type="checkbox" id="clause">
@@ -619,10 +702,10 @@
   </div>
 
   <section class="about">
-    <h2>About this translator</h2>
-    <p>Lun Bawang is spoken by roughly 50,000–80,000 people across the highlands of Borneo — Sarawak, Kalimantan and Brunei. This translator is free, and runs on a model fine-tuned on the first parallel corpus ever assembled for the language.</p>
-    <p>Translate in either direction, look up single words, and send a correction when the model gets something wrong. Corrections go back into the corpus.</p>
-    <p class="alsoknown">Also known as <b>Lun Dayeh</b> or <b>Lundayeh</b> — this works equally as a Lundayeh translator, a Lundayeh dictionary, and for Lundayeh to English translation.</p>
+    <h2>About the Lun Bawang language</h2>
+    <p>Lun Bawang is an Austronesian language of the highlands of central and northern Borneo, spoken by roughly 50,000–80,000 people across Sarawak in Malaysia, North Kalimantan in Indonesia, and Brunei. It belongs to the Apad Uat group and is closely related to Kelabit. The name means, roughly, “people of the land” — <i>lun</i> meaning people and <i>bawang</i> the land or place.</p>
+    <p>This translator is free and runs on an AI model fine-tuned on the first parallel corpus ever assembled for the language — a mix of a Lun Bawang dictionary, everyday sentences, and scripture. Translate in either direction, look up single words, and send a correction whenever the model gets something wrong. Every correction goes back into the corpus to help train the next version.</p>
+    <p class="alsoknown">Also known as <b>Lun Dayeh</b> or <b>Lundayeh</b> — this works equally as a Lundayeh translator, a Lundayeh dictionary, and for Lun Bawang to English or Lundayeh to English translation. Learn more about the language on its <a href="https://en.wikipedia.org/wiki/Lun_Bawang_language" target="_blank" rel="noopener">Wikipedia page</a>.</p>
   </section>
 
   <section class="phrases">
@@ -640,7 +723,41 @@
       <div class="phrase"><dt>Rurum</dt><dd>Friend</dd></div>
       <div class="phrase"><dt>Aceh, dueh, teluh</dt><dd>One, two, three</dd></div>
       <div class="phrase"><dt>Kuman</dt><dd>Eat</dd></div>
+      <div class="phrase"><dt>Abpa'</dt><dd>Water</dd></div>
+      <div class="phrase"><dt>Aco</dt><dd>Day</dd></div>
+      <div class="phrase"><dt>Ruma'</dt><dd>House</dd></div>
+      <div class="phrase"><dt>Rudap</dt><dd>Sleep</dd></div>
+      <div class="phrase"><dt>Rayeh</dt><dd>Big</dd></div>
+      <div class="phrase"><dt>Isut</dt><dd>Small</dd></div>
     </dl>
+  </section>
+
+  <section class="faq">
+    <h2>Frequently asked questions</h2>
+    <details>
+      <summary>Is Lun Bawang the same as Lundayeh (Lun Dayeh)?</summary>
+      <p>Yes. Lun Bawang, Lun Dayeh and Lundayeh are names for the same language and closely related communities of highland Borneo. “Lun Bawang” is the name used most in Sarawak, Malaysia, while “Lun Dayeh” or “Lundayeh” is more common in Indonesian Kalimantan and among speakers in Brunei. This translator works for all of them, so you can use it as a Lun Bawang, Lun Dayeh or Lundayeh translator and dictionary.</p>
+    </details>
+    <details>
+      <summary>Where is Lun Bawang spoken?</summary>
+      <p>Lun Bawang is spoken in the highlands of central and northern Borneo: the Lawas and Limbang districts of Sarawak in Malaysia, the Krayan highlands of North Kalimantan in Indonesia, and parts of Temburong in Brunei. It belongs to the Apad Uat group of the Austronesian language family and is closely related to Kelabit.</p>
+    </details>
+    <details>
+      <summary>How many people speak Lun Bawang?</summary>
+      <p>Estimates put the number of Lun Bawang (Lundayeh) speakers at roughly 50,000 to 80,000 across Malaysia, Indonesia and Brunei. It is considered a vulnerable language, which is part of why building open tools and corpora for it matters.</p>
+    </details>
+    <details>
+      <summary>How do you say good morning in Lun Bawang?</summary>
+      <p>A common way to say good morning is “Do pekak”, and good evening is “Ro meco”. “Mo” means yes and “nam” means no. You can type any English or Lun Bawang word or phrase into the translator above to look up more.</p>
+    </details>
+    <details>
+      <summary>How accurate is this Lun Bawang translator?</summary>
+      <p>The translator runs on an AI model fine-tuned on the first parallel corpus assembled for Lun Bawang, combining a dictionary, everyday sentences and scripture. It handles everyday sentences and single-word lookups best, and — like any low-resource machine translation — can still make mistakes, especially on rare words or long, complex sentences. When it gets something wrong you can suggest a correction, which goes back into the corpus to improve future versions.</p>
+    </details>
+    <details>
+      <summary>Is the Lun Bawang translator free to use?</summary>
+      <p>Yes. The Lun Bawang translator and dictionary are completely free, with no sign-up. Translation works in both directions — Lun Bawang to English and English to Lun Bawang — and the project is open source.</p>
+    </details>
   </section>
 
   <div class="colophon">
@@ -663,7 +780,6 @@
   const fromLang       = document.getElementById('fromLang');
   const toLang         = document.getElementById('toLang');
   const detectedTag    = document.getElementById('detectedTag');
-  const notice         = document.getElementById('notice');
   const statusDot      = document.getElementById('statusDot');
   const statusText     = document.getElementById('statusText');
   const checkpointSelect = document.getElementById('checkpointSelect');
@@ -742,7 +858,6 @@
       statusDot.classList.toggle('busy', !modelReady);
       if (modelReady) {
         statusText.textContent = `Ready · ${d.num_checkpoints} checkpoint${d.num_checkpoints !== 1 ? 's' : ''}`;
-        notice.classList.remove('show');
       } else {
         statusText.textContent = d.steps > 0 ? `Training · step ${d.steps.toLocaleString()}` : 'Training…';
       }
@@ -806,8 +921,9 @@
     if (!text) { clearOutput(); refreshLabels(null); return; }
 
     if (!modelReady) {
-      notice.classList.add('show');
-      clearOutput();
+      out.textContent = 'The model is starting up — this usually takes a few seconds. Try again in a moment.';
+      out.classList.add('empty');
+      copyBtn.hidden = true;
       return;
     }
 
@@ -831,7 +947,6 @@
         out.textContent = data.error;
         out.classList.add('empty');
         clearClauses();
-        if (data.error.includes('training')) notice.classList.add('show');
       } else if (!(data.translation || '').trim()) {
         // The model occasionally returns an empty completion on hard/rare
         // single words even after the server's retries. Show a helpful line
@@ -839,7 +954,6 @@
         out.textContent = 'No translation came back for that — tap Clear and try again, or reword it slightly.';
         out.classList.add('empty');
         copyBtn.hidden = true;
-        notice.classList.remove('show');
         hideFeedback();
         clearClauses();
       } else {
@@ -851,7 +965,6 @@
         lastCheckpoint   = checkpointSelect.value;
         refreshLabels(data.detected_lang);
         copyBtn.hidden = false;
-        notice.classList.remove('show');
         hideFeedback();
         feedback.classList.add('show');
 
